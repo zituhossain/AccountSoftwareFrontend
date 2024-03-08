@@ -25,13 +25,13 @@ const FooterContent = () => {
           ❤️
         </Box>
         {` by `}
-        <LinkStyled target='_blank' href='https://pixinvent.com/'>
-          Pixinvent
+        <LinkStyled target='_blank' href='#'>
+          Top4
         </LinkStyled>
       </Typography>
       {hidden ? null : (
         <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', '& :not(:last-child)': { mr: 4 } }}>
-          <LinkStyled target='_blank' href='https://themeforest.net/licenses/standard'>
+          {/* <LinkStyled target='_blank' href='https://themeforest.net/licenses/standard'>
             License
           </LinkStyled>
           <LinkStyled target='_blank' href='https://1.envato.market/pixinvent_portfolio'>
@@ -45,7 +45,7 @@ const FooterContent = () => {
           </LinkStyled>
           <LinkStyled target='_blank' href='https://pixinvent.ticksy.com/'>
             Support
-          </LinkStyled>
+          </LinkStyled> */}
         </Box>
       )}
     </Box>
