@@ -22,6 +22,21 @@ const navigation = (): VerticalNavItemsType => {
       path: '/apps/calendar'
     },
     {
+      title: 'Company',
+      icon: 'mdi:domain',
+      path: '/apps/company',
+      children: [
+        {
+          title: 'List',
+          path: '/apps/company/list'
+        },
+        {
+          title: 'Add',
+          path: '/apps/company/add'
+        }
+      ]
+    },
+    {
       title: 'Invoice',
       icon: 'mdi:file-document-outline',
       children: [
