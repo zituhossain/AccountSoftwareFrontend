@@ -3,7 +3,7 @@ import { useState, useEffect, MouseEvent, useCallback } from 'react'
 
 // ** Next Imports
 import Link from 'next/link'
-import { GetStaticProps, InferGetStaticPropsType } from 'next/types'
+import { GetStaticProps } from 'next/types'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
@@ -26,12 +26,13 @@ import Select, { SelectChangeEvent } from '@mui/material/Select'
 import Icon from 'src/@core/components/icon'
 
 // ** Store Imports
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 
 // ** Custom Components Imports
-import CustomChip from 'src/@core/components/mui/chip'
+// import CustomChip from 'src/@core/components/mui/chip'
 import CustomAvatar from 'src/@core/components/mui/avatar'
-import CardStatisticsHorizontal from 'src/@core/components/card-statistics/card-stats-horizontal'
+
+// import CardStatisticsHorizontal from 'src/@core/components/card-statistics/card-stats-horizontal'
 
 // ** Utils Import
 import { getInitials } from 'src/@core/utils/get-initials'
@@ -40,45 +41,48 @@ import { getInitials } from 'src/@core/utils/get-initials'
 import { fetchData, deleteUser } from 'src/store/apps/user'
 
 // ** Third Party Components
-import axios from 'axios'
+// import axios from 'axios'
 
 // ** Types Imports
-import { RootState, AppDispatch } from 'src/store'
-import { CardStatsType } from 'src/@fake-db/types'
-import { ThemeColor } from 'src/@core/layouts/types'
-import { UsersType } from 'src/types/apps/userTypes'
-import { CardStatsHorizontalProps } from 'src/@core/components/card-statistics/types'
+import { AppDispatch } from 'src/store'
+
+// import { CardStatsType } from 'src/@fake-db/types'
+// import { ThemeColor } from 'src/@core/layouts/types'
+import { UsersType, UsersTypeFromStrapi } from 'src/types/apps/userTypes'
+
+// import { CardStatsHorizontalProps } from 'src/@core/components/card-statistics/types'
 
 // ** Custom Table Components Imports
 import TableHeader from 'src/views/apps/user/list/TableHeader'
 import AddUserDrawer from 'src/views/apps/user/list/AddUserDrawer'
+import { fetchDataFromApi } from 'src/utils/api'
 
-interface UserRoleType {
-  [key: string]: { icon: string; color: string }
-}
+// interface UserRoleType {
+//   [key: string]: { icon: string; color: string }
+// }
 
-interface UserStatusType {
-  [key: string]: ThemeColor
-}
+// interface UserStatusType {
+//   [key: string]: ThemeColor
+// }
 
 // ** Vars
-const userRoleObj: UserRoleType = {
-  admin: { icon: 'mdi:laptop', color: 'error.main' },
-  author: { icon: 'mdi:cog-outline', color: 'warning.main' },
-  editor: { icon: 'mdi:pencil-outline', color: 'info.main' },
-  maintainer: { icon: 'mdi:chart-donut', color: 'success.main' },
-  subscriber: { icon: 'mdi:account-outline', color: 'primary.main' }
-}
+// const userRoleObj: UserRoleType = {
+//   admin: { icon: 'mdi:laptop', color: 'error.main' },
+//   author: { icon: 'mdi:cog-outline', color: 'warning.main' },
+//   editor: { icon: 'mdi:pencil-outline', color: 'info.main' },
+//   maintainer: { icon: 'mdi:chart-donut', color: 'success.main' },
+//   subscriber: { icon: 'mdi:account-outline', color: 'primary.main' }
+// }
 
 interface CellType {
   row: UsersType
 }
 
-const userStatusObj: UserStatusType = {
-  active: 'success',
-  pending: 'warning',
-  inactive: 'secondary'
-}
+// const userStatusObj: UserStatusType = {
+//   active: 'success',
+//   pending: 'warning',
+//   inactive: 'secondary'
+// }
 
 const LinkStyled = styled(Link)(({ theme }) => ({
   fontWeight: 600,
@@ -92,8 +96,8 @@ const LinkStyled = styled(Link)(({ theme }) => ({
 }))
 
 // ** renders client column
-const renderClient = (row: UsersType) => {
-  if (row.avatar.length) {
+const renderClient = (row: UsersTypeFromStrapi) => {
+  if (row.avatar) {
     return <CustomAvatar src={row.avatar} sx={{ mr: 3, width: 34, height: 34 }} />
   } else {
     return (
@@ -102,7 +106,7 @@ const renderClient = (row: UsersType) => {
         color={row.avatarColor || 'primary'}
         sx={{ mr: 3, width: 34, height: 34, fontSize: '1rem' }}
       >
-        {getInitials(row.fullName ? row.fullName : 'John Doe')}
+        {getInitials(row.username ? row.username : 'John Doe')}
       </CustomAvatar>
     )
   }
@@ -175,16 +179,16 @@ const columns: GridColDef[] = [
   {
     flex: 0.2,
     minWidth: 230,
-    field: 'fullName',
+    field: 'username',
     headerName: 'User',
     renderCell: ({ row }: CellType) => {
-      const { fullName, username } = row
+      const { username } = row
 
       return (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           {renderClient(row)}
           <Box sx={{ display: 'flex', alignItems: 'flex-start', flexDirection: 'column' }}>
-            <LinkStyled href='/apps/user/view/overview/'>{fullName}</LinkStyled>
+            <LinkStyled href='/apps/user/view/overview/'>{username}</LinkStyled>
             <Typography noWrap variant='caption'>
               {`@${username}`}
             </Typography>
@@ -206,52 +210,55 @@ const columns: GridColDef[] = [
       )
     }
   },
-  {
-    flex: 0.15,
-    field: 'role',
-    minWidth: 150,
-    headerName: 'Role',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Box sx={{ display: 'flex', alignItems: 'center', '& svg': { mr: 3, color: userRoleObj[row.role].color } }}>
-          <Icon icon={userRoleObj[row.role].icon} fontSize={20} />
-          <Typography noWrap sx={{ color: 'text.secondary', textTransform: 'capitalize' }}>
-            {row.role}
-          </Typography>
-        </Box>
-      )
-    }
-  },
-  {
-    flex: 0.15,
-    minWidth: 120,
-    headerName: 'Plan',
-    field: 'currentPlan',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Typography variant='subtitle1' noWrap sx={{ textTransform: 'capitalize' }}>
-          {row.currentPlan}
-        </Typography>
-      )
-    }
-  },
-  {
-    flex: 0.1,
-    minWidth: 110,
-    field: 'status',
-    headerName: 'Status',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <CustomChip
-          skin='light'
-          size='small'
-          label={row.status}
-          color={userStatusObj[row.status]}
-          sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
-        />
-      )
-    }
-  },
+
+  // {
+  //   flex: 0.15,
+  //   field: 'role',
+  //   minWidth: 150,
+  //   headerName: 'Role',
+  //   renderCell: ({ row }: CellType) => {
+  //     return (
+  //       <Box sx={{ display: 'flex', alignItems: 'center', '& svg': { mr: 3, color: userRoleObj[row.role].color } }}>
+  //         <Icon icon={userRoleObj[row.role].icon} fontSize={20} />
+  //         <Typography noWrap sx={{ color: 'text.secondary', textTransform: 'capitalize' }}>
+  //           {row.role}
+  //         </Typography>
+  //       </Box>
+  //     )
+  //   }
+  // },
+
+  // {
+  //   flex: 0.15,
+  //   minWidth: 120,
+  //   headerName: 'Plan',
+  //   field: 'currentPlan',
+  //   renderCell: ({ row }: CellType) => {
+  //     return (
+  //       <Typography variant='subtitle1' noWrap sx={{ textTransform: 'capitalize' }}>
+  //         {row.currentPlan}
+  //       </Typography>
+  //     )
+  //   }
+  // },
+
+  // {
+  //   flex: 0.1,
+  //   minWidth: 110,
+  //   field: 'status',
+  //   headerName: 'Status',
+  //   renderCell: ({ row }: CellType) => {
+  //     return (
+  //       <CustomChip
+  //         skin='light'
+  //         size='small'
+  //         label={row.status}
+  //         color={userStatusObj[row.status]}
+  //         sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
+  //       />
+  //     )
+  //   }
+  // },
   {
     flex: 0.1,
     minWidth: 90,
@@ -262,7 +269,10 @@ const columns: GridColDef[] = [
   }
 ]
 
-const UserList = ({ apiData }: InferGetStaticPropsType<typeof getStaticProps>) => {
+// const UserList = ({ apiData }: InferGetStaticPropsType<typeof getStaticProps>) => {
+const UserList = ({ userData }: { userData: UsersTypeFromStrapi[] }) => {
+  console.log('zdata', userData)
+
   // ** State
   const [role, setRole] = useState<string>('')
   const [plan, setPlan] = useState<string>('')
@@ -273,7 +283,8 @@ const UserList = ({ apiData }: InferGetStaticPropsType<typeof getStaticProps>) =
 
   // ** Hooks
   const dispatch = useDispatch<AppDispatch>()
-  const store = useSelector((state: RootState) => state.user)
+
+  // const store = useSelector((state: RootState) => state.user)
 
   useEffect(() => {
     dispatch(
@@ -306,7 +317,7 @@ const UserList = ({ apiData }: InferGetStaticPropsType<typeof getStaticProps>) =
 
   return (
     <Grid container spacing={6}>
-      <Grid item xs={12}>
+      {/* <Grid item xs={12}>
         {apiData && (
           <Grid container spacing={6}>
             {apiData.statsHorizontal.map((item: CardStatsHorizontalProps, index: number) => {
@@ -318,7 +329,7 @@ const UserList = ({ apiData }: InferGetStaticPropsType<typeof getStaticProps>) =
             })}
           </Grid>
         )}
-      </Grid>
+      </Grid> */}
       <Grid item xs={12}>
         <Card>
           <CardHeader title='Search Filters' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
@@ -390,7 +401,7 @@ const UserList = ({ apiData }: InferGetStaticPropsType<typeof getStaticProps>) =
           <TableHeader value={value} handleFilter={handleFilter} toggle={toggleAddUserDrawer} />
           <DataGrid
             autoHeight
-            rows={store.data}
+            rows={userData}
             columns={columns}
             checkboxSelection
             disableRowSelectionOnClick
@@ -408,14 +419,38 @@ const UserList = ({ apiData }: InferGetStaticPropsType<typeof getStaticProps>) =
 }
 
 export const getStaticProps: GetStaticProps = async () => {
-  const res = await axios.get('/cards/statistics')
-  const apiData: CardStatsType = res.data
+  try {
+    // Fetch user data from the API
+    const userData = await fetchDataFromApi('/api/users') // Adjust the endpoint accordingly
 
-  return {
-    props: {
-      apiData
+    console.log('mydata', userData)
+
+    return {
+      props: {
+        userData
+      },
+      revalidate: 60 // Optional: This will re-generate the page every 60 seconds
+    }
+  } catch (error) {
+    console.error('Error fetching user data:', error)
+
+    return {
+      props: {
+        userData: []
+      }
     }
   }
 }
+
+// export const getStaticProps: GetStaticProps = async () => {
+//   const res = await axios.get('/cards/statistics')
+//   const apiData: CardStatsType = res.data
+
+//   return {
+//     props: {
+//       apiData
+//     }
+//   }
+// }
 
 export default UserList
