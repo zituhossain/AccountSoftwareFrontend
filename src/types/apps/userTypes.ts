@@ -16,14 +16,6 @@ export type UsersType = {
   avatarColor?: ThemeColor
 }
 
-export type UsersTypeFromStrapi = {
-  id: number
-  username: string
-  email: string
-  avatar: string
-  avatarColor?: ThemeColor
-}
-
 export type ProjectListDataType = {
   id: number
   img: string
