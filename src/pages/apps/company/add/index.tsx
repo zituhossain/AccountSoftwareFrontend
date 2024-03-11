@@ -13,8 +13,10 @@ import CardActions from '@mui/material/CardActions'
 import FormControl from '@mui/material/FormControl'
 import Select from '@mui/material/Select'
 import { FormControlLabel, Switch } from '@mui/material'
+import { useRouter } from 'next/navigation'
 
 const AddCompany = () => {
+  const router = useRouter()
   const [companyData, setCompanyData] = useState({
     type: '',
     name: '',
@@ -57,14 +59,32 @@ const AddCompany = () => {
 
     // formData.append('logo', companyData.logo || '')
 
+    console.log('data', {
+      data: {
+        type: companyData.type,
+        name: companyData.name,
+        email: companyData.email,
+        phone: companyData.phone,
+        code: companyData.code,
+        address: companyData.address,
+        status: companyData.status
+      }
+    })
     axios
-      .post('http://127.0.0.1:1337/api/companies', formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
+      .post('http://127.0.0.1:1337/api/companies', {
+        data: {
+          type: companyData.type,
+          name: companyData.name,
+          email: companyData.email,
+          phone: companyData.phone,
+          code: companyData.code,
+          address: companyData.address,
+          status: companyData.status
         }
       })
       .then(() => {
         console.log('Company added successfully')
+        router.push('/apps/company/list')
       })
       .catch(error => {
         console.error('Error adding company:', error.message)

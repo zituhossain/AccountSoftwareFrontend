@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { API_URL, STRAPI_API_TOKEN } from './urls'
 
 export const fetchDataFromApi = async (endpoint: string) => {
@@ -8,8 +9,7 @@ export const fetchDataFromApi = async (endpoint: string) => {
     }
   }
 
-  const res = await fetch(`${API_URL}${endpoint}`, options)
-  const data = await res.json()
+  const res = await axios.get(`${API_URL}${endpoint}`, options)
 
-  return data
+  return res.data
 }
