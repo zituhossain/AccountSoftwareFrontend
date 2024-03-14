@@ -39,19 +39,19 @@ const AddCompany = () => {
 
   const onSubmit = async (data: CompanyTypeFromStrapi) => {
     try {
-      await axios.post('http://127.0.0.1:1337/api/companies', {
+      await axios.post('http://127.0.0.1:1337/api/quotations', {
         data: data
       })
-      console.log('Company added successfully')
-      router.push('/apps/company/list')
+      console.log('quotations added successfully')
+      router.push('/apps/quotation/list')
     } catch (error: any) {
-      console.error('Error adding company:', error.message)
+      console.error('Error adding quotations:', error.message)
     }
   }
 
   return (
     <Card>
-      <CardHeader title='Add Company' />
+      <CardHeader title='Add Quotations' />
       <Divider sx={{ m: '0 !important' }} />
       <form onSubmit={handleSubmit(onSubmit)} onReset={reset}>
         <CardContent>
