@@ -75,6 +75,23 @@ export type BusinessRelationType = {
   }
 }
 
+export type QuotationFromStrapi = {
+  id: number
+  quotation_no: string
+  subject: string
+  supplier_rate: number
+  top4_rate: number
+  no_of_trailers: number
+  overweight: number
+  lc_number: string
+  bl_number: string
+  remarks: string
+  status: boolean
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
 export type ProjectListDataType = {
   id: number
   img: string

@@ -28,7 +28,7 @@ import { useDispatch } from 'react-redux'
 import { AppDispatch } from 'src/store'
 import { Menu } from '@mui/material'
 import { deleteUser } from 'src/store/apps/user'
-import TableHeader from 'src/views/apps/company/list/TableHeader'
+import TableHeader from 'src/views/apps/quotation/TableHeader'
 import { fetchDataFromApi } from 'src/utils/api'
 
 // ** Vars
@@ -228,7 +228,7 @@ const Quotation = ({ quotationData }: { quotationData: Quotation[] }) => {
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card>
-          <CardHeader title='Companies List' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
+          <CardHeader title='Quotation List' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
           <CardContent>
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid

@@ -4,28 +4,24 @@ import Card from '@mui/material/Card'
 import Grid from '@mui/material/Grid'
 import Button from '@mui/material/Button'
 import Divider from '@mui/material/Divider'
-import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
 import CardHeader from '@mui/material/CardHeader'
-import InputLabel from '@mui/material/InputLabel'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
-import FormControl from '@mui/material/FormControl'
-import Select from '@mui/material/Select'
 import { FormControlLabel, Switch } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { CompanyTypeFromStrapi } from 'src/types/apps/userTypes'
+import { QuotationFromStrapi } from 'src/types/apps/userTypes'
 
-const AddCompany = () => {
+const AddQuotation = () => {
   const router = useRouter()
 
   const schema = yup.object().shape({
-    type: yup.string().required('Type is required'),
-    name: yup.string().required('Name is required'),
-    email: yup.string().email('Invalid email format').required('Email is required')
+    // type: yup.string().required('Type is required'),
+    // name: yup.string().required('Name is required'),
+    // email: yup.string().email('Invalid email format').required('Email is required')
   })
 
   const {
@@ -33,30 +29,30 @@ const AddCompany = () => {
     control,
     reset,
     formState: { errors }
-  } = useForm({
+  } = useForm<QuotationFromStrapi>({
     resolver: yupResolver(schema)
   })
 
-  const onSubmit = async (data: CompanyTypeFromStrapi) => {
+  const onSubmit = async (data: QuotationFromStrapi) => {
     try {
-      await axios.post('http://127.0.0.1:1337/api/companies', {
+      await axios.post('http://127.0.0.1:1337/api/quotations', {
         data: data
       })
-      console.log('Company added successfully')
-      router.push('/apps/company/list')
+      console.log('Quotation added successfully')
+      router.push('/apps/quotation/list')
     } catch (error: any) {
-      console.error('Error adding company:', error.message)
+      console.error('Error adding quotation:', error.message)
     }
   }
 
   return (
     <Card>
-      <CardHeader title='Add Company' />
+      <CardHeader title='Add Quotation' />
       <Divider sx={{ m: '0 !important' }} />
       <form onSubmit={handleSubmit(onSubmit)} onReset={reset}>
         <CardContent>
           <Grid container spacing={5}>
-            <Grid item xs={12} sm={6}>
+            {/* <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel id='form-layouts-separator-select-label'>Type</InputLabel>
                 <Controller
@@ -76,85 +72,151 @@ const AddCompany = () => {
                   )}
                 />
               </FormControl>
-            </Grid>
+            </Grid> */}
             <Grid item xs={12} sm={6}>
               <Controller
-                name='name'
+                name='quotation_no'
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
                     fullWidth
-                    label='Name'
-                    placeholder='Company Name'
-                    error={!!errors.name}
-                    helperText={errors.name?.message}
+                    label='Quotation No'
+                    placeholder='Quotation No'
+                    error={!!errors.quotation_no}
+                    helperText={errors.quotation_no?.message}
                   />
                 )}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <Controller
-                name='email'
+                name='subject'
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
                     fullWidth
-                    label='Email'
-                    placeholder='Email'
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
+                    label='Subject'
+                    placeholder='Subject'
+                    error={!!errors.subject}
+                    helperText={errors.subject?.message}
                   />
                 )}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <Controller
-                name='phone'
+                name='supplier_rate'
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
+                    type='number'
                     fullWidth
-                    label='Phone No.'
-                    placeholder='+1-123-456-8790'
-                    error={!!errors.phone}
-                    helperText={errors.phone?.message}
+                    label='Supplier Rate'
+                    placeholder='Supplier Rate'
+                    error={!!errors.supplier_rate}
+                    helperText={errors.supplier_rate?.message}
                   />
                 )}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <Controller
-                name='code'
+                name='top4_rate'
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    type='number'
+                    fullWidth
+                    label='Top4 Rate Rate'
+                    placeholder='Top4 Rate Rate'
+                    error={!!errors.top4_rate}
+                    helperText={errors.top4_rate?.message}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Controller
+                name='no_of_trailers'
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    type='number'
+                    fullWidth
+                    label='No of Trailers'
+                    placeholder='No of Trailers'
+                    error={!!errors.no_of_trailers}
+                    helperText={errors.no_of_trailers?.message}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Controller
+                name='overweight'
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    type='number'
+                    fullWidth
+                    label='overweight'
+                    placeholder='overweight'
+                    error={!!errors.overweight}
+                    helperText={errors.overweight?.message}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Controller
+                name='lc_number'
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
                     fullWidth
-                    label='code No.'
+                    label='LC Number'
                     placeholder=''
-                    error={!!errors.code}
-                    helperText={errors.code?.message}
+                    error={!!errors.lc_number}
+                    helperText={errors.lc_number?.message}
                   />
                 )}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
               <Controller
-                name='address'
+                name='bl_number'
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
                     fullWidth
-                    multiline
-                    minRows={3}
-                    label='Address'
-                    placeholder='Address...'
-                    error={!!errors.address}
-                    helperText={errors.address?.message}
+                    label='Bill Number'
+                    placeholder=''
+                    error={!!errors.bl_number}
+                    helperText={errors.bl_number?.message}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Controller
+                name='remarks'
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label='Remarks'
+                    placeholder=''
+                    error={!!errors.remarks}
+                    helperText={errors.remarks?.message}
                   />
                 )}
               />
@@ -166,12 +228,6 @@ const AddCompany = () => {
                 render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
               />
             </Grid>
-            {/* <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={<Switch checked={Boolean(companyData.status)} onChange={handleSwitchChange} name='status' />}
-                label='Status'
-              />
-            </Grid> */}
           </Grid>
         </CardContent>
         <Divider sx={{ m: '0 !important' }} />
@@ -188,4 +244,4 @@ const AddCompany = () => {
   )
 }
 
-export default AddCompany
+export default AddQuotation
