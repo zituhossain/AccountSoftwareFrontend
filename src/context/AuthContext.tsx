@@ -49,13 +49,12 @@ const AuthProvider = ({ children }: Props) => {
             }
           })
           .then(async response => {
-            debugger
-
+            // debugger
             setLoading(false)
-            setUser({ ...response.data.user })
+            setUser({ ...response.data })
           })
           .catch(() => {
-            debugger
+            // debugger
             localStorage.removeItem('userData')
             localStorage.removeItem('refreshToken')
             localStorage.removeItem('accessToken')
@@ -78,7 +77,7 @@ const AuthProvider = ({ children }: Props) => {
     axios
       .post(authConfig.loginEndpoint, params)
       .then(async response => {
-        debugger
+        // debugger
         params.rememberMe ? window.localStorage.setItem(authConfig.storageTokenKeyName, response.data.jwt) : null
 
         // const returnUrl = router.query.returnUrl
@@ -88,7 +87,7 @@ const AuthProvider = ({ children }: Props) => {
 
         // const redirectURL = returnUrl && returnUrl !== '/' ? returnUrl : '/'
 
-        router.replace('/dashboards')
+        router.replace('/')
       })
 
       .catch(err => {
