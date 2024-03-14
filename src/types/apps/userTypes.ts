@@ -26,19 +26,52 @@ export type UsersTypeFromStrapi = {
 
 export type CompanyTypeFromStrapi = {
   id: number
+  name: string
+  address: string
+  email: string
+  code: string
+  phone: string
+  status: boolean
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
+export type ContactPersonType = {
+  id: number
+  name: string
+  address: string
+  email: string
+  code: string
+  phone: string
+  image: string
+  company_id: number
+  contact_type: number
+  status: boolean
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
+export type ContactType = {
+  id: number
+  title: string
+  status: boolean
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
+export type BusinessRelationType = {
+  id: number
   attributes: {
-    type: string
-    name: string
-    address: string
-    email: string
-    code: string
-    phone: string
+    company_id: number
+    business_contact_id: number
+    relation_type: number
     status: boolean
     createdAt: string
     updatedAt: string
     publishedAt: string
-    avatar: string
-    avatarColor?: ThemeColor
   }
 }
 

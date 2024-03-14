@@ -45,7 +45,7 @@ const navigation = (): VerticalNavItemsType => {
         },
         {
           title: 'Business Relationship',
-          path: '/apps/company/business-relationship'
+          path: '/apps/company/business-relation'
         }
       ]
     },
