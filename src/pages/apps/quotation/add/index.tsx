@@ -36,7 +36,6 @@ const AddQuotation = () => {
   const onSubmit = async (data: QuotationFromStrapi) => {
     try {
       await axios.post('http://127.0.0.1:1337/api/quotations', {
-      await axios.post('http://127.0.0.1:1337/api/quotations', {
         data: data
       })
       console.log('Quotation added successfully')
