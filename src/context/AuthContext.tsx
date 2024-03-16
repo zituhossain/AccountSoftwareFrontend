@@ -16,7 +16,7 @@ import { AuthValuesType, LoginParams, ErrCallbackType, UserDataType } from './ty
 // ** Defaults
 const defaultProvider: AuthValuesType = {
   user: null,
-  loading: true,
+  loading: false,
   setUser: () => null,
   setLoading: () => Boolean,
   login: () => Promise.resolve(),
@@ -45,14 +45,16 @@ const AuthProvider = ({ children }: Props) => {
         await axios
           .get(authConfig.meEndpoint, {
             headers: {
-              Authorization: storedToken
+              Authorization: `Bearer ${storedToken}`
             }
           })
           .then(async response => {
+            // debugger
             setLoading(false)
-            setUser({ ...response.data.userData })
+            setUser({ ...response.data })
           })
           .catch(() => {
+            // debugger
             localStorage.removeItem('userData')
             localStorage.removeItem('refreshToken')
             localStorage.removeItem('accessToken')
@@ -75,17 +77,17 @@ const AuthProvider = ({ children }: Props) => {
     axios
       .post(authConfig.loginEndpoint, params)
       .then(async response => {
-        params.rememberMe
-          ? window.localStorage.setItem(authConfig.storageTokenKeyName, response.data.accessToken)
-          : null
-        const returnUrl = router.query.returnUrl
+        // debugger
+        params.rememberMe ? window.localStorage.setItem(authConfig.storageTokenKeyName, response.data.jwt) : null
 
-        setUser({ ...response.data.userData })
-        params.rememberMe ? window.localStorage.setItem('userData', JSON.stringify(response.data.userData)) : null
+        // const returnUrl = router.query.returnUrl
 
-        const redirectURL = returnUrl && returnUrl !== '/' ? returnUrl : '/'
+        setUser({ ...response.data.user })
+        params.rememberMe ? window.localStorage.setItem('userData', JSON.stringify(response.data.user)) : null
 
-        router.replace(redirectURL as string)
+        // const redirectURL = returnUrl && returnUrl !== '/' ? returnUrl : '/'
+
+        router.replace('/')
       })
 
       .catch(err => {
