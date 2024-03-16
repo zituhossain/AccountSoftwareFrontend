@@ -52,8 +52,8 @@ const TableHeader = (props: TableHeaderProps) => {
           sx={{ mr: 4, mb: 2, maxWidth: '180px' }}
           onChange={e => handleFilter(e.target.value)}
         />
-        <Button sx={{ mb: 2 }} component={Link} variant='contained' href='/apps/company/contact-type/add'>
-          Create Contact Type
+        <Button sx={{ mb: 2 }} component={Link} variant='contained' href='/apps/accounts/account-head/add'>
+          Create Account Header
         </Button>
       </Box>
     </Box>

@@ -16,14 +16,13 @@ import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { BusinessRelationType } from 'src/types/apps/userTypes'
+import { FormEventHandler } from 'react'
+import { API_URL } from 'src/utils/urls'
 
 const AddB2bRelation = () => {
   const router = useRouter()
 
-  const schema = yup.object().shape({
-    name: yup.string().required('Name is required'),
-    email: yup.string().email('Invalid email format').required('Email is required')
-  })
+  const schema = yup.object().shape({})
 
   const {
     handleSubmit,
@@ -36,7 +35,7 @@ const AddB2bRelation = () => {
 
   const onSubmit = async (data: BusinessRelationType) => {
     try {
-      await axios.post('http://127.0.0.1:1337/api/b2b-relations', {
+      await axios.post(`${API_URL}/api/b2b-relations`, {
         data: data
       })
       console.log('B2b added successfully')
@@ -50,21 +49,21 @@ const AddB2bRelation = () => {
     <Card>
       <CardHeader title='Add Business Relationship' />
       <Divider sx={{ m: '0 !important' }} />
-      <form onSubmit={handleSubmit(onSubmit)} onReset={reset}>
+      <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
           <Grid container spacing={5}>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel id='form-layouts-separator-select-label'>Business Contact</InputLabel>
                 <Controller
-                  name='attributes.business_contact_id'
+                  name='business_contact_id'
                   control={control}
                   render={({ field }) => (
                     <Select
                       {...field}
                       label='Business Contact'
                       labelId='form-layouts-separator-select-label'
-                      error={!!errors.attributes?.business_contact_id}
+                      error={!!errors?.business_contact_id}
                     >
                       {/* <MenuItem value='supplier'>Supplier</MenuItem>
                       <MenuItem value='customer'>Customer</MenuItem> */}
@@ -77,14 +76,14 @@ const AddB2bRelation = () => {
               <FormControl fullWidth>
                 <InputLabel id='form-layouts-separator-select-label'>Type</InputLabel>
                 <Controller
-                  name='attributes.relation_type'
+                  name='relation_type'
                   control={control}
                   render={({ field }) => (
                     <Select
                       {...field}
                       label='Relation Type'
                       labelId='form-layouts-separator-select-label'
-                      error={!!errors.attributes?.relation_type}
+                      error={!!errors?.relation_type}
                     >
                       {/* <MenuItem value='supplier'>Supplier</MenuItem>
                       <MenuItem value='customer'>Customer</MenuItem> */}
@@ -96,17 +95,11 @@ const AddB2bRelation = () => {
 
             <Grid item xs={12} sm={6}>
               <Controller
-                name='attributes.status'
+                name='status'
                 control={control}
                 render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
               />
             </Grid>
-            {/* <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={<Switch checked={Boolean(companyData.status)} onChange={handleSwitchChange} name='status' />}
-                label='Status'
-              />
-            </Grid> */}
           </Grid>
         </CardContent>
         <Divider sx={{ m: '0 !important' }} />

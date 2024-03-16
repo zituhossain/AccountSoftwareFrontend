@@ -13,17 +13,15 @@ import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { CompanyType } from 'src/types/apps/userTypes'
+import { AccountHeadType } from 'src/types/apps/userTypes'
 import { API_URL } from 'src/utils/urls'
 import { FormEventHandler } from 'react'
 
-const AddCompany = () => {
+const AddAccountHead = () => {
   const router = useRouter()
 
   const schema = yup.object().shape({
-    type: yup.string().required('Type is required'),
-    name: yup.string().required('Name is required'),
-    email: yup.string().email('Invalid email format').required('Email is required')
+    header_name: yup.string().required('Account Header is required')
   })
 
   const {
@@ -31,96 +29,49 @@ const AddCompany = () => {
     control,
     reset,
     formState: { errors }
-  } = useForm<CompanyType>({
+  } = useForm<AccountHeadType>({
     resolver: yupResolver(schema)
   })
 
-  const onSubmit = async (data: CompanyType) => {
+  const onSubmit = async (data: AccountHeadType) => {
     try {
-      await axios.post(`${API_URL}/api/companies`, {
+      await axios.post(`${API_URL}/api/account-headers`, {
         data: data
       })
-      console.log('Company added successfully')
-      router.push('/apps/company/list')
+      console.log('account header added successfully')
+      router.push('/apps/accounts/account-head')
     } catch (error: any) {
-      console.error('Error adding company:', error.message)
+      console.error('Error adding account header:', error.message)
     }
   }
 
   return (
     <Card>
-      <CardHeader title='Add Company' />
+      <CardHeader title='Add Account Header' />
       <Divider sx={{ m: '0 !important' }} />
       <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
           <Grid container spacing={5}>
             <Grid item xs={12} sm={6}>
               <Controller
-                name='name'
+                name='header_name'
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
                     fullWidth
-                    label='Name'
-                    placeholder='Company Name'
-                    error={!!errors.name}
-                    helperText={errors.name?.message}
+                    label='Header Name'
+                    placeholder='Header Name'
+                    error={!!errors.header_name}
+                    helperText={errors.header_name?.message}
                   />
                 )}
               />
             </Grid>
+
             <Grid item xs={12} sm={6}>
               <Controller
-                name='email'
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label='Email'
-                    placeholder='Email'
-                    error={!!errors.email}
-                    helperText={errors.email?.message}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name='phone'
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label='Phone No.'
-                    placeholder='+1-123-456-8790'
-                    error={!!errors.phone}
-                    helperText={errors.phone?.message}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name='code'
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label='code No.'
-                    placeholder=''
-                    error={!!errors.code}
-                    helperText={errors.code?.message}
-                  />
-                )}
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name='address'
+                name='description'
                 control={control}
                 render={({ field }) => (
                   <TextField
@@ -128,14 +79,15 @@ const AddCompany = () => {
                     fullWidth
                     multiline
                     minRows={3}
-                    label='Address'
-                    placeholder='Address...'
-                    error={!!errors.address}
-                    helperText={errors.address?.message}
+                    label='description'
+                    placeholder='description...'
+                    error={!!errors.description}
+                    helperText={errors.description?.message}
                   />
                 )}
               />
             </Grid>
+
             <Grid item xs={12} sm={6}>
               <Controller
                 name='status'
@@ -159,4 +111,4 @@ const AddCompany = () => {
   )
 }
 
-export default AddCompany
+export default AddAccountHead

@@ -11,12 +11,14 @@ import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
 import FormControl from '@mui/material/FormControl'
 import Select from '@mui/material/Select'
-import { FormControlLabel, Switch } from '@mui/material'
+import { FormControlLabel, FormHelperText, Switch } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { ContactPersonType } from 'src/types/apps/userTypes'
+import { API_URL } from 'src/utils/urls'
+import { FormEventHandler } from 'react'
 
 const AddContact = () => {
   const router = useRouter()
@@ -37,7 +39,7 @@ const AddContact = () => {
 
   const onSubmit = async (data: ContactPersonType) => {
     try {
-      await axios.post('http://127.0.0.1:1337/api/contact-people', {
+      await axios.post(`${API_URL}/api/contact-people`, {
         data: data
       })
       console.log('contact added successfully')
@@ -51,7 +53,7 @@ const AddContact = () => {
     <Card>
       <CardHeader title='Add Contact Person' />
       <Divider sx={{ m: '0 !important' }} />
-      <form onSubmit={handleSubmit(onSubmit)} onReset={reset}>
+      <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
           <Grid container spacing={5}>
             <Grid item xs={12} sm={6}>
@@ -61,16 +63,18 @@ const AddContact = () => {
                   name='company_id'
                   control={control}
                   render={({ field }) => (
-                    <Select
-                      {...field}
-                      label='Company'
-                      labelId='form-layouts-separator-select-label'
-                      error={!!errors.company_id}
-                      helperText={errors.company_id?.message}
-                    >
-                      {/* <MenuItem value='supplier'>Supplier</MenuItem>
+                    <>
+                      <Select
+                        {...field}
+                        label='Company'
+                        labelId='form-layouts-separator-select-label'
+                        error={!!errors.company_id}
+                      >
+                        {/* <MenuItem value='supplier'>Supplier</MenuItem>
                       <MenuItem value='customer'>Customer</MenuItem> */}
-                    </Select>
+                      </Select>
+                      {errors.company_id && <FormHelperText error>{errors.company_id.message}</FormHelperText>}
+                    </>
                   )}
                 />
               </FormControl>
@@ -82,16 +86,18 @@ const AddContact = () => {
                   name='contact_type'
                   control={control}
                   render={({ field }) => (
-                    <Select
-                      {...field}
-                      label='Contact Person Type'
-                      labelId='form-layouts-separator-select-label'
-                      error={!!errors.contact_type}
-                      helperText={errors.contact_type?.message}
-                    >
-                      {/* <MenuItem value='supplier'>Supplier</MenuItem>
+                    <>
+                      <Select
+                        {...field}
+                        label='Contact Person Type'
+                        labelId='form-layouts-separator-select-label'
+                        error={!!errors.contact_type}
+                      >
+                        {/* <MenuItem value='supplier'>Supplier</MenuItem>
                       <MenuItem value='customer'>Customer</MenuItem> */}
-                    </Select>
+                      </Select>
+                      {errors.contact_type && <FormHelperText error>{errors.contact_type.message}</FormHelperText>}
+                    </>
                   )}
                 />
               </FormControl>

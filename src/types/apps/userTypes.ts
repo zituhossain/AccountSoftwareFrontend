@@ -24,7 +24,7 @@ export type UsersTypeFromStrapi = {
   avatarColor?: ThemeColor
 }
 
-export type CompanyTypeFromStrapi = {
+export type CompanyType = {
   id: number
   name: string
   address: string
@@ -54,8 +54,18 @@ export type ContactPersonType = {
 }
 
 export type ContactType = {
-  id: number
+  id?: number
   title: string
+  status: boolean
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
+}
+
+export type AccountHeadType = {
+  id: number
+  header_name: string
+  description: string
   status: boolean
   createdAt: string
   updatedAt: string
@@ -64,15 +74,13 @@ export type ContactType = {
 
 export type BusinessRelationType = {
   id: number
-  attributes: {
-    company_id: number
-    business_contact_id: number
-    relation_type: number
-    status: boolean
-    createdAt: string
-    updatedAt: string
-    publishedAt: string
-  }
+  company_id: number
+  business_contact_id: number
+  relation_type: number
+  status: boolean
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
 }
 
 export type QuotationFromStrapi = {
@@ -86,6 +94,7 @@ export type QuotationFromStrapi = {
   lc_number: string
   bl_number: string
   remarks: string
+  business_contact_id: number
   status: boolean
   createdAt: string
   updatedAt: string

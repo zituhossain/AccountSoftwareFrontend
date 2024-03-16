@@ -8,12 +8,14 @@ import TextField from '@mui/material/TextField'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
-import { FormControlLabel, Switch } from '@mui/material'
+import { FormControl, FormControlLabel, InputLabel, Select, Switch } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { QuotationFromStrapi } from 'src/types/apps/userTypes'
+import { FormEventHandler } from 'react'
+import { API_URL } from 'src/utils/urls'
 
 const AddQuotation = () => {
   const router = useRouter()
@@ -35,7 +37,7 @@ const AddQuotation = () => {
 
   const onSubmit = async (data: QuotationFromStrapi) => {
     try {
-      await axios.post('http://127.0.0.1:1337/api/quotations', {
+      await axios.post(`${API_URL}/api/quotations`, {
         data: data
       })
       console.log('Quotation added successfully')
@@ -49,7 +51,7 @@ const AddQuotation = () => {
     <Card>
       <CardHeader title='Add Quotation' />
       <Divider sx={{ m: '0 !important' }} />
-      <form onSubmit={handleSubmit(onSubmit)} onReset={reset}>
+      <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
           <Grid container spacing={5}>
             {/* <Grid item xs={12} sm={6}>
@@ -220,6 +222,26 @@ const AddQuotation = () => {
                   />
                 )}
               />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel id='form-layouts-separator-select-label'>Business Contact</InputLabel>
+                <Controller
+                  name='business_contact_id'
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      label='Business Contact'
+                      labelId='form-layouts-separator-select-label'
+                      error={!!errors?.business_contact_id}
+                    >
+                      {/* <MenuItem value='supplier'>Supplier</MenuItem>
+                      <MenuItem value='customer'>Customer</MenuItem> */}
+                    </Select>
+                  )}
+                />
+              </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
               <Controller

@@ -14,6 +14,8 @@ import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { ContactType } from 'src/types/apps/userTypes'
+import { API_URL } from 'src/utils/urls'
+import { FormEventHandler } from 'react'
 
 const AddContactType = () => {
   const router = useRouter()
@@ -22,18 +24,25 @@ const AddContactType = () => {
     title: yup.string().required('Title is required')
   })
 
+  // Set initial form values
+  const defaultValues: ContactType = {
+    title: '',
+    status: true
+  }
+
   const {
     handleSubmit,
     control,
     reset,
     formState: { errors }
   } = useForm<ContactType>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues
   })
 
   const onSubmit = async (data: ContactType) => {
     try {
-      await axios.post('http://127.0.0.1:1337/api/contact-types', {
+      await axios.post(`${API_URL}/api/contact-types`, {
         data: data
       })
       console.log('contact added successfully')
@@ -47,7 +56,7 @@ const AddContactType = () => {
     <Card>
       <CardHeader title='Add Contact Type' />
       <Divider sx={{ m: '0 !important' }} />
-      <form onSubmit={handleSubmit(onSubmit)} onReset={reset}>
+      <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
           <Grid container spacing={5}>
             <Grid item xs={12} sm={6}>
@@ -71,7 +80,9 @@ const AddContactType = () => {
               <Controller
                 name='status'
                 control={control}
-                render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
+                render={({ field }) => (
+                  <FormControlLabel control={<Switch {...field} defaultChecked />} label='Status' />
+                )}
               />
             </Grid>
           </Grid>
