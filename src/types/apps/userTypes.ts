@@ -31,6 +31,7 @@ export type CompanyType = {
   email: string
   code: string
   phone: string
+  logo: string
   status: boolean
   createdAt: string
   updatedAt: string

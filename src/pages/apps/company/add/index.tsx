@@ -1,4 +1,4 @@
-// import { useState } from 'react'
+import { useState } from 'react'
 import axios from 'axios'
 import Card from '@mui/material/Card'
 import Grid from '@mui/material/Grid'
@@ -21,7 +21,6 @@ const AddCompany = () => {
   const router = useRouter()
 
   const schema = yup.object().shape({
-    type: yup.string().required('Type is required'),
     name: yup.string().required('Name is required'),
     email: yup.string().email('Invalid email format').required('Email is required')
   })
@@ -35,10 +34,25 @@ const AddCompany = () => {
     resolver: yupResolver(schema)
   })
 
+  const [logo, setLogo] = useState<File | null>(null)
+
+  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length) {
+      setLogo(e.target.files[0])
+    }
+  }
+
   const onSubmit = async (data: CompanyType) => {
     try {
-      await axios.post(`${API_URL}/api/companies`, {
-        data: data
+      const formData = new FormData()
+      formData.append('data', JSON.stringify(data))
+      if (logo) {
+        formData.append('files.logo', logo)
+      }
+      await axios.post(`${API_URL}/api/companies`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
       })
       console.log('Company added successfully')
       router.push('/apps/company/list')
@@ -47,6 +61,18 @@ const AddCompany = () => {
     }
   }
 
+  // const onSubmit = async (data: CompanyType) => {
+  //   try {
+  //     await axios.post(`${API_URL}/api/companies`, {
+  //       data: data
+  //     })
+  //     console.log('Company added successfully')
+  //     router.push('/apps/company/list')
+  //   } catch (error: any) {
+  //     console.error('Error adding company:', error.message)
+  //   }
+  // }
+
   return (
     <Card>
       <CardHeader title='Add Company' />
@@ -54,6 +80,11 @@ const AddCompany = () => {
       <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
           <Grid container spacing={5}>
+            <Grid item xs={12} sm={6}>
+              <input type='file' onChange={handleLogoChange} accept='image/*' />
+              {errors.logo && <span>{errors.logo.message}</span>}
+            </Grid>
+
             <Grid item xs={12} sm={6}>
               <Controller
                 name='name'
