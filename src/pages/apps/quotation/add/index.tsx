@@ -38,27 +38,16 @@ const AddQuotation = () => {
       await axios.post('http://127.0.0.1:1337/api/quotations', {
         data: data
       })
-<<<<<<< HEAD
       console.log('Quotation added successfully')
       router.push('/apps/quotation/list')
     } catch (error: any) {
       console.error('Error adding quotation:', error.message)
-=======
-      console.log('quotations added successfully')
-      router.push('/apps/quotation/list')
-    } catch (error: any) {
-      console.error('Error adding quotations:', error.message)
->>>>>>> login(auth-issue)
     }
   }
 
   return (
     <Card>
-<<<<<<< HEAD
       <CardHeader title='Add Quotation' />
-=======
-      <CardHeader title='Add Quotations' />
->>>>>>> login(auth-issue)
       <Divider sx={{ m: '0 !important' }} />
       <form onSubmit={handleSubmit(onSubmit)} onReset={reset}>
         <CardContent>
