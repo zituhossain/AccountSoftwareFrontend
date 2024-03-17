@@ -18,12 +18,12 @@ const navigation = (): VerticalNavItemsType => {
         {
           title: 'List',
           path: '/apps/user/list'
-        }
+        },
 
-        // {
-        //   title: 'Roles',
-        //   path: '/apps/roles'
-        // },
+        {
+          title: 'User Role',
+          path: '/apps/user/user-role'
+        }
       ]
     },
     {
@@ -71,6 +71,14 @@ const navigation = (): VerticalNavItemsType => {
         {
           title: 'Journal',
           path: '/apps/accounts/journal'
+        },
+        {
+          title: 'Account Receivable',
+          path: '/apps/accounts/account-receivable'
+        },
+        {
+          title: 'Account Payable',
+          path: '/apps/accounts/account-payable'
         }
       ]
     },

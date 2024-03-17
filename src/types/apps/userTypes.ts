@@ -19,12 +19,28 @@ export type UsersType = {
 export type UsersTypeFromStrapi = {
   id: number
   username: string
+  phone: string
+  role: {
+    name: string
+  }
   email: string
+  confirmed: boolean
   companies_id: number
   image: string
   signature: string
   avatar: string
   avatarColor?: ThemeColor
+}
+
+export type UserRoleType = {
+  id: number
+  attributes: {
+    title: string
+    status: boolean
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  }
 }
 
 export type CompanyType = {
