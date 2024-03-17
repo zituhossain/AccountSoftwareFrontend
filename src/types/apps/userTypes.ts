@@ -20,6 +20,9 @@ export type UsersTypeFromStrapi = {
   id: number
   username: string
   email: string
+  companies_id: number
+  image: string
+  signature: string
   avatar: string
   avatarColor?: ThemeColor
 }
@@ -27,6 +30,7 @@ export type UsersTypeFromStrapi = {
 export type CompanyType = {
   id: number
   name: string
+  company_type: string
   address: string
   email: string
   code: string
@@ -89,14 +93,17 @@ export type QuotationFromStrapi = {
   quotation_no: string
   subject: string
   supplier_rate: number
-  top4_rate: number
+  our_rate: number
   no_of_trailers: number
   overweight: number
   lc_number: string
   bl_number: string
   remarks: string
+  quotation_image: string
   business_contact_id: number
   status: boolean
+  send_status: boolean
+  revision_count: number
   createdAt: string
   updatedAt: string
   publishedAt: string

@@ -8,17 +8,21 @@ import TextField from '@mui/material/TextField'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
-import { FormControl, FormControlLabel, InputLabel, Select, Switch } from '@mui/material'
+import { Box, FormControl, FormControlLabel, InputLabel, Select, Switch, Typography } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { QuotationFromStrapi } from 'src/types/apps/userTypes'
-import { FormEventHandler } from 'react'
-import { API_URL } from 'src/utils/urls'
+import { FormEventHandler, useState } from 'react'
+import toast from 'react-hot-toast'
+import { postDataToApi, storedToken } from 'src/utils/api'
 
 const AddQuotation = () => {
   const router = useRouter()
+
+  const [quotationImages, setQuotationImages] = useState<File[]>([])
+  const [imgSrcs, setImgSrcs] = useState<string[]>([])
 
   const schema = yup.object().shape({
     // type: yup.string().required('Type is required'),
@@ -35,17 +39,53 @@ const AddQuotation = () => {
     resolver: yupResolver(schema)
   })
 
-  const onSubmit = async (data: QuotationFromStrapi) => {
-    try {
-      await axios.post(`${API_URL}/api/quotations`, {
-        data: data
-      })
-      console.log('Quotation added successfully')
-      router.push('/apps/quotation/list')
-    } catch (error: any) {
-      console.error('Error adding quotation:', error.message)
+  const handleInputImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length) {
+      const selectedFiles = Array.from(e.target.files)
+      const newImages = [...quotationImages, ...selectedFiles]
+      setQuotationImages(newImages)
+
+      const newImgSrcs = selectedFiles.map(file => URL.createObjectURL(file))
+      setImgSrcs([...imgSrcs, ...newImgSrcs])
     }
   }
+
+  const handleInputImageReset = () => {
+    setQuotationImages([])
+    setImgSrcs([])
+  }
+
+  const onSubmit = async (data: QuotationFromStrapi) => {
+    try {
+      const formData = new FormData()
+      formData.append('data', JSON.stringify(data))
+      quotationImages.forEach((logo, index) => {
+        formData.append(`files.quotationImages[${index}]`, logo)
+      })
+
+      await postDataToApi('/quotations', formData)
+      if (storedToken) {
+        router.push('/apps/quotation/list')
+        toast.success('Quotation added successfully')
+      } else {
+        toast.error('Something went wrong! Please try again.')
+      }
+    } catch (error: any) {
+      console.error('Error adding quotations:', error.message)
+    }
+  }
+
+  // const onSubmit = async (data: QuotationFromStrapi) => {
+  //   try {
+  //     await axios.post(`${API_URL}/api/quotations`, {
+  //       data: data
+  //     })
+  //     console.log('Quotation added successfully')
+  //     router.push('/apps/quotation/list')
+  //   } catch (error: any) {
+  //     console.error('Error adding quotation:', error.message)
+  //   }
+  // }
 
   return (
     <Card>
@@ -126,17 +166,17 @@ const AddQuotation = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <Controller
-                name='top4_rate'
+                name='our_rate'
                 control={control}
                 render={({ field }) => (
                   <TextField
                     {...field}
                     type='number'
                     fullWidth
-                    label='Top4 Rate Rate'
-                    placeholder='Top4 Rate Rate'
-                    error={!!errors.top4_rate}
-                    helperText={errors.top4_rate?.message}
+                    label='Our Rate'
+                    placeholder='Our Rate'
+                    error={!!errors.our_rate}
+                    helperText={errors.our_rate?.message}
                   />
                 )}
               />
@@ -244,11 +284,70 @@ const AddQuotation = () => {
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
+              <Grid container spacing={5}>
+                <Grid item xs={6} sm={6}>
+                  <Controller
+                    name='status'
+                    control={control}
+                    render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
+                  />
+                </Grid>
+                <Grid item xs={6} sm={6}>
+                  <Controller
+                    name='send_status'
+                    control={control}
+                    render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Send Status' />}
+                  />
+                </Grid>
+              </Grid>
+            </Grid>
+            <Grid item xs={12} sm={6}>
               <Controller
-                name='status'
+                name='revision_count'
                 control={control}
-                render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    type='number'
+                    label='Revision Count'
+                    placeholder='Revision Count'
+                    error={!!errors.revision_count}
+                    helperText={errors.revision_count?.message}
+                  />
+                )}
               />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                {imgSrcs.map((src, index) => (
+                  <img
+                    key={index}
+                    src={src}
+                    alt={`Logo ${index + 1}`}
+                    style={{ width: '100px', height: '100px', marginRight: '20px' }}
+                  />
+                ))}
+                <div>
+                  <Button component='label' variant='contained' htmlFor='logo-upload-button'>
+                    Upload Logos
+                    <input
+                      hidden
+                      type='file'
+                      accept='image/png, image/jpeg'
+                      multiple
+                      onChange={handleInputImageChange}
+                      id='logo-upload-button'
+                    />
+                  </Button>
+                  <Button color='secondary' variant='outlined' onClick={handleInputImageReset}>
+                    Reset
+                  </Button>
+                  <Typography sx={{ mt: 5, color: 'text.disabled' }}>Allowed PNG or JPEG. Max size of 800K.</Typography>
+                </div>
+              </Box>
+              {errors.quotation_image && <span>{errors.quotation_image.message}</span>}
             </Grid>
           </Grid>
         </CardContent>

@@ -1,4 +1,6 @@
 import { useState } from 'react'
+import Box from '@mui/material/Box'
+import Typography from '@mui/material/Typography'
 import Card from '@mui/material/Card'
 import Grid from '@mui/material/Grid'
 import Button from '@mui/material/Button'
@@ -7,7 +9,7 @@ import TextField from '@mui/material/TextField'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
-import { FormControlLabel, Switch } from '@mui/material'
+import { FormControl, FormControlLabel, InputLabel, Select, Switch } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
@@ -35,11 +37,19 @@ const AddCompany = () => {
   })
 
   const [logo, setLogo] = useState<File | null>(null)
+  const [imgSrc, setImgSrc] = useState<string | null>(null)
 
-  const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length) {
-      setLogo(e.target.files[0])
+      const selectedFile = e.target.files[0]
+      setLogo(selectedFile)
+      setImgSrc(URL.createObjectURL(selectedFile))
     }
+  }
+
+  const handleInputImageReset = () => {
+    setLogo(null)
+    setImgSrc(null)
   }
 
   const onSubmit = async (data: CompanyType) => {
@@ -76,7 +86,36 @@ const AddCompany = () => {
         <CardContent>
           <Grid container spacing={5}>
             <Grid item xs={12} sm={6}>
-              <input type='file' onChange={handleLogoChange} accept='image/*' />
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                {imgSrc && (
+                  <img
+                    src={imgSrc}
+                    alt='Logo Preview'
+                    style={{ width: '100px', height: '100px', marginRight: '20px' }}
+                  />
+                )}
+                <div>
+                  <Button component='label' variant='contained' htmlFor='logo-upload-button'>
+                    Upload Logo
+                    <input
+                      hidden
+                      type='file'
+                      accept='image/png, image/jpeg'
+                      onChange={handleInputImageChange}
+                      id='logo-upload-button'
+                    />
+                  </Button>
+                  <Button
+                    sx={{ marginLeft: '10px' }}
+                    color='secondary'
+                    variant='outlined'
+                    onClick={handleInputImageReset}
+                  >
+                    Reset
+                  </Button>
+                  <Typography sx={{ mt: 5, color: 'text.disabled' }}>Allowed PNG or JPEG. Max size of 800K.</Typography>
+                </div>
+              </Box>
               {errors.logo && <span>{errors.logo.message}</span>}
             </Grid>
 
@@ -96,6 +135,28 @@ const AddCompany = () => {
                 )}
               />
             </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel id='form-layouts-separator-select-label'>Company Type</InputLabel>
+                <Controller
+                  name='company_type'
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      label='Company Type'
+                      labelId='form-layouts-separator-select-label'
+                      error={!!errors?.company_type}
+                    >
+                      {/* <MenuItem value='supplier'>Supplier</MenuItem>
+                      <MenuItem value='customer'>Customer</MenuItem> */}
+                    </Select>
+                  )}
+                />
+              </FormControl>
+            </Grid>
+
             <Grid item xs={12} sm={6}>
               <Controller
                 name='email'

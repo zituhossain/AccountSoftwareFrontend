@@ -42,7 +42,7 @@ interface Quotation {
     quotation_no: string
     subject: string
     supplier_rate: number
-    top4_rate: number
+    our_rate: number
     no_of_trailers: number
     overweight: number
     lc_number: string
@@ -159,12 +159,12 @@ const columns: GridColDef[] = [
   },
   {
     flex: 0.15,
-    field: 'top4_rate',
+    field: 'our_rate',
     minWidth: 150,
-    headerName: 'Top4 Rate',
+    headerName: 'Our Rate',
     renderCell: ({ row }: CellType) => (
       <Typography noWrap variant='body2'>
-        {row.attributes.top4_rate}
+        {row.attributes.our_rate}
       </Typography>
     )
   },

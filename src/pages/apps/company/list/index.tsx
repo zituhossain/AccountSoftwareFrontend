@@ -20,7 +20,7 @@ import Link from 'next/link'
 import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Third Party Components
-import axios from 'axios'
+// import axios from 'axios'
 
 // ** Types Imports
 import { ThemeColor } from 'src/@core/layouts/types'
