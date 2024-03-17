@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState, MouseEvent, useCallback } from 'react'
+import { useState, MouseEvent, useCallback, useEffect } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
@@ -17,7 +17,6 @@ import Icon from 'src/@core/components/icon'
 
 // ** Custom Components Imports
 import Link from 'next/link'
-import { GetStaticProps } from 'next/types'
 import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Third Party Components
@@ -216,12 +215,27 @@ const columns: GridColDef[] = [
   }
 ]
 
-const Quotation = ({ quotationData }: { quotationData: Quotation[] }) => {
+const Quotation = () => {
   // ** State
+  const [quotation, setQuotation] = useState<Quotation[]>([])
   const [value, setValue] = useState<string>('')
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
+  }, [])
+
+  useEffect(() => {
+    // Fetch companies data from API
+    const fetchQuotaiton = async () => {
+      try {
+        const response = await fetchDataFromApi('/quotations')
+        console.log('zitu', response.data)
+        setQuotation(response.data)
+      } catch (error) {
+        console.error('Error fetching contact type:', error)
+      }
+    }
+    fetchQuotaiton()
   }, [])
 
   return (
@@ -233,7 +247,7 @@ const Quotation = ({ quotationData }: { quotationData: Quotation[] }) => {
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={quotationData}
+              rows={quotation}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
@@ -245,29 +259,6 @@ const Quotation = ({ quotationData }: { quotationData: Quotation[] }) => {
       </Grid>
     </Grid>
   )
-}
-
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    const quotationData = await fetchDataFromApi('/api/quotations')
-
-    console.log('mydata', quotationData.data)
-
-    return {
-      props: {
-        quotationData: quotationData.data
-      },
-      revalidate: 60 // Optional: This will re-generate the page every 60 seconds
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error)
-
-    return {
-      props: {
-        quotationData: []
-      }
-    }
-  }
 }
 
 export default Quotation

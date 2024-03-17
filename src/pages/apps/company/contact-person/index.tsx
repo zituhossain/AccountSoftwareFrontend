@@ -29,6 +29,7 @@ import { AppDispatch } from 'src/store'
 import { Menu } from '@mui/material'
 import { deleteUser } from 'src/store/apps/user'
 import TableHeader from 'src/views/apps/company/contact-person/list/TableHeader'
+import { fetchDataFromApi } from 'src/utils/api'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -222,9 +223,9 @@ const ContactPersonList = () => {
     // Fetch companies data from API
     const fetchContact = async () => {
       try {
-        const response = await axios.get('http://localhost:1337/api/contact-people')
-        console.log('zitu', response.data[0])
-        setContact(response.data.data)
+        const response = await fetchDataFromApi('/contact-people')
+        console.log('zitu', response.data)
+        setContact(response.data)
       } catch (error) {
         console.error('Error fetching companies:', error)
       }

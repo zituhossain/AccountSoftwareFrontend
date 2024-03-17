@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState, MouseEvent, useCallback } from 'react'
+import { useState, MouseEvent, useCallback, useEffect } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
@@ -21,9 +21,6 @@ import Link from 'next/link'
 import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Third Party Components
-// import axios from 'axios'
-
-import { GetStaticProps } from 'next/types'
 
 // ** Types Imports
 import { ThemeColor } from 'src/@core/layouts/types'
@@ -162,27 +159,28 @@ const columns: GridColDef[] = [
   }
 ]
 
-const ContactTypeList = ({ contactTypeData }: { contactTypeData: ContactType[] }) => {
+const ContactTypeList = () => {
   // ** State
+  const [contact, setContact] = useState<ContactType[]>([])
   const [value, setValue] = useState<string>('')
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
   }, [])
 
-  // useEffect(() => {
-  //   // Fetch companies data from API
-  //   const fetchContact = async () => {
-  //     try {
-  //       const response = await axios.get('http://localhost:1337/api/contact-types')
-  //       console.log('zitu', response.data[0])
-  //       setContact(response.data.data)
-  //     } catch (error) {
-  //       console.error('Error fetching companies:', error)
-  //     }
-  //   }
-  //   fetchContact()
-  // }, [])
+  useEffect(() => {
+    // Fetch companies data from API
+    const fetchContact = async () => {
+      try {
+        const response = await fetchDataFromApi('/contact-types')
+        console.log('zitu', response.data)
+        setContact(response.data)
+      } catch (error) {
+        console.error('Error fetching contact type:', error)
+      }
+    }
+    fetchContact()
+  }, [])
 
   return (
     <Grid container spacing={6}>
@@ -193,7 +191,7 @@ const ContactTypeList = ({ contactTypeData }: { contactTypeData: ContactType[] }
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={contactTypeData}
+              rows={contact}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
@@ -207,27 +205,27 @@ const ContactTypeList = ({ contactTypeData }: { contactTypeData: ContactType[] }
   )
 }
 
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    const contactTypeData = await fetchDataFromApi('/api/contact-types')
+// export const getStaticProps: GetStaticProps = async () => {
+//   try {
+//     const contactTypeData = await fetchDataFromApi('/api/contact-types')
 
-    console.log('mydata', contactTypeData.data)
+//     console.log('mydata', contactTypeData.data)
 
-    return {
-      props: {
-        contactTypeData: contactTypeData.data
-      },
-      revalidate: 60 // Optional: This will re-generate the page every 60 seconds
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error)
+//     return {
+//       props: {
+//         contactTypeData: contactTypeData.data
+//       },
+//       revalidate: 60 // Optional: This will re-generate the page every 60 seconds
+//     }
+//   } catch (error) {
+//     console.error('Error fetching data:', error)
 
-    return {
-      props: {
-        contactTypeData: []
-      }
-    }
-  }
-}
+//     return {
+//       props: {
+//         contactTypeData: []
+//       }
+//     }
+//   }
+// }
 
 export default ContactTypeList

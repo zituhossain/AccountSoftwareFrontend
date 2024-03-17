@@ -2,7 +2,7 @@ import axios from 'axios'
 import { API_URL } from './urls'
 import authConfig from 'src/configs/auth'
 
-let storedToken: string | null = null
+export let storedToken: string | null = null
 
 // Check if window is available (i.e., in a browser environment)
 if (typeof window !== 'undefined') {

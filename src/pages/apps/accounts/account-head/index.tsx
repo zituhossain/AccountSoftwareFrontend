@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState, MouseEvent, useCallback } from 'react'
+import { useState, MouseEvent, useCallback, useEffect } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
@@ -22,8 +22,6 @@ import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Third Party Components
 // import axios from 'axios'
-
-import { GetStaticProps } from 'next/types'
 
 // ** Types Imports
 import { ThemeColor } from 'src/@core/layouts/types'
@@ -165,12 +163,27 @@ const columns: GridColDef[] = [
   }
 ]
 
-const AccountHeadList = ({ accountHeadData }: { accountHeadData: AccountHeadType[] }) => {
+const AccountHeadList = () => {
   // ** State
+  const [accountHead, setAccountHead] = useState<AccountHeadType[]>([])
   const [value, setValue] = useState<string>('')
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
+  }, [])
+
+  useEffect(() => {
+    // Fetch companies data from API
+    const fetchAccountHead = async () => {
+      try {
+        const response = await fetchDataFromApi('/account-headers')
+        console.log('zitu', response.data)
+        setAccountHead(response.data)
+      } catch (error) {
+        console.error('Error fetching contact type:', error)
+      }
+    }
+    fetchAccountHead()
   }, [])
 
   return (
@@ -182,7 +195,7 @@ const AccountHeadList = ({ accountHeadData }: { accountHeadData: AccountHeadType
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={accountHeadData}
+              rows={accountHead}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
@@ -194,29 +207,6 @@ const AccountHeadList = ({ accountHeadData }: { accountHeadData: AccountHeadType
       </Grid>
     </Grid>
   )
-}
-
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    const accountHeadData = await fetchDataFromApi('/api/account-headers')
-
-    console.log('accountHeadData', accountHeadData.data)
-
-    return {
-      props: {
-        accountHeadData: accountHeadData.data
-      },
-      revalidate: 60 // Optional: This will re-generate the page every 60 seconds
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error)
-
-    return {
-      props: {
-        accountHeadData: []
-      }
-    }
-  }
 }
 
 export default AccountHeadList

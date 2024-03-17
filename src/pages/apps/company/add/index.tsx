@@ -1,5 +1,4 @@
 import { useState } from 'react'
-import axios from 'axios'
 import Card from '@mui/material/Card'
 import Grid from '@mui/material/Grid'
 import Button from '@mui/material/Button'
@@ -14,10 +13,8 @@ import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { CompanyType } from 'src/types/apps/userTypes'
-import { API_URL } from 'src/utils/urls'
 import { FormEventHandler } from 'react'
-import authConfig from 'src/configs/auth'
-import { postDataToApi } from 'src/utils/api'
+import { postDataToApi, storedToken } from 'src/utils/api'
 import toast from 'react-hot-toast'
 
 const AddCompany = () => {
@@ -45,13 +42,6 @@ const AddCompany = () => {
     }
   }
 
-  let storedToken: string | null = null
-
-  // Check if window is available (i.e., in a browser environment)
-  if (typeof window !== 'undefined') {
-    storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
-  }
-
   const onSubmit = async (data: CompanyType) => {
     try {
       const formData = new FormData()
@@ -77,18 +67,6 @@ const AddCompany = () => {
       console.error('Error adding company:', error.message)
     }
   }
-
-  // const onSubmit = async (data: CompanyType) => {
-  //   try {
-  //     await axios.post(`${API_URL}/api/companies`, {
-  //       data: data
-  //     })
-  //     console.log('Company added successfully')
-  //     router.push('/apps/company/list')
-  //   } catch (error: any) {
-  //     console.error('Error adding company:', error.message)
-  //   }
-  // }
 
   return (
     <Card>
