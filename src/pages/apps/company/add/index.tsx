@@ -16,6 +16,9 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { CompanyType } from 'src/types/apps/userTypes'
 import { API_URL } from 'src/utils/urls'
 import { FormEventHandler } from 'react'
+import authConfig from 'src/configs/auth'
+import { postDataToApi } from 'src/utils/api'
+import toast from 'react-hot-toast'
 
 const AddCompany = () => {
   const router = useRouter()
@@ -42,6 +45,13 @@ const AddCompany = () => {
     }
   }
 
+  let storedToken: string | null = null
+
+  // Check if window is available (i.e., in a browser environment)
+  if (typeof window !== 'undefined') {
+    storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
+  }
+
   const onSubmit = async (data: CompanyType) => {
     try {
       const formData = new FormData()
@@ -49,13 +59,20 @@ const AddCompany = () => {
       if (logo) {
         formData.append('files.logo', logo)
       }
-      await axios.post(`${API_URL}/api/companies`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        }
-      })
-      console.log('Company added successfully')
-      router.push('/apps/company/list')
+
+      // await axios.post(`${API_URL}/companies`, formData, {
+      //   headers: {
+      //     // 'Content-Type': 'multipart/form-data',
+      //     Authorization: `Bearer ${storedToken}`
+      //   }
+      // })
+      await postDataToApi('/companies', formData)
+      if (storedToken) {
+        router.push('/apps/company/list')
+        toast.success('Company added successfully')
+      } else {
+        toast.error('Something went wrong! Please try again.')
+      }
     } catch (error: any) {
       console.error('Error adding company:', error.message)
     }

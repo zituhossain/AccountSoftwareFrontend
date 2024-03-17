@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState, useEffect, MouseEvent, useCallback } from 'react'
+import { useState, MouseEvent, useCallback } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
@@ -7,7 +7,8 @@ import Grid from '@mui/material/Grid'
 import { styled } from '@mui/material/styles'
 import MenuItem from '@mui/material/MenuItem'
 import IconButton from '@mui/material/IconButton'
-import Typography from '@mui/material/Typography'
+
+// import Typography from '@mui/material/Typography'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
@@ -20,7 +21,9 @@ import Link from 'next/link'
 import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Third Party Components
-import axios from 'axios'
+// import axios from 'axios'
+
+import { GetStaticProps } from 'next/types'
 
 // ** Types Imports
 import { ThemeColor } from 'src/@core/layouts/types'
@@ -28,7 +31,7 @@ import { useDispatch } from 'react-redux'
 import { AppDispatch } from 'src/store'
 import { Menu } from '@mui/material'
 import { deleteUser } from 'src/store/apps/user'
-import TableHeader from 'src/views/apps/company/list/TableHeader'
+import TableHeader from 'src/views/apps/accounts/journal/TableHeader'
 import { fetchDataFromApi } from 'src/utils/api'
 
 // ** Vars
@@ -37,26 +40,20 @@ const companyStatusObj: { [key: string]: ThemeColor } = {
   false: 'secondary'
 }
 
-interface CompanyType {
+interface AccountHeadType {
   id: number
   attributes: {
-    type: string
-    name: string
-    address: string
-    email: string
-    code: string
-    phone: string
+    journal_no: string
+    date: string
     status: boolean
     createdAt: string
     updatedAt: string
     publishedAt: string
-    avatar: string
-    avatarColor?: ThemeColor
   }
 }
 
 interface CellType {
-  row: CompanyType
+  row: AccountHeadType
 }
 
 const LinkStyled = styled(Link)(({ theme }) => ({
@@ -137,41 +134,19 @@ const columns: GridColDef[] = [
   {
     flex: 0.2,
     minWidth: 230,
-    field: 'name',
-    headerName: 'Name',
-    renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes.name}</LinkStyled>
+    field: 'journal_no',
+    headerName: 'Journal No',
+    renderCell: ({ row }: CellType) => (
+      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.header_name}</LinkStyled>
+    )
   },
   {
     flex: 0.2,
-    minWidth: 250,
-    field: 'email',
-    headerName: 'Email',
+    minWidth: 230,
+    field: 'date',
+    headerName: 'Date',
     renderCell: ({ row }: CellType) => (
-      <Typography noWrap variant='body2'>
-        {row.attributes.email}
-      </Typography>
-    )
-  },
-  {
-    flex: 0.15,
-    field: 'code',
-    minWidth: 150,
-    headerName: 'Code',
-    renderCell: ({ row }: CellType) => (
-      <Typography noWrap variant='body2'>
-        {row.attributes.code}
-      </Typography>
-    )
-  },
-  {
-    flex: 0.15,
-    minWidth: 120,
-    headerName: 'Type',
-    field: 'type',
-    renderCell: ({ row }: CellType) => (
-      <Typography variant='subtitle1' noWrap>
-        {row.attributes.type}
-      </Typography>
+      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.header_name}</LinkStyled>
     )
   },
   {
@@ -199,38 +174,24 @@ const columns: GridColDef[] = [
   }
 ]
 
-const CompaniesList = () => {
+const AccountHeadList = ({ accountHeadData }: { accountHeadData: AccountHeadType[] }) => {
   // ** State
-  const [companies, setCompanies] = useState<CompanyType[]>([])
   const [value, setValue] = useState<string>('')
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
   }, [])
 
-  useEffect(() => {
-    // Fetch companies data from API
-    const fetchCompanies = async () => {
-      try {
-        const response = await fetchDataFromApi('/companies')
-        setCompanies(response.data)
-      } catch (error) {
-        console.error('Error fetching companies:', error)
-      }
-    }
-    fetchCompanies()
-  }, [])
-
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card>
-          <CardHeader title='Companies List' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
+          <CardHeader title='Journal List' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
           <CardContent>
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={companies}
+              rows={accountHeadData}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
@@ -244,4 +205,27 @@ const CompaniesList = () => {
   )
 }
 
-export default CompaniesList
+export const getStaticProps: GetStaticProps = async () => {
+  try {
+    const accountHeadData = await fetchDataFromApi('/api/account-headers')
+
+    console.log('accountHeadData', accountHeadData.data)
+
+    return {
+      props: {
+        accountHeadData: accountHeadData.data
+      },
+      revalidate: 60 // Optional: This will re-generate the page every 60 seconds
+    }
+  } catch (error) {
+    console.error('Error fetching data:', error)
+
+    return {
+      props: {
+        accountHeadData: []
+      }
+    }
+  }
+}
+
+export default AccountHeadList
