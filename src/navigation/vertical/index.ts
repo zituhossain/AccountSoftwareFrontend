@@ -42,12 +42,12 @@ const navigation = (): VerticalNavItemsType => {
         {
           title: 'Contact Type',
           path: '/apps/company/contact-type'
-        }
+        },
 
-        // {
-        //   title: 'Business Relationship',
-        //   path: '/apps/company/business-relation'
-        // }
+        {
+          title: 'Business Relationship',
+          path: '/apps/company/business-relation'
+        }
       ]
     },
     {

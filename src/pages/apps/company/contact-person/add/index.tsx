@@ -1,5 +1,3 @@
-// import { useState } from 'react'
-import axios from 'axios'
 import Card from '@mui/material/Card'
 import Grid from '@mui/material/Grid'
 import Button from '@mui/material/Button'
@@ -11,22 +9,34 @@ import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
 import FormControl from '@mui/material/FormControl'
 import Select from '@mui/material/Select'
-import { FormControlLabel, FormHelperText, Switch } from '@mui/material'
+import { FormControlLabel, FormHelperText, Switch, Typography } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { ContactPersonType } from 'src/types/apps/userTypes'
-import { API_URL } from 'src/utils/urls'
-import { FormEventHandler } from 'react'
+import { FormEventHandler, useState } from 'react'
+import { postDataToApi, storedToken } from 'src/utils/api'
+import toast from 'react-hot-toast'
+import { Box } from '@mui/system'
 
 const AddContact = () => {
   const router = useRouter()
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
-    email: yup.string().email('Invalid email format').required('Email is required')
+    email: yup.string().email('Invalid email format'),
+    phone: yup.string().required('Phone is required')
   })
+
+  const defaultValues: ContactPersonType = {
+    name: '',
+    address: '',
+    email: '',
+    code: '',
+    phone: '',
+    status: true
+  }
 
   const {
     handleSubmit,
@@ -34,16 +44,40 @@ const AddContact = () => {
     reset,
     formState: { errors }
   } = useForm<ContactPersonType>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues
   })
+
+  const [contactImg, setContactImg] = useState<File | null>(null)
+  const [imgSrc, setImgSrc] = useState<string | null>(null)
+
+  const handleInputImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length) {
+      const selectedFile = e.target.files[0]
+      setContactImg(selectedFile)
+      setImgSrc(URL.createObjectURL(selectedFile))
+    }
+  }
+
+  const handleInputImageReset = () => {
+    setContactImg(null)
+    setImgSrc(null)
+  }
 
   const onSubmit = async (data: ContactPersonType) => {
     try {
-      await axios.post(`${API_URL}/api/contact-people`, {
-        data: data
-      })
-      console.log('contact added successfully')
-      router.push('/apps/company/contact-person')
+      const formData = new FormData()
+      formData.append('data', JSON.stringify(data))
+      if (contactImg) {
+        formData.append('files.image', contactImg)
+      }
+      if (storedToken) {
+        await postDataToApi('/contact-people', formData)
+        router.push('/apps/company/contact-person')
+        toast.success('Contact Person added successfully')
+      } else {
+        toast.error('Something went wrong! Please try again.')
+      }
     } catch (error: any) {
       console.error('Error adding contact person:', error.message)
     }
@@ -56,6 +90,39 @@ const AddContact = () => {
       <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
           <Grid container spacing={5}>
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                {imgSrc && (
+                  <img
+                    src={imgSrc}
+                    alt='Logo Preview'
+                    style={{ width: '100px', height: '100px', marginRight: '20px' }}
+                  />
+                )}
+                <div>
+                  <Button component='label' variant='contained' htmlFor='logo-upload-button'>
+                    Upload Image
+                    <input
+                      hidden
+                      type='file'
+                      accept='image/png, image/jpeg'
+                      onChange={handleInputImageChange}
+                      id='logo-upload-button'
+                    />
+                  </Button>
+                  <Button
+                    sx={{ marginLeft: '10px' }}
+                    color='secondary'
+                    variant='outlined'
+                    onClick={handleInputImageReset}
+                  >
+                    Reset
+                  </Button>
+                  <Typography sx={{ mt: 5, color: 'text.disabled' }}>Allowed PNG or JPEG. Max size of 800K.</Typography>
+                </div>
+              </Box>
+              {errors.image && <span>{errors.image.message}</span>}
+            </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel id='form-layouts-separator-select-label'>Company</InputLabel>
@@ -173,15 +240,11 @@ const AddContact = () => {
               <Controller
                 name='status'
                 control={control}
-                render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
+                render={({ field }) => (
+                  <FormControlLabel control={<Switch {...field} defaultChecked />} label='Status' />
+                )}
               />
             </Grid>
-            {/* <Grid item xs={12} sm={6}>
-              <FormControlLabel
-                control={<Switch checked={Boolean(companyData.status)} onChange={handleSwitchChange} name='status' />}
-                label='Status'
-              />
-            </Grid> */}
           </Grid>
         </CardContent>
         <Divider sx={{ m: '0 !important' }} />

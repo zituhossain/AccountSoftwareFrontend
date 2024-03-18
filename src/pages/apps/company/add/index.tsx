@@ -9,7 +9,7 @@ import TextField from '@mui/material/TextField'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
-import { FormControl, FormControlLabel, InputLabel, Select, Switch } from '@mui/material'
+import { FormControlLabel, Switch } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
@@ -27,13 +27,25 @@ const AddCompany = () => {
     email: yup.string().email('Invalid email format').required('Email is required')
   })
 
+  const defaultValues: CompanyType = {
+    name: '',
+    status: true,
+    address: '',
+    email: '',
+    code: '',
+    phone: '',
+    legal_information: '',
+    website: ''
+  }
+
   const {
     handleSubmit,
     control,
     reset,
     formState: { errors }
   } = useForm<CompanyType>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues
   })
 
   const [logo, setLogo] = useState<File | null>(null)
@@ -127,34 +139,13 @@ const AddCompany = () => {
                   <TextField
                     {...field}
                     fullWidth
-                    label='Name'
+                    label='Company Name'
                     placeholder='Company Name'
                     error={!!errors.name}
                     helperText={errors.name?.message}
                   />
                 )}
               />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel id='form-layouts-separator-select-label'>Company Type</InputLabel>
-                <Controller
-                  name='company_type'
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      label='Company Type'
-                      labelId='form-layouts-separator-select-label'
-                      error={!!errors?.company_type}
-                    >
-                      {/* <MenuItem value='supplier'>Supplier</MenuItem>
-                      <MenuItem value='customer'>Customer</MenuItem> */}
-                    </Select>
-                  )}
-                />
-              </FormControl>
             </Grid>
 
             <Grid item xs={12} sm={6}>
@@ -207,6 +198,38 @@ const AddCompany = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <Controller
+                name='website'
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label='Website'
+                    placeholder='Website'
+                    error={!!errors.website}
+                    helperText={errors.website?.message}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Controller
+                name='legal_information'
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    label='Legal Information'
+                    placeholder='Legal Information'
+                    error={!!errors.legal_information}
+                    helperText={errors.legal_information?.message}
+                  />
+                )}
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <Controller
                 name='address'
                 control={control}
                 render={({ field }) => (
@@ -227,7 +250,9 @@ const AddCompany = () => {
               <Controller
                 name='status'
                 control={control}
-                render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
+                render={({ field }) => (
+                  <FormControlLabel control={<Switch {...field} defaultChecked />} label='Status' />
+                )}
               />
             </Grid>
           </Grid>

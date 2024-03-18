@@ -40,7 +40,6 @@ const companyStatusObj: { [key: string]: ThemeColor } = {
 interface CompanyType {
   id: number
   attributes: {
-    type: string
     name: string
     address: string
     email: string
@@ -138,7 +137,7 @@ const columns: GridColDef[] = [
     flex: 0.2,
     minWidth: 230,
     field: 'name',
-    headerName: 'Name',
+    headerName: 'Company Name',
     renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes.name}</LinkStyled>
   },
   {
@@ -166,11 +165,11 @@ const columns: GridColDef[] = [
   {
     flex: 0.15,
     minWidth: 120,
-    headerName: 'Type',
-    field: 'type',
+    headerName: 'Phone',
+    field: 'phone',
     renderCell: ({ row }: CellType) => (
       <Typography variant='subtitle1' noWrap>
-        {row.attributes.type}
+        {row.attributes.phone}
       </Typography>
     )
   },

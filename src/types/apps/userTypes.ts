@@ -44,34 +44,35 @@ export type UserRoleType = {
 }
 
 export type CompanyType = {
-  id: number
+  id?: number
   name: string
-  company_type: string
   address: string
   email: string
   code: string
   phone: string
-  logo: string
+  legal_information: string
+  website: string
+  logo?: string
   status: boolean
-  createdAt: string
-  updatedAt: string
-  publishedAt: string
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
 }
 
 export type ContactPersonType = {
-  id: number
+  id?: number
   name: string
   address: string
   email: string
   code: string
   phone: string
-  image: string
-  company_id: number
-  contact_type: number
+  image?: string
+  company_id?: number
+  contact_type?: number
   status: boolean
-  createdAt: string
-  updatedAt: string
-  publishedAt: string
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
 }
 
 export type ContactType = {
@@ -104,25 +105,24 @@ export type BusinessRelationType = {
   publishedAt: string
 }
 
-export type QuotationFromStrapi = {
-  id: number
+export type QuotationType = {
+  id?: number
   quotation_no: string
   subject: string
-  supplier_rate: number
+  client_rate: number
   our_rate: number
-  no_of_trailers: number
+  no_of_items: number
   overweight: number
   lc_number: string
   bl_number: string
   remarks: string
-  quotation_image: string
-  business_contact_id: number
+  business_contact: string
   status: boolean
   send_status: boolean
   revision_count: number
-  createdAt: string
-  updatedAt: string
-  publishedAt: string
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
 }
 
 export type ProjectListDataType = {
