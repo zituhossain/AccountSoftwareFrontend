@@ -1,114 +1,75 @@
-// import { useState } from 'react'
-import axios from 'axios'
-import Card from '@mui/material/Card'
+// ** React Imports
+import { useState } from 'react'
+
+// ** Next Imports
+import { GetStaticProps, InferGetStaticPropsType } from 'next/types'
+
+// ** MUI Imports
 import Grid from '@mui/material/Grid'
-import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
-import TextField from '@mui/material/TextField'
-import CardHeader from '@mui/material/CardHeader'
-import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
-import { FormControlLabel, Switch } from '@mui/material'
-import { useRouter } from 'next/navigation'
-import * as yup from 'yup'
-import { useForm, Controller } from 'react-hook-form'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { AccountHeadType } from 'src/types/apps/userTypes'
-import { API_URL } from 'src/utils/urls'
-import { FormEventHandler } from 'react'
 
-const AddAccountHead = () => {
-  const router = useRouter()
+// ** Third Party Components
+import axios from 'axios'
 
-  const schema = yup.object().shape({
-    header_name: yup.string().required('Account Header is required')
-  })
+// ** Types
+import { InvoiceType, InvoiceClientType } from 'src/types/apps/invoiceTypes'
 
-  const {
-    handleSubmit,
-    control,
-    reset,
-    formState: { errors }
-  } = useForm<AccountHeadType>({
-    resolver: yupResolver(schema)
-  })
+// ** Demo Components Imports
+import AddCard from 'src/views/apps/accounts/journal/add/AddCard'
 
-  const onSubmit = async (data: AccountHeadType) => {
-    try {
-      await axios.post(`${API_URL}/api/account-headers`, {
-        data: data
-      })
-      console.log('account header added successfully')
-      router.push('/apps/accounts/account-head')
-    } catch (error: any) {
-      console.error('Error adding account header:', error.message)
-    }
-  }
+// import AddActions from 'src/views/apps/invoice/add/AddActions'
+import AddNewCustomers from 'src/views/apps/invoice/add/AddNewCustomer'
+
+// ** Styled Component
+import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
+
+const InvoiceAdd = ({ apiClientData, invoiceNumber }: InferGetStaticPropsType<typeof getStaticProps>) => {
+  // ** State
+  const [addCustomerOpen, setAddCustomerOpen] = useState<boolean>(false)
+  const [selectedClient, setSelectedClient] = useState<InvoiceClientType | null>(null)
+  const [clients, setClients] = useState<InvoiceClientType[] | undefined>(apiClientData)
+
+  const toggleAddCustomerDrawer = () => setAddCustomerOpen(!addCustomerOpen)
 
   return (
-    <Card>
-      <CardHeader title='Add Account Header' />
-      <Divider sx={{ m: '0 !important' }} />
-      <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
-        <CardContent>
-          <Grid container spacing={5}>
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name='header_name'
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    label='Header Name'
-                    placeholder='Header Name'
-                    error={!!errors.header_name}
-                    helperText={errors.header_name?.message}
-                  />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name='description'
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    multiline
-                    minRows={3}
-                    label='description'
-                    placeholder='description...'
-                    error={!!errors.description}
-                    helperText={errors.description?.message}
-                  />
-                )}
-              />
-            </Grid>
-
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name='status'
-                control={control}
-                render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
-              />
-            </Grid>
-          </Grid>
-        </CardContent>
-        <Divider sx={{ m: '0 !important' }} />
-        <CardActions>
-          <Button size='large' type='submit' sx={{ mr: 2 }} variant='contained'>
-            Submit
-          </Button>
-          <Button type='reset' size='large' color='secondary' variant='outlined'>
-            Reset
-          </Button>
-        </CardActions>
-      </form>
-    </Card>
+    <DatePickerWrapper sx={{ '& .react-datepicker-wrapper': { width: 'auto' } }}>
+      <Grid container spacing={6}>
+        <Grid item xl={12} md={12} xs={12}>
+          <AddCard
+            clients={clients}
+            invoiceNumber={invoiceNumber}
+            selectedClient={selectedClient}
+            setSelectedClient={setSelectedClient}
+            toggleAddCustomerDrawer={toggleAddCustomerDrawer}
+          />
+        </Grid>
+        {/* <Grid item xl={3} md={4} xs={12}>
+          <AddActions />
+        </Grid> */}
+      </Grid>
+      <AddNewCustomers
+        clients={clients}
+        open={addCustomerOpen}
+        setClients={setClients}
+        toggle={toggleAddCustomerDrawer}
+        setSelectedClient={setSelectedClient}
+      />
+    </DatePickerWrapper>
   )
 }
 
-export default AddAccountHead
+export const getStaticProps: GetStaticProps = async () => {
+  const clientResponse = await axios.get('/apps/invoice/clients')
+  const apiClientData: InvoiceClientType = clientResponse.data
+
+  const allInvoicesResponse = await axios.get('/apps/invoice/invoices', { params: { q: '', status: '' } })
+  const lastInvoiceNumber = Math.max(...allInvoicesResponse.data.allData.map((i: InvoiceType) => i.id))
+
+  return {
+    props: {
+      apiClientData,
+      invoiceNumber: lastInvoiceNumber + 1
+    }
+  }
+}
+
+export default InvoiceAdd

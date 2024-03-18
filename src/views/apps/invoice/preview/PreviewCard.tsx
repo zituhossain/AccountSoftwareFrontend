@@ -14,7 +14,7 @@ import TableContainer from '@mui/material/TableContainer'
 import TableCell, { TableCellBaseProps } from '@mui/material/TableCell'
 
 // ** Configs
-import themeConfig from 'src/configs/themeConfig'
+// import themeConfig from 'src/configs/themeConfig'
 
 // ** Types
 import { SingleInvoiceType } from 'src/types/apps/invoiceTypes'
@@ -120,17 +120,18 @@ const PreviewCard = ({ data }: Props) => {
                     </defs>
                   </svg>
                   <Typography variant='h6' sx={{ ml: 2, fontWeight: 700, lineHeight: 1.2 }}>
-                    {themeConfig.templateName}
+                    Top-4 Logistics
                   </Typography>
                 </Box>
                 <Box>
                   <Typography variant='body2' sx={{ mb: 1 }}>
-                    Office 149, 450 South Brand Brooklyn
+                    9/31, F, Eastern Plaza, Hatirpul
                   </Typography>
                   <Typography variant='body2' sx={{ mb: 1 }}>
-                    San Diego County, CA 91905, USA
+                    Dhaka - 1205, Bangladesh
                   </Typography>
-                  <Typography variant='body2'>+1 (123) 456 7891, +44 (876) 543 2198</Typography>
+                  <Typography variant='body2'>+8801852244141</Typography>
+                  <Typography variant='body2'>top4we@gmail.com</Typography>
                 </Box>
               </Box>
             </Grid>
@@ -180,67 +181,69 @@ const PreviewCard = ({ data }: Props) => {
                 Invoice To:
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
-                {data.invoice.name}
+                {/* {data.invoice.name} */}
+                Manager
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
-                {data.invoice.company}
+                {/* {data.invoice.company} */}
+                SS Steel Limited
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
-                {data.invoice.address}
+                {/* {data.invoice.address} */}
+                Plot-4,Block-b, Tongi, Gazipur, Bangladesh
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
                 {data.invoice.contact}
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
-                {data.invoice.companyEmail}
+                {/* {data.invoice.companyEmail} */}
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: ['flex-start', 'flex-end'] }}>
               <div>
                 <Typography variant='subtitle2' sx={{ mb: 3, color: 'text.primary', letterSpacing: '.1px' }}>
-                  Bill To:
+                  Subject:
                 </Typography>
                 <TableContainer>
                   <Table>
                     <TableBody>
                       <TableRow>
                         <MUITableCell>
-                          <Typography variant='body2'>Total Due:</Typography>
-                        </MUITableCell>
-                        <MUITableCell>
-                          <Typography variant='body2'>{data.paymentDetails.totalDue}</Typography>
+                          <Typography variant='subtitle2'>Chittagong Port To S.S Steel</Typography>
                         </MUITableCell>
                       </TableRow>
                       <TableRow>
                         <MUITableCell>
-                          <Typography variant='body2'>Bank name:</Typography>
+                          <Typography variant='body2'>Carrying Bill No:</Typography>
                         </MUITableCell>
                         <MUITableCell>
-                          <Typography variant='body2'>{data.paymentDetails.bankName}</Typography>
-                        </MUITableCell>
-                      </TableRow>
-                      <TableRow>
-                        <MUITableCell>
-                          <Typography variant='body2'>Country:</Typography>
-                        </MUITableCell>
-                        <MUITableCell>
-                          <Typography variant='body2'>{data.paymentDetails.country}</Typography>
+                          <Typography variant='body2'>TFL2014/2024</Typography>
                         </MUITableCell>
                       </TableRow>
                       <TableRow>
                         <MUITableCell>
-                          <Typography variant='body2'>IBAN:</Typography>
+                          <Typography variant='body2'>B/L NO:</Typography>
                         </MUITableCell>
                         <MUITableCell>
-                          <Typography variant='body2'>{data.paymentDetails.iban}</Typography>
+                          <Typography variant='body2'>SGS2070UTY78, MEDUDO8905T</Typography>
                         </MUITableCell>
                       </TableRow>
                       <TableRow>
                         <MUITableCell>
-                          <Typography variant='body2'>SWIFT code:</Typography>
+                          <Typography variant='body2'>L/C NO:</Typography>
                         </MUITableCell>
                         <MUITableCell>
-                          <Typography variant='body2'>{data.paymentDetails.swiftCode}</Typography>
+                          <Typography variant='body2'>2356789005674, 209893304749</Typography>
+                        </MUITableCell>
+                      </TableRow>
+                      <TableRow>
+                        <MUITableCell>
+                          <Typography variant='subtitle2' sx={{ color: 'text.primary', letterSpacing: '.1px' }}>
+                            Remarks:
+                          </Typography>
+                        </MUITableCell>
+                        <MUITableCell>
+                          <Typography variant='body2'>Charge 3000/- will be added for overweight</Typography>
                         </MUITableCell>
                       </TableRow>
                     </TableBody>
@@ -257,41 +260,41 @@ const PreviewCard = ({ data }: Props) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Item</TableCell>
-                <TableCell>Description</TableCell>
-                <TableCell>hours</TableCell>
-                <TableCell>qty</TableCell>
+                <TableCell>Vehical No</TableCell>
+                <TableCell>Container Number</TableCell>
+                <TableCell>Rent</TableCell>
+                <TableCell>Overweight</TableCell>
                 <TableCell>Total</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
               <TableRow>
-                <TableCell>Premium Branding Package</TableCell>
-                <TableCell>Branding & Promotion</TableCell>
-                <TableCell>48</TableCell>
-                <TableCell>1</TableCell>
-                <TableCell>$32</TableCell>
+                <TableCell>CMDA81-4372</TableCell>
+                <TableCell>FCUI-389098</TableCell>
+                <TableCell>40,000</TableCell>
+                <TableCell>3000</TableCell>
+                <TableCell>43000</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Social Media</TableCell>
-                <TableCell>Social media templates</TableCell>
-                <TableCell>42</TableCell>
-                <TableCell>1</TableCell>
-                <TableCell>$28</TableCell>
+                <TableCell>CMDA81-4372</TableCell>
+                <TableCell>FCUI-389098</TableCell>
+                <TableCell>40,000</TableCell>
+                <TableCell>3000</TableCell>
+                <TableCell>43000</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>Web Design</TableCell>
-                <TableCell>Web designing package</TableCell>
-                <TableCell>46</TableCell>
-                <TableCell>1</TableCell>
-                <TableCell>$24</TableCell>
+                <TableCell>CMDA81-4372</TableCell>
+                <TableCell>FCUI-389098</TableCell>
+                <TableCell>40,000</TableCell>
+                <TableCell>3000</TableCell>
+                <TableCell>43000</TableCell>
               </TableRow>
               <TableRow>
-                <TableCell>SEO</TableCell>
-                <TableCell>Search engine optimization</TableCell>
-                <TableCell>40</TableCell>
-                <TableCell>1</TableCell>
-                <TableCell>$22</TableCell>
+                <TableCell>CMDA81-4372</TableCell>
+                <TableCell>FCUI-389098</TableCell>
+                <TableCell>40,000</TableCell>
+                <TableCell>3000</TableCell>
+                <TableCell>43000</TableCell>
               </TableRow>
             </TableBody>
           </Table>
@@ -305,39 +308,46 @@ const PreviewCard = ({ data }: Props) => {
                   variant='body2'
                   sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
                 >
-                  Salesperson:
+                  In Word:
                 </Typography>
-                <Typography variant='body2'>Tommy Shelby</Typography>
+                <Typography variant='body2'>One Lakh seventy thousand taka only</Typography>
               </Box>
-
-              <Typography variant='body2'>Thanks for your business</Typography>
+              <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+                <Typography
+                  variant='body2'
+                  sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+                >
+                  Account Name:
+                </Typography>
+                <Typography variant='body2'>Top 4 Logistics, A/C No: 123456789, UCB, Kawranbazar branch</Typography>
+              </Box>
             </Grid>
             <Grid item xs={12} sm={5} lg={3} sx={{ mb: { sm: 0, xs: 4 }, order: { sm: 2, xs: 1 } }}>
               <CalcWrapper>
                 <Typography variant='body2'>Subtotal:</Typography>
                 <Typography variant='body2' sx={{ color: 'text.primary', letterSpacing: '.25px', fontWeight: 600 }}>
-                  $1800
+                  172000
                 </Typography>
               </CalcWrapper>
               <CalcWrapper>
                 <Typography variant='body2'>Discount:</Typography>
                 <Typography variant='body2' sx={{ color: 'text.primary', letterSpacing: '.25px', fontWeight: 600 }}>
-                  $28
+                  2000
                 </Typography>
               </CalcWrapper>
-              <CalcWrapper>
+              {/* <CalcWrapper>
                 <Typography variant='body2'>Tax:</Typography>
                 <Typography variant='body2' sx={{ color: 'text.primary', letterSpacing: '.25px', fontWeight: 600 }}>
                   21%
                 </Typography>
-              </CalcWrapper>
+              </CalcWrapper> */}
               <Divider
                 sx={{ mt: theme => `${theme.spacing(5)} !important`, mb: theme => `${theme.spacing(3)} !important` }}
               />
               <CalcWrapper>
                 <Typography variant='body2'>Total:</Typography>
                 <Typography variant='body2' sx={{ color: 'text.primary', letterSpacing: '.25px', fontWeight: 600 }}>
-                  $1690
+                  170000
                 </Typography>
               </CalcWrapper>
             </Grid>

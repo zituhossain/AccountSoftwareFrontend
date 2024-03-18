@@ -38,10 +38,10 @@ const companyStatusObj: { [key: string]: ThemeColor } = {
   false: 'secondary'
 }
 
-interface AccountHeadType {
+interface AccountHead {
   id: number
   attributes: {
-    header_name: string
+    head_title: string
     description: string
     status: boolean
     createdAt: string
@@ -51,7 +51,7 @@ interface AccountHeadType {
 }
 
 interface CellType {
-  row: AccountHeadType
+  row: AccountHead
 }
 
 const LinkStyled = styled(Link)(({ theme }) => ({
@@ -132,10 +132,19 @@ const columns: GridColDef[] = [
   {
     flex: 0.2,
     minWidth: 230,
-    field: 'header_name',
+    field: 'head_title',
     headerName: 'Header Name',
     renderCell: ({ row }: CellType) => (
-      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.header_name}</LinkStyled>
+      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.head_title}</LinkStyled>
+    )
+  },
+  {
+    flex: 0.2,
+    minWidth: 230,
+    field: 'description',
+    headerName: 'Description',
+    renderCell: ({ row }: CellType) => (
+      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.description}</LinkStyled>
     )
   },
   {
@@ -165,7 +174,7 @@ const columns: GridColDef[] = [
 
 const AccountHeadList = () => {
   // ** State
-  const [accountHead, setAccountHead] = useState<AccountHeadType[]>([])
+  const [accountHead, setAccountHead] = useState<AccountHead[]>([])
   const [value, setValue] = useState<string>('')
 
   const handleFilter = useCallback((val: string) => {

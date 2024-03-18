@@ -1,5 +1,4 @@
 // import { useState } from 'react'
-import axios from 'axios'
 import Card from '@mui/material/Card'
 import Grid from '@mui/material/Grid'
 import Button from '@mui/material/Button'
@@ -14,14 +13,14 @@ import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
 import { AccountHeadType } from 'src/types/apps/userTypes'
-import { API_URL } from 'src/utils/urls'
 import { FormEventHandler } from 'react'
+import { postDataToApi } from 'src/utils/api'
 
 const AddAccountHead = () => {
   const router = useRouter()
 
   const schema = yup.object().shape({
-    header_name: yup.string().required('Account Header is required')
+    head_title: yup.string().required('Account Header is required')
   })
 
   const {
@@ -34,10 +33,11 @@ const AddAccountHead = () => {
   })
 
   const onSubmit = async (data: AccountHeadType) => {
+    console.log('firstsd', data)
     try {
-      await axios.post(`${API_URL}/api/account-headers`, {
-        data: data
-      })
+      const formData = new FormData()
+      formData.append('data', JSON.stringify(data))
+      await postDataToApi('/account-headers', formData)
       console.log('account header added successfully')
       router.push('/apps/accounts/account-head')
     } catch (error: any) {
@@ -54,7 +54,7 @@ const AddAccountHead = () => {
           <Grid container spacing={5}>
             <Grid item xs={12} sm={6}>
               <Controller
-                name='header_name'
+                name='head_title'
                 control={control}
                 render={({ field }) => (
                   <TextField
@@ -62,8 +62,8 @@ const AddAccountHead = () => {
                     fullWidth
                     label='Header Name'
                     placeholder='Header Name'
-                    error={!!errors.header_name}
-                    helperText={errors.header_name?.message}
+                    error={!!errors.head_title}
+                    helperText={errors.head_title?.message}
                   />
                 )}
               />

@@ -52,7 +52,7 @@ const TableHeader = (props: TableHeaderProps) => {
           sx={{ mr: 4, mb: 2, maxWidth: '180px' }}
           onChange={e => handleFilter(e.target.value)}
         />
-        <Button sx={{ mb: 2 }} component={Link} variant='contained' href='/apps/accounts/account-head/add'>
+        <Button sx={{ mb: 2 }} component={Link} variant='contained' href='/apps/accounts/journal/add'>
           Create Journal
         </Button>
       </Box>

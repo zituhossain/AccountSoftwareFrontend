@@ -85,7 +85,7 @@ export type ContactType = {
 
 export type AccountHeadType = {
   id: number
-  header_name: string
+  head_title: string
   description: string
   status: boolean
   createdAt: string
