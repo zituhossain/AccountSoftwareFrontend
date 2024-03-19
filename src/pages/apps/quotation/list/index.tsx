@@ -208,7 +208,7 @@ const columns: GridColDef[] = [
         skin='light'
         size='small'
         label={row.attributes.status ? 'Active' : 'Inactive'}
-        color={companyStatusObj[row.attributes.status.toString()]}
+        color={companyStatusObj[row.attributes.status]}
         sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
       />
     )

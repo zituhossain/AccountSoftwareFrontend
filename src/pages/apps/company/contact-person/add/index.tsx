@@ -9,19 +9,24 @@ import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
 import FormControl from '@mui/material/FormControl'
 import Select from '@mui/material/Select'
-import { FormControlLabel, FormHelperText, Switch, Typography } from '@mui/material'
+import { FormControlLabel, FormHelperText, MenuItem, Switch, Typography } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { ContactPersonType } from 'src/types/apps/userTypes'
-import { FormEventHandler, useState } from 'react'
-import { postDataToApi, storedToken } from 'src/utils/api'
+import { CompanyType, ContactPersonType, ContactType } from 'src/types/apps/userTypes'
+import { FormEventHandler, useEffect, useState } from 'react'
+import { fetchDataFromApi, postDataToApi, storedToken } from 'src/utils/api'
 import toast from 'react-hot-toast'
 import { Box } from '@mui/system'
 
 const AddContact = () => {
   const router = useRouter()
+
+  const [contactImg, setContactImg] = useState<File | null>(null)
+  const [imgSrc, setImgSrc] = useState<string | null>(null)
+  const [company, setCompany] = useState<CompanyType[]>([])
+  const [contactType, setContactType] = useState<ContactType[]>([])
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
@@ -48,9 +53,6 @@ const AddContact = () => {
     defaultValues
   })
 
-  const [contactImg, setContactImg] = useState<File | null>(null)
-  const [imgSrc, setImgSrc] = useState<string | null>(null)
-
   const handleInputImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length) {
       const selectedFile = e.target.files[0]
@@ -63,6 +65,21 @@ const AddContact = () => {
     setContactImg(null)
     setImgSrc(null)
   }
+
+  useEffect(() => {
+    const fetchCompany_Type = async () => {
+      try {
+        const response = await fetchDataFromApi('/companies')
+        const response1 = await fetchDataFromApi('/contact-types')
+        console.log('first', response1.data)
+        setCompany(response.data)
+        setContactType(response1.data)
+      } catch (error) {
+        console.error('Error fetching positions:', error)
+      }
+    }
+    fetchCompany_Type()
+  }, [])
 
   const onSubmit = async (data: ContactPersonType) => {
     try {
@@ -79,7 +96,7 @@ const AddContact = () => {
         toast.error('Something went wrong! Please try again.')
       }
     } catch (error: any) {
-      console.error('Error adding contact person:', error.message)
+      console.error('Error adding contact data:', error.message)
     }
   }
 
@@ -127,7 +144,7 @@ const AddContact = () => {
               <FormControl fullWidth>
                 <InputLabel id='form-layouts-separator-select-label'>Company</InputLabel>
                 <Controller
-                  name='company_id'
+                  name='company'
                   control={control}
                   render={({ field }) => (
                     <>
@@ -135,12 +152,16 @@ const AddContact = () => {
                         {...field}
                         label='Company'
                         labelId='form-layouts-separator-select-label'
-                        error={!!errors.company_id}
+                        error={!!errors.company}
                       >
-                        {/* <MenuItem value='supplier'>Supplier</MenuItem>
-                      <MenuItem value='customer'>Customer</MenuItem> */}
+                        <MenuItem value={0}>Select Company</MenuItem>
+                        {company.map(com => (
+                          <MenuItem key={com.id} value={com.id}>
+                            {com?.attributes?.name}
+                          </MenuItem>
+                        ))}
                       </Select>
-                      {errors.company_id && <FormHelperText error>{errors.company_id.message}</FormHelperText>}
+                      {errors.company && <FormHelperText error>{errors.company.message}</FormHelperText>}
                     </>
                   )}
                 />
@@ -160,8 +181,12 @@ const AddContact = () => {
                         labelId='form-layouts-separator-select-label'
                         error={!!errors.contact_type}
                       >
-                        {/* <MenuItem value='supplier'>Supplier</MenuItem>
-                      <MenuItem value='customer'>Customer</MenuItem> */}
+                        <MenuItem value={0}>Select Type</MenuItem>
+                        {contactType.map(type => (
+                          <MenuItem key={type.id} value={type.id}>
+                            {type?.attributes?.title}
+                          </MenuItem>
+                        ))}
                       </Select>
                       {errors.contact_type && <FormHelperText error>{errors.contact_type.message}</FormHelperText>}
                     </>

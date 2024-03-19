@@ -78,7 +78,7 @@ export type ContactPersonType = {
   code: string
   phone: string
   image?: string
-  company_id?: number
+  company?: number
   contact_type?: number
   status: boolean
   createdAt?: string
@@ -127,7 +127,8 @@ export type QuotationType = {
   lc_number: string
   bl_number: string
   remarks: string
-  business_contact: string
+  company?: string
+  business_contact?: string
   status: boolean
   send_status: boolean
   revision_count: number

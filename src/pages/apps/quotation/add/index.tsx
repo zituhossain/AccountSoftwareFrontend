@@ -6,18 +6,22 @@ import TextField from '@mui/material/TextField'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
-import { FormControl, FormControlLabel, InputLabel, Select, Switch } from '@mui/material'
+import { FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, Switch } from '@mui/material'
 import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { QuotationType } from 'src/types/apps/userTypes'
-import { FormEventHandler } from 'react'
+import { CompanyType, QuotationType } from 'src/types/apps/userTypes'
+import { FormEventHandler, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
-import { postDataToApi, storedToken } from 'src/utils/api'
+import { fetchDataFromApi, postDataToApi, storedToken } from 'src/utils/api'
 
 const AddQuotation = () => {
   const router = useRouter()
+
+  const [company, setCompany] = useState<CompanyType[]>([])
+
+  // const [contact, setContact] = useState<ContactPersonType[]>([])
 
   const schema = yup.object().shape({
     // type: yup.string().required('Type is required'),
@@ -35,7 +39,6 @@ const AddQuotation = () => {
     lc_number: '',
     bl_number: '',
     remarks: '',
-    business_contact: '',
     status: false,
     send_status: false,
     revision_count: 0
@@ -50,6 +53,21 @@ const AddQuotation = () => {
     resolver: yupResolver(schema),
     defaultValues
   })
+
+  useEffect(() => {
+    const fetchCompanyContact = async () => {
+      try {
+        const response = await fetchDataFromApi('/companies')
+        const response1 = await fetchDataFromApi('/contact-people')
+        console.log('first', response1.data)
+        setCompany(response.data)
+        setContact(response1.data)
+      } catch (error) {
+        console.error('Error fetching data:', error)
+      }
+    }
+    fetchCompanyContact()
+  }, [])
 
   const onSubmit = async (data: QuotationType) => {
     try {
@@ -75,27 +93,6 @@ const AddQuotation = () => {
       <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
           <Grid container spacing={5}>
-            {/* <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
-                <InputLabel id='form-layouts-separator-select-label'>Type</InputLabel>
-                <Controller
-                  name='type'
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      label='Type'
-                      labelId='form-layouts-separator-select-label'
-                      error={!!errors.type}
-                      helperText={errors.type?.message}
-                    >
-                      <MenuItem value='supplier'>Supplier</MenuItem>
-                      <MenuItem value='customer'>Customer</MenuItem>
-                    </Select>
-                  )}
-                />
-              </FormControl>
-            </Grid> */}
             <Grid item xs={12} sm={6}>
               <Controller
                 name='quotation_no'
@@ -244,7 +241,7 @@ const AddQuotation = () => {
                 )}
               />
             </Grid>
-            <Grid item xs={12} sm={6}>
+            {/* <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel id='form-layouts-separator-select-label'>Business Contact</InputLabel>
                 <Controller
@@ -257,13 +254,63 @@ const AddQuotation = () => {
                       labelId='form-layouts-separator-select-label'
                       error={!!errors?.business_contact}
                     >
-                      {/* <MenuItem value='supplier'>Supplier</MenuItem>
-                      <MenuItem value='customer'>Customer</MenuItem> */}
+                      <MenuItem value={0}>Select Contact</MenuItem>
+                      {contact.map(con => (
+                        <MenuItem key={con.id} value={con.id}>
+                          {con?.attributes?.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   )}
                 />
               </FormControl>
+            </Grid> */}
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel id='form-layouts-separator-select-label'>Company</InputLabel>
+                <Controller
+                  name='company'
+                  control={control}
+                  render={({ field }) => (
+                    <>
+                      <Select
+                        {...field}
+                        label='Company'
+                        labelId='form-layouts-separator-select-label'
+                        error={!!errors.company}
+                      >
+                        <MenuItem value={0}>Select Company</MenuItem>
+                        {company.map(com => (
+                          <MenuItem key={com.id} value={com.id}>
+                            {com?.attributes?.name}
+                          </MenuItem>
+                        ))}
+                      </Select>
+                      {errors.company && <FormHelperText error>{errors.company.message}</FormHelperText>}
+                    </>
+                  )}
+                />
+              </FormControl>
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <Controller
+                name='revision_count'
+                control={control}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    type='number'
+                    label='Revision Count'
+                    placeholder='Revision Count'
+                    error={!!errors.revision_count}
+                    helperText={errors.revision_count?.message}
+                  />
+                )}
+              />
+            </Grid>
+
             <Grid item xs={12} sm={6}>
               <Grid container spacing={5}>
                 <Grid item xs={6} sm={6}>
@@ -283,23 +330,6 @@ const AddQuotation = () => {
                   />
                 </Grid>
               </Grid>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <Controller
-                name='revision_count'
-                control={control}
-                render={({ field }) => (
-                  <TextField
-                    {...field}
-                    fullWidth
-                    type='number'
-                    label='Revision Count'
-                    placeholder='Revision Count'
-                    error={!!errors.revision_count}
-                    helperText={errors.revision_count?.message}
-                  />
-                )}
-              />
             </Grid>
           </Grid>
         </CardContent>
