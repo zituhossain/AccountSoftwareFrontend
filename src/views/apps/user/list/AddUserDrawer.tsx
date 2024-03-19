@@ -19,11 +19,11 @@ import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { useDispatch, useSelector } from 'react-redux'
 import Icon from 'src/@core/components/icon'
+import authConfig from 'src/configs/auth'
 import { AppDispatch, RootState } from 'src/store'
 import { UserPositionType } from 'src/types/apps/userTypes'
 import { fetchDataFromApi, postDataToApi, storedToken } from 'src/utils/api'
 import * as yup from 'yup'
-import authConfig from 'src/configs/auth'
 
 interface SidebarAddUserType {
   open: boolean
@@ -35,8 +35,6 @@ interface UserData {
   email: string
   password: string
   confirmed: boolean
-  image: string
-  signature: string
   organizational_position: number
   company: number
   role: number
@@ -64,40 +62,11 @@ const AddUserDrawer = ({ open, toggle }: SidebarAddUserType) => {
   const [position, setPosition] = useState<UserPositionType[]>([])
   const dispatch = useDispatch<AppDispatch>()
   const store = useSelector((state: RootState) => state.user)
-  const [profile, setProfile] = useState<File | null>(null)
-  const [profileImgSrc, setProfileImgSrc] = useState<string | null>(null)
-  const [signature, setSignature] = useState<File | null>(null)
-  const [signatureImgSrc, setSignatureImgSrc] = useState<string | null>(null)
+
   const [companyId, setCompanyId] = useState<any>(null)
   const [userId, setUserId] = useState<any>(null)
 
   const router = useRouter()
-
-  const handleInputProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length) {
-      const selectedFile = e.target.files[0]
-      setProfile(selectedFile)
-      setProfileImgSrc(URL.createObjectURL(selectedFile))
-    }
-  }
-
-  const handleInputProfileImageReset = () => {
-    setProfile(null)
-    setProfileImgSrc(null)
-  }
-
-  const handleInputSignatureImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files.length) {
-      const selectedFile = e.target.files[0]
-      setSignature(selectedFile)
-      setSignatureImgSrc(URL.createObjectURL(selectedFile))
-    }
-  }
-
-  const handleInputSignatureImageReset = () => {
-    setSignature(null)
-    setSignatureImgSrc(null)
-  }
 
   const {
     reset,
@@ -112,8 +81,6 @@ const AddUserDrawer = ({ open, toggle }: SidebarAddUserType) => {
       email: '',
       password: '',
       confirmed: false,
-      image: '',
-      signature: '',
       organizational_position: 0,
       role: 1,
       company: 0,
@@ -151,20 +118,17 @@ const AddUserDrawer = ({ open, toggle }: SidebarAddUserType) => {
       formData.append('role', data.role.toString())
       formData.append('company', companyId)
       formData.append('created_user', userId)
-      formData.append('files.image', profile!)
-      formData.append('files.signature', signature!)
 
-      // const response = await axios.post('http://localhost:1337/api/users', formData, {
-      //   headers: {
-      //     Authorization: `Bearer ${storedToken}`,
-      //     'Content-Type': 'multipart/form-data'
-      //   }
-      // })
+      const response = await axios.post('http://localhost:1337/api/users', formData, {
+        headers: {
+          Authorization: `Bearer ${storedToken}`
+        }
+      })
 
-      const response = await postDataToApi('/users', formData)
+      // const response = await postDataToApi('/users', formData)
 
       if (response.status === 201) {
-        router.push('/apps/user/list')
+        router.reload()
         toggle() // Close the modal after successful submission
         toast.success('User added successfully')
       } else {
@@ -257,80 +221,7 @@ const AddUserDrawer = ({ open, toggle }: SidebarAddUserType) => {
               )}
             />
           </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {profileImgSrc && (
-                <img
-                  src={profileImgSrc}
-                  alt='Profile Preview'
-                  style={{ width: '100px', height: '100px', marginRight: '20px' }}
-                />
-              )}
-              <div>
-                <Button
-                  sx={{ marginTop: '10px' }}
-                  component='label'
-                  variant='contained'
-                  htmlFor='profile-upload-button'
-                >
-                  Upload Profile
-                  <input
-                    hidden
-                    type='file'
-                    accept='image/png, image/jpeg'
-                    onChange={handleInputProfileImageChange}
-                    id='profile-upload-button'
-                  />
-                </Button>
-                <Button
-                  sx={{ marginLeft: '10px', marginTop: '10px' }}
-                  color='secondary'
-                  variant='outlined'
-                  onClick={handleInputProfileImageReset}
-                >
-                  Reset
-                </Button>
-                <Typography sx={{ mt: 5, color: 'text.disabled' }}>Allowed PNG or JPEG. Max size of 800K.</Typography>
-              </div>
-            </Box>
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-              {signatureImgSrc && (
-                <img
-                  src={signatureImgSrc}
-                  alt='Signature Preview'
-                  style={{ width: '100px', height: '100px', marginRight: '20px' }}
-                />
-              )}
-              <div>
-                <Button
-                  sx={{ marginTop: '10px' }}
-                  component='label'
-                  variant='contained'
-                  htmlFor='signature-upload-button'
-                >
-                  Upload Signature
-                  <input
-                    hidden
-                    type='file'
-                    accept='image/png, image/jpeg'
-                    onChange={handleInputSignatureImageChange}
-                    id='signature-upload-button'
-                  />
-                </Button>
-                <Button
-                  sx={{ marginLeft: '10px', marginTop: '10px' }}
-                  color='secondary'
-                  variant='outlined'
-                  onClick={handleInputSignatureImageReset}
-                >
-                  Reset
-                </Button>
-                <Typography sx={{ mt: 5, color: 'text.disabled' }}>Allowed PNG or JPEG. Max size of 800K.</Typography>
-              </div>
-            </Box>
-          </FormControl>
+
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Typography variant='body1'>Confirmed</Typography>
             <Controller

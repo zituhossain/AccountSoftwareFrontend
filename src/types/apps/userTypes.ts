@@ -19,17 +19,14 @@ export type UsersType = {
 export type UsersTypeFromStrapi = {
   id: number
   username: string
-  phone: string
-  organizational_position: {
-    title: string
-  }
   email: string
-  confirmed: boolean
-  companies_id: number
-  image: string
-  signature: string
-  avatar: string
-  avatarColor?: ThemeColor
+  password: string
+  organizational_position?: any
+  confirmed: any
+  company?: string
+  image?: string
+  signature?: string
+  role?: number
 }
 
 export type UserRoleType = {
@@ -107,9 +104,59 @@ export type AccountHeadType = {
 
 export type BusinessRelationType = {
   id: number
-  company_id: number
-  business_contact_id: number
-  relation_type: number
+  attributes: {
+    company: {
+      data: {
+        attributes: {
+          name: string
+          code: string
+          address: string
+          email: string
+          phone: string
+          image: string
+          createdAt: string
+          updatedAt: string
+          publishedAt: string
+        }
+      }
+    }
+    client: {
+      data: {
+        attributes: {
+          name: string
+          code: string
+          address: string
+          email: string
+          phone: string
+          image: string
+          createdAt: string
+          updatedAt: string
+          publishedAt: string
+        }
+      }
+    }
+    relation_type: {
+      data: {
+        attributes: {
+          title: string
+          status: boolean
+          createdAt: string
+          updatedAt: string
+          publishedAt: string
+        }
+      }
+    }
+  }
+  status: boolean
+  created_user: number
+  createdAt: string
+  updatedAt: string
+  publishedAt: string
+}
+
+export type B2BRelationType = {
+  id: number
+  title: string
   status: boolean
   createdAt: string
   updatedAt: string
@@ -128,7 +175,7 @@ export type QuotationType = {
   bl_number: string
   remarks: string
   company?: string
-  business_contact?: string
+  client?: string
   status: boolean
   send_status: boolean
   revision_count: number

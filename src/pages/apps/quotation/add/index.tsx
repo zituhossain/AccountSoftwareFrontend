@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { CompanyType, QuotationType } from 'src/types/apps/userTypes'
+import { BusinessRelationType, CompanyType, QuotationType } from 'src/types/apps/userTypes'
 import { FormEventHandler, useEffect, useState } from 'react'
 import toast from 'react-hot-toast'
 import { fetchDataFromApi, postDataToApi, storedToken } from 'src/utils/api'
@@ -19,7 +19,9 @@ import { fetchDataFromApi, postDataToApi, storedToken } from 'src/utils/api'
 const AddQuotation = () => {
   const router = useRouter()
 
-  const [company, setCompany] = useState<CompanyType[]>([])
+  const [client, setClient] = useState<BusinessRelationType[]>([])
+  const [userId, setUserId] = useState<number[]>([])
+  const [companyId, setCompanyId] = useState<number[]>([])
 
   // const [contact, setContact] = useState<ContactPersonType[]>([])
 
@@ -55,13 +57,27 @@ const AddQuotation = () => {
   })
 
   useEffect(() => {
+    const fetchPositions = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData')!)
+        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+
+        if (userResponse) {
+          setUserId(userResponse.id)
+          if (userResponse.company) setCompanyId(userResponse.company.id)
+        }
+      } catch (error) {
+        console.error('Error fetching positions:', error)
+      }
+    }
+    fetchPositions()
+  }, [])
+
+  useEffect(() => {
     const fetchCompanyContact = async () => {
       try {
-        const response = await fetchDataFromApi('/companies')
-        const response1 = await fetchDataFromApi('/contact-people')
-        console.log('first', response1.data)
-        setCompany(response.data)
-        setContact(response1.data)
+        const response = await fetchDataFromApi('/b2b-relations')
+        setClient(response.data)
       } catch (error) {
         console.error('Error fetching data:', error)
       }
@@ -241,32 +257,32 @@ const AddQuotation = () => {
                 )}
               />
             </Grid>
-            {/* <Grid item xs={12} sm={6}>
+            <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
-                <InputLabel id='form-layouts-separator-select-label'>Business Contact</InputLabel>
+                <InputLabel id='form-layouts-separator-select-label'>Client Contact</InputLabel>
                 <Controller
-                  name='business_contact'
+                  name='client'
                   control={control}
                   render={({ field }) => (
                     <Select
                       {...field}
-                      label='Business Contact'
+                      label='Client Contact'
                       labelId='form-layouts-separator-select-label'
-                      error={!!errors?.business_contact}
+                      error={!!errors?.client}
                     >
                       <MenuItem value={0}>Select Contact</MenuItem>
-                      {contact.map(con => (
-                        <MenuItem key={con.id} value={con.id}>
-                          {con?.attributes?.name}
+                      {client.map(cl => (
+                        <MenuItem key={cl.id} value={cl.id}>
+                          {cl?.id}
                         </MenuItem>
                       ))}
                     </Select>
                   )}
                 />
               </FormControl>
-            </Grid> */}
+            </Grid>
 
-            <Grid item xs={12} sm={6}>
+            {/* <Grid item xs={12} sm={6}>
               <FormControl fullWidth>
                 <InputLabel id='form-layouts-separator-select-label'>Company</InputLabel>
                 <Controller
@@ -292,7 +308,7 @@ const AddQuotation = () => {
                   )}
                 />
               </FormControl>
-            </Grid>
+            </Grid> */}
             <Grid item xs={12} sm={6}>
               <Controller
                 name='revision_count'

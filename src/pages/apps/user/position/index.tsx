@@ -177,6 +177,14 @@ const RowOptions = ({ id }: { id: number | string }) => {
 
 const columns: GridColDef[] = [
   {
+    sortable: true,
+    field: 'slNo',
+    headerName: '#',
+    flex: 0,
+    editable: false,
+    renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
+  },
+  {
     flex: 0.2,
     minWidth: 230,
     field: 'title',

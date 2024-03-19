@@ -1,15 +1,15 @@
 // ** React Imports
-import { useState, MouseEvent, useCallback } from 'react'
+import { MouseEvent, useCallback, useEffect, useState } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
-import Grid from '@mui/material/Grid'
-import { styled } from '@mui/material/styles'
-import MenuItem from '@mui/material/MenuItem'
-import IconButton from '@mui/material/IconButton'
-import Typography from '@mui/material/Typography'
-import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import Grid from '@mui/material/Grid'
+import IconButton from '@mui/material/IconButton'
+import MenuItem from '@mui/material/MenuItem'
+import Typography from '@mui/material/Typography'
+import { styled } from '@mui/material/styles'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
 // ** Icon Imports
@@ -22,14 +22,13 @@ import CustomChip from 'src/@core/components/mui/chip'
 // ** Third Party Components
 
 // ** Types Imports
-import { ThemeColor } from 'src/@core/layouts/types'
-import { useDispatch } from 'react-redux'
-import { AppDispatch } from 'src/store'
 import { Menu } from '@mui/material'
+import { useDispatch } from 'react-redux'
+import { ThemeColor } from 'src/@core/layouts/types'
+import { AppDispatch } from 'src/store'
 import { deleteUser } from 'src/store/apps/user'
-import TableHeader from 'src/views/apps/company/business-relation/TableHeader'
-import { GetStaticProps } from 'next/types'
 import { fetchDataFromApi } from 'src/utils/api'
+import TableHeader from 'src/views/apps/company/business-relation/TableHeader'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -40,9 +39,48 @@ const companyStatusObj: { [key: string]: ThemeColor } = {
 interface BusinessRelation {
   id: number
   attributes: {
-    company_id: number
-    business_contact_id: number
-    relation_type: number
+    company: {
+      data: {
+        attributes: {
+          name: string
+          code: string
+          address: string
+          email: string
+          phone: string
+          image: string
+          createdAt: string
+          updatedAt: string
+          publishedAt: string
+        }
+      }
+    }
+    client: {
+      data: {
+        attributes: {
+          name: string
+          code: string
+          address: string
+          email: string
+          phone: string
+          image: string
+          createdAt: string
+          updatedAt: string
+          publishedAt: string
+        }
+      }
+    }
+    relation_type: {
+      data: {
+        attributes: {
+          title: string
+          status: boolean
+          createdAt: string
+          updatedAt: string
+          publishedAt: string
+        }
+      }
+    }
+    created_user: number
     status: boolean
     createdAt: string
     updatedAt: string
@@ -130,12 +168,20 @@ const RowOptions = ({ id }: { id: number | string }) => {
 
 const columns: GridColDef[] = [
   {
+    sortable: true,
+    field: 'slNo',
+    headerName: '#',
+    flex: 0,
+    editable: false,
+    renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
+  },
+  {
     flex: 0.2,
     minWidth: 230,
-    field: 'business_contact_id',
+    field: 'client',
     headerName: 'Business Contact',
     renderCell: ({ row }: CellType) => (
-      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.business_contact_id}</LinkStyled>
+      <LinkStyled href={`/companies/${row.id}`}>{row.attributes?.client?.data?.attributes?.name}</LinkStyled>
     )
   },
   {
@@ -145,7 +191,7 @@ const columns: GridColDef[] = [
     headerName: 'Type',
     renderCell: ({ row }: CellType) => (
       <Typography noWrap variant='body2'>
-        {row.attributes.relation_type}
+        {row.attributes?.relation_type?.data?.attributes?.title}
       </Typography>
     )
   },
@@ -159,7 +205,7 @@ const columns: GridColDef[] = [
       <CustomChip
         skin='light'
         size='small'
-        label={row.attributes.status ? 'Active' : 'Inactive'}
+        label={row.attributes?.status ? 'Active' : 'Inactive'}
         color={companyStatusObj[row.attributes.status]}
         sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
       />
@@ -175,12 +221,27 @@ const columns: GridColDef[] = [
   }
 ]
 
-const BusinessRelationList = ({ b2bRelationData }: { b2bRelationData: BusinessRelation[] }) => {
+const BusinessRelationList = () => {
   // ** State
+  const [businessRelation, setBusinessRelation] = useState<BusinessRelation[]>([])
   const [value, setValue] = useState<string>('')
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
+  }, [])
+
+  useEffect(() => {
+    // Fetch companies data from API
+    const fetchB2B = async () => {
+      try {
+        const response = await fetchDataFromApi('/b2b-relations?populate=*')
+        console.log('zitu', response.data)
+        setBusinessRelation(response.data)
+      } catch (error) {
+        console.error('Error fetching companies:', error)
+      }
+    }
+    fetchB2B()
   }, [])
 
   return (
@@ -195,7 +256,7 @@ const BusinessRelationList = ({ b2bRelationData }: { b2bRelationData: BusinessRe
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={b2bRelationData}
+              rows={businessRelation}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
@@ -209,27 +270,27 @@ const BusinessRelationList = ({ b2bRelationData }: { b2bRelationData: BusinessRe
   )
 }
 
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    const b2bRelationData = await fetchDataFromApi('/api/b2b-relations?populate=*')
+// export const getStaticProps: GetStaticProps = async () => {
+//   try {
+//     const b2bRelationData = await fetchDataFromApi('/b2b-relations?populate=*')
 
-    console.log('mydata', b2bRelationData.data[0].attributes.business_contact_id.data.attributes.name)
+//     console.log('mydata', b2bRelationData.data)
 
-    return {
-      props: {
-        b2bRelationData: b2bRelationData.data[0]
-      },
-      revalidate: 60 // Optional: This will re-generate the page every 60 seconds
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error)
+//     return {
+//       props: {
+//         b2bRelationData: b2bRelationData.data
+//       },
+//       revalidate: 60 // Optional: This will re-generate the page every 60 seconds
+//     }
+//   } catch (error) {
+//     console.error('Error fetching data:', error)
 
-    return {
-      props: {
-        b2bRelationData: []
-      }
-    }
-  }
-}
+//     return {
+//       props: {
+//         b2bRelationData: []
+//       }
+//     }
+//   }
+// }
 
 export default BusinessRelationList
