@@ -53,8 +53,8 @@ import { UserPositionType, UserRoleType } from 'src/types/apps/userTypes'
 // import { CardStatsHorizontalProps } from 'src/@core/components/card-statistics/types'
 
 // ** Custom Table Components Imports
-import TableHeader from 'src/views/apps/user/list/TableHeader'
-import AddUserDrawer from 'src/views/apps/user/list/AddUserDrawer'
+import TableHeader from 'src/views/apps/user/position/TableHeader'
+import AddUserDrawer from 'src/views/apps/user/position/AddPositionDrawer'
 import { fetchDataFromApi } from 'src/utils/api'
 import { ThemeColor } from 'src/@core/layouts/types'
 

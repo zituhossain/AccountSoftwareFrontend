@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState, SyntheticEvent, Fragment } from 'react'
+import { useState, SyntheticEvent, Fragment, useEffect } from 'react'
 
 // ** Next Import
 import { useRouter } from 'next/router'
@@ -22,6 +22,7 @@ import { useAuth } from 'src/hooks/useAuth'
 
 // ** Type Imports
 import { Settings } from 'src/@core/context/settingsContext'
+import { fetchDataFromApi } from 'src/utils/api'
 
 interface Props {
   settings: Settings
@@ -42,6 +43,8 @@ const UserDropdown = (props: Props) => {
 
   // ** States
   const [anchorEl, setAnchorEl] = useState<Element | null>(null)
+  const [userData, setUserData] = useState<any>(null)
+  console.log('image', userData?.image ? `http://127.0.0.1:1337${userData.image.url}` : '/images/avatars/1.png')
 
   // ** Hooks
   const router = useRouter()
@@ -81,6 +84,16 @@ const UserDropdown = (props: Props) => {
     handleDropdownClose()
   }
 
+  const storedUser = JSON.parse(localStorage.getItem('userData')!)
+
+  useEffect(() => {
+    ;(async () => {
+      const response = await fetchDataFromApi(`/users/${storedUser.id}?populate=*`)
+      console.log('response', response)
+      setUserData(response)
+    })()
+  }, [])
+
   return (
     <Fragment>
       <Badge
@@ -97,7 +110,7 @@ const UserDropdown = (props: Props) => {
           alt='John Doe'
           onClick={handleDropdownOpen}
           sx={{ width: 40, height: 40 }}
-          src='/images/avatars/1.png'
+          src={userData?.image ? `http://127.0.0.1:1337/${userData.image.url}` : '/images/avatars/1.png'}
         />
       </Badge>
       <Menu
@@ -118,10 +131,14 @@ const UserDropdown = (props: Props) => {
                 horizontal: 'right'
               }}
             >
-              <Avatar alt='John Doe' src='/images/avatars/1.png' sx={{ width: '2.5rem', height: '2.5rem' }} />
+              <Avatar
+                alt={userData?.username}
+                src={userData?.image ? userData?.image?.url : '/images/avatars/1.png'}
+                sx={{ width: '2.5rem', height: '2.5rem' }}
+              />
             </Badge>
             <Box sx={{ display: 'flex', ml: 3, alignItems: 'flex-start', flexDirection: 'column' }}>
-              <Typography sx={{ fontWeight: 600 }}>John Doe</Typography>
+              <Typography sx={{ fontWeight: 600 }}>{userData?.username}</Typography>
               <Typography variant='body2' sx={{ fontSize: '0.8rem', color: 'text.disabled' }}>
                 Admin
               </Typography>

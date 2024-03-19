@@ -21,7 +21,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import Icon from 'src/@core/components/icon'
 import { AppDispatch, RootState } from 'src/store'
 import { UserPositionType } from 'src/types/apps/userTypes'
-import { fetchDataFromApi, storedToken } from 'src/utils/api'
+import { fetchDataFromApi, postDataToApi, storedToken } from 'src/utils/api'
 import * as yup from 'yup'
 import authConfig from 'src/configs/auth'
 
@@ -40,6 +40,7 @@ interface UserData {
   organizational_position: number
   company: number
   role: number
+  created_user: number
 }
 
 const Header = styled(Box)({
@@ -68,10 +69,9 @@ const AddUserDrawer = ({ open, toggle }: SidebarAddUserType) => {
   const [signature, setSignature] = useState<File | null>(null)
   const [signatureImgSrc, setSignatureImgSrc] = useState<string | null>(null)
   const [companyId, setCompanyId] = useState<any>(null)
+  const [userId, setUserId] = useState<any>(null)
 
   const router = useRouter()
-
-  console.log('companyId', companyId)
 
   const handleInputProfileImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length) {
@@ -116,7 +116,8 @@ const AddUserDrawer = ({ open, toggle }: SidebarAddUserType) => {
       signature: '',
       organizational_position: 0,
       role: 1,
-      company: 0
+      company: 0,
+      created_user: 0
     }
   })
 
@@ -125,11 +126,12 @@ const AddUserDrawer = ({ open, toggle }: SidebarAddUserType) => {
       try {
         const userData = JSON.parse(localStorage.getItem(authConfig.storageUserKeyName)!)
         const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
-        if (userResponse.company) {
-          setCompanyId(userResponse.company.id)
+
+        if (userResponse) {
+          setUserId(userResponse.id)
+          if (userResponse.company) setCompanyId(userResponse.company.id)
         }
         const response = await fetchDataFromApi('/organizational-positions')
-        console.log('response', response.data)
         setPosition(response.data)
       } catch (error) {
         console.error('Error fetching positions:', error)
@@ -140,25 +142,27 @@ const AddUserDrawer = ({ open, toggle }: SidebarAddUserType) => {
 
   const onSubmit = async (data: UserData) => {
     try {
-      const formData: any = {}
-      formData['username'] = data.username
-      formData['email'] = data.email
-      formData['password'] = data.password
-      formData['confirmed'] = data.confirmed
-      formData['image'] = profile
-      formData['signature'] = signature
-      formData['organizational_position'] = data.organizational_position
-      formData['role'] = data.role
-      formData['company'] = companyId
+      const formData = new FormData()
+      formData.append('username', data.username)
+      formData.append('email', data.email)
+      formData.append('password', data.password)
+      formData.append('confirmed', data.confirmed.toString())
+      formData.append('organizational_position', data.organizational_position.toString())
+      formData.append('role', data.role.toString())
+      formData.append('company', companyId)
+      formData.append('created_user', userId)
+      formData.append('files.image', profile!)
+      formData.append('files.signature', signature!)
 
-      console.log('formData', formData)
+      // const response = await axios.post('http://localhost:1337/api/users', formData, {
+      //   headers: {
+      //     Authorization: `Bearer ${storedToken}`,
+      //     'Content-Type': 'multipart/form-data'
+      //   }
+      // })
 
-      const response = await axios.post('http://localhost:1337/api/users', formData, {
-        headers: {
-          Authorization: `Bearer ${storedToken}`,
-          'Content-Type': 'multipart/form-data'
-        }
-      })
+      const response = await postDataToApi('/users', formData)
+
       if (response.status === 201) {
         router.push('/apps/user/list')
         toggle() // Close the modal after successful submission

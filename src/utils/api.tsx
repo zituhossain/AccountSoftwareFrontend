@@ -35,7 +35,7 @@ export const postDataToApi = async (endpoint: string, data: any) => {
 
   console.log('data', data)
 
-  const res = await axios(`${API_URL}${endpoint}`, options)
+  const res = await fetch(`${API_URL}${endpoint}`, options)
 
-  return res
+  return res.json()
 }
