@@ -20,7 +20,6 @@ import Link from 'next/link'
 import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Third Party Components
-import axios from 'axios'
 
 // ** Types Imports
 import { ThemeColor } from 'src/@core/layouts/types'
@@ -135,6 +134,14 @@ const RowOptions = ({ id }: { id: number | string }) => {
 
 const columns: GridColDef[] = [
   {
+    sortable: true,
+    field: 'slNo',
+    headerName: '#',
+    flex: 0,
+    editable: false,
+    renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
+  },
+  {
     flex: 0.2,
     minWidth: 230,
     field: 'name',
@@ -195,7 +202,7 @@ const columns: GridColDef[] = [
         skin='light'
         size='small'
         label={row.attributes.status ? 'Active' : 'Inactive'}
-        color={companyStatusObj[row.attributes.status]}
+        color={companyStatusObj[row.attributes.status.toString()]}
         sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
       />
     )

@@ -32,7 +32,6 @@ import { AppDispatch } from 'src/store'
 import { Menu } from '@mui/material'
 import { deleteUser } from 'src/store/apps/user'
 import TableHeader from 'src/views/apps/accounts/journal/TableHeader'
-import { fetchDataFromApi } from 'src/utils/api'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -134,6 +133,14 @@ const RowOptions = ({ id }: { id: number | string }) => {
 
 const columns: GridColDef[] = [
   {
+    sortable: true,
+    field: 'slNo',
+    headerName: '#',
+    flex: 0,
+    editable: false,
+    renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
+  },
+  {
     flex: 0.2,
     minWidth: 230,
     field: 'journal_no',
@@ -177,7 +184,7 @@ const columns: GridColDef[] = [
         skin='light'
         size='small'
         label={row.attributes.status ? 'Active' : 'Inactive'}
-        color={companyStatusObj[row.attributes.status]}
+        color={companyStatusObj[row.attributes.status.toString()]}
         sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
       />
     )
