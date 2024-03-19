@@ -1,15 +1,15 @@
 import axios from 'axios'
-import { API_URL } from './urls'
 import authConfig from 'src/configs/auth'
+import { API_URL } from './urls'
 
 export let storedToken: string | null = null
+export let storedUser: string | null = null
 
 // Check if window is available (i.e., in a browser environment)
 if (typeof window !== 'undefined') {
   storedToken = window.localStorage.getItem(authConfig.storageTokenKeyName)
+  storedUser = window.localStorage.getItem(authConfig.storageUserKeyName)
 }
-
-console.log('storedToken', storedToken)
 
 export const fetchDataFromApi = async (endpoint: string) => {
   const options = {
@@ -33,7 +33,9 @@ export const postDataToApi = async (endpoint: string, data: any) => {
     body: data
   }
 
-  const res = await fetch(`${API_URL}${endpoint}`, options)
+  console.log('data', data)
 
-  return res.json()
+  const res = await axios(`${API_URL}${endpoint}`, options)
+
+  return res
 }

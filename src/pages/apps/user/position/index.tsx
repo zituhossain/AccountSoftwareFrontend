@@ -48,7 +48,7 @@ import { AppDispatch } from 'src/store'
 
 // import { CardStatsType } from 'src/@fake-db/types'
 // import { ThemeColor } from 'src/@core/layouts/types'
-import { UserRoleType } from 'src/types/apps/userTypes'
+import { UserPositionType, UserRoleType } from 'src/types/apps/userTypes'
 
 // import { CardStatsHorizontalProps } from 'src/@core/components/card-statistics/types'
 
@@ -96,7 +96,7 @@ const LinkStyled = styled(Link)(({ theme }) => ({
 }))
 
 // ** renders client column
-const renderClient = (row: UsersTypeFromStrapi) => {
+const renderClient = (row: UserPositionType) => {
   if (row.avatar) {
     return <CustomAvatar src={row.avatar} sx={{ mr: 3, width: 34, height: 34 }} />
   } else {
@@ -232,7 +232,7 @@ const UserList = () => {
     // Fetch companies data from API
     const fetchCompanies = async () => {
       try {
-        const response = await fetchDataFromApi('/user-roles')
+        const response = await fetchDataFromApi('/organizational-positions')
         setUserRole(response.data)
       } catch (error) {
         console.error('Error fetching companies:', error)

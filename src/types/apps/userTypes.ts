@@ -20,8 +20,8 @@ export type UsersTypeFromStrapi = {
   id: number
   username: string
   phone: string
-  role: {
-    name: string
+  organizational_position: {
+    title: string
   }
   email: string
   confirmed: boolean
@@ -33,6 +33,17 @@ export type UsersTypeFromStrapi = {
 }
 
 export type UserRoleType = {
+  id: number
+  attributes: {
+    title: string
+    status: boolean
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  }
+}
+
+export type UserPositionType = {
   id: number
   attributes: {
     title: string

@@ -72,12 +72,6 @@ const AddCompany = () => {
         formData.append('files.logo', logo)
       }
 
-      // await axios.post(`${API_URL}/companies`, formData, {
-      //   headers: {
-      //     // 'Content-Type': 'multipart/form-data',
-      //     Authorization: `Bearer ${storedToken}`
-      //   }
-      // })
       await postDataToApi('/companies', formData)
       if (storedToken) {
         router.push('/apps/company/list')
