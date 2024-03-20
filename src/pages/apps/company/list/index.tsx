@@ -146,7 +146,7 @@ const columns: GridColDef[] = [
     minWidth: 230,
     field: 'name',
     headerName: 'Company Name',
-    renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes.name}</LinkStyled>
+    renderCell: ({ row }: CellType) => <LinkStyled href={`#`}>{row.attributes.name}</LinkStyled>
   },
   {
     flex: 0.2,

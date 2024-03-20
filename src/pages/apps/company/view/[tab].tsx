@@ -16,13 +16,7 @@ const CompanyView = ({ tab, invoiceData }: InferGetStaticPropsType<typeof getSta
 
 export const getStaticPaths: GetStaticPaths = () => {
   return {
-    paths: [
-      { params: { tab: 'overview' } },
-      { params: { tab: 'security' } },
-      { params: { tab: 'billing-plan' } },
-      { params: { tab: 'notification' } },
-      { params: { tab: 'connection' } }
-    ],
+    paths: [{ params: { tab: 'overview' } }],
     fallback: false
   }
 }

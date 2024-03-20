@@ -51,7 +51,7 @@ const AddB2bRelation = () => {
         }
 
         const relation_response = await fetchDataFromApi('/b2b-relation-types')
-        const company_response = await fetchDataFromApi('/companies')
+        const company_response = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
 
         setRelationType(relation_response.data)
         setCompanies(company_response.data)

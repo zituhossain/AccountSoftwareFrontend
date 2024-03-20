@@ -124,36 +124,16 @@ const columns: GridColDef[] = [
     headerName: 'Actions',
     renderCell: ({ row }: CellType) => (
       <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Tooltip title='Delete Invoice'>
+        <Tooltip title='Delete'>
           <IconButton size='small'>
             <Icon icon='mdi:delete-outline' fontSize={20} />
           </IconButton>
         </Tooltip>
-        <Tooltip title='View'>
-          <IconButton size='small' component={Link} href={`/apps/invoice/preview/${row.id}`}>
-            <Icon icon='mdi:eye-outline' fontSize={20} />
+        <Tooltip title='Edit'>
+          <IconButton size='small' component={Link} href={`#`}>
+            <Icon icon='mdi:pencil-outline' fontSize={20} />
           </IconButton>
         </Tooltip>
-        <OptionsMenu
-          iconProps={{ fontSize: 20 }}
-          iconButtonProps={{ size: 'small' }}
-          menuProps={{ sx: { '& .MuiMenuItem-root svg': { mr: 2 } } }}
-          options={[
-            {
-              text: 'Download',
-              icon: <Icon icon='mdi:download' fontSize={20} />
-            },
-            {
-              text: 'Edit',
-              href: `/apps/invoice/edit/${row.id}`,
-              icon: <Icon icon='mdi:pencil-outline' fontSize={20} />
-            },
-            {
-              text: 'Duplicate',
-              icon: <Icon icon='mdi:content-copy' fontSize={20} />
-            }
-          ]}
-        />
       </Box>
     )
   }
@@ -176,29 +156,7 @@ const InvoiceListTable = ({ invoiceData }: Props) => {
 
   return (
     <Card>
-      <CardHeader
-        title='Invoice List'
-        sx={{ '& .MuiCardHeader-action': { m: 0 } }}
-        action={
-          <>
-            <Button
-              variant='contained'
-              aria-haspopup='true'
-              onClick={handleClick}
-              aria-expanded={open ? 'true' : undefined}
-              endIcon={<Icon icon='mdi:chevron-down' />}
-              aria-controls={open ? 'user-view-overview-export' : undefined}
-            >
-              Export
-            </Button>
-            <Menu open={open} anchorEl={anchorEl} onClose={handleClose} id='user-view-overview-export'>
-              <MenuItem onClick={handleClose}>PDF</MenuItem>
-              <MenuItem onClick={handleClose}>XLSX</MenuItem>
-              <MenuItem onClick={handleClose}>CSV</MenuItem>
-            </Menu>
-          </>
-        }
-      />
+      {/* <CardHeader title='Invoice List' sx={{ '& .MuiCardHeader-action': { m: 0 } }} /> */}
       <DataGrid
         autoHeight
         columns={columns}
