@@ -45,8 +45,32 @@ interface ContactPerson {
     code: string
     phone: string
     image: string
-    company_id: number
-    contact_type: number
+    company: {
+      data: {
+        attributes: {
+          name: string
+          code: string
+          address: string
+          email: string
+          phone: string
+          image: string
+          createdAt: string
+          updatedAt: string
+          publishedAt: string
+        }
+      }
+    }
+    contact_type: {
+      data: {
+        attributes: {
+          title: string
+          status: boolean
+          createdAt: string
+          updatedAt: string
+          publishedAt: string
+        }
+      }
+    }
     status: boolean
     createdAt: string
     updatedAt: string
@@ -177,7 +201,7 @@ const columns: GridColDef[] = [
     field: 'type',
     renderCell: ({ row }: CellType) => (
       <Typography variant='subtitle1' noWrap>
-        {row.attributes.contact_type}
+        {row.attributes?.contact_type?.data?.attributes?.title}
       </Typography>
     )
   },
@@ -188,7 +212,7 @@ const columns: GridColDef[] = [
     field: 'company',
     renderCell: ({ row }: CellType) => (
       <Typography variant='subtitle1' noWrap>
-        {row.attributes.company_id}
+        {row.attributes?.company?.data?.attributes?.name}
       </Typography>
     )
   },
@@ -230,8 +254,8 @@ const ContactPersonList = () => {
     // Fetch companies data from API
     const fetchContact = async () => {
       try {
-        const response = await fetchDataFromApi('/contact-people')
-        console.log('zitu', response.data)
+        const response = await fetchDataFromApi('/contact-people?populate=*')
+        console.log('contact', response.data)
         setContact(response.data)
       } catch (error) {
         console.error('Error fetching companies:', error)

@@ -41,20 +41,17 @@ interface Quotation {
   attributes: {
     quotation_no: string
     subject: string
-    supplier_rate: number
+    client_rate: number
     our_rate: number
-    no_of_trailers: number
+    no_of_items: number
     overweight: number
     lc_number: string
     bl_number: string
     remarks: string
     status: boolean
-    supplier_id: number
     createdAt: string
     updatedAt: string
     publishedAt: string
-    avatar: string
-    avatarColor?: ThemeColor
   }
 }
 
@@ -157,11 +154,11 @@ const columns: GridColDef[] = [
   {
     flex: 0.2,
     minWidth: 250,
-    field: 'supplier_rate',
-    headerName: 'Supplier Rate',
+    field: 'client_rate',
+    headerName: 'Client Rate',
     renderCell: ({ row }: CellType) => (
       <Typography noWrap variant='body2'>
-        {row.attributes.supplier_rate}
+        {row.attributes.client_rate}
       </Typography>
     )
   },
@@ -179,11 +176,11 @@ const columns: GridColDef[] = [
   {
     flex: 0.15,
     minWidth: 120,
-    headerName: 'No of Trailers',
-    field: 'no_of_trailers',
+    headerName: 'No of Items',
+    field: 'no_of_items',
     renderCell: ({ row }: CellType) => (
       <Typography variant='subtitle1' noWrap>
-        {row.attributes.no_of_trailers}
+        {row.attributes.no_of_items}
       </Typography>
     )
   },

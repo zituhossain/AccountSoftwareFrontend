@@ -76,7 +76,8 @@ const AddQuotation = () => {
   useEffect(() => {
     const fetchCompanyContact = async () => {
       try {
-        const response = await fetchDataFromApi('/b2b-relations')
+        const response = await fetchDataFromApi('/b2b-relations?populate=*')
+        console.log('b2b', response.data)
         setClient(response.data)
       } catch (error) {
         console.error('Error fetching data:', error)
@@ -273,7 +274,7 @@ const AddQuotation = () => {
                       <MenuItem value={0}>Select Contact</MenuItem>
                       {client.map(cl => (
                         <MenuItem key={cl.id} value={cl.id}>
-                          {cl?.id}
+                          {cl?.attributes?.client?.data?.attributes?.name}
                         </MenuItem>
                       ))}
                     </Select>

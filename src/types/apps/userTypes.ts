@@ -104,49 +104,9 @@ export type AccountHeadType = {
 
 export type BusinessRelationType = {
   id: number
-  attributes: {
-    company: {
-      data: {
-        attributes: {
-          name: string
-          code: string
-          address: string
-          email: string
-          phone: string
-          image: string
-          createdAt: string
-          updatedAt: string
-          publishedAt: string
-        }
-      }
-    }
-    client: {
-      data: {
-        attributes: {
-          name: string
-          code: string
-          address: string
-          email: string
-          phone: string
-          image: string
-          createdAt: string
-          updatedAt: string
-          publishedAt: string
-        }
-      }
-    }
-    relation_type: {
-      data: {
-        attributes: {
-          title: string
-          status: boolean
-          createdAt: string
-          updatedAt: string
-          publishedAt: string
-        }
-      }
-    }
-  }
+  company: number
+  client: number
+  relation_type: number
   status: boolean
   created_user: number
   createdAt: string
