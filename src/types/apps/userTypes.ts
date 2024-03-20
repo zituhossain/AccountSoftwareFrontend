@@ -77,6 +77,7 @@ export type ContactPersonType = {
   image?: string
   company?: number
   contact_type?: number
+  created_user?: number
   status: boolean
   createdAt?: string
   updatedAt?: string

@@ -27,6 +27,7 @@ const AddContact = () => {
   const [imgSrc, setImgSrc] = useState<string | null>(null)
   const [company, setCompany] = useState<CompanyType[]>([])
   const [contactType, setContactType] = useState<ContactType[]>([])
+  const [userId, setUserId] = useState<number>(0)
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
@@ -69,10 +70,14 @@ const AddContact = () => {
   useEffect(() => {
     const fetchCompany_Type = async () => {
       try {
-        const response = await fetchDataFromApi('/companies')
+        const userData = JSON.parse(localStorage.getItem('userData')!)
+        setUserId(userData.id)
+        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+
+        const companyResponse = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
         const response1 = await fetchDataFromApi('/contact-types')
         console.log('first', response1.data)
-        setCompany(response.data)
+        setCompany(companyResponse.data)
         setContactType(response1.data)
       } catch (error) {
         console.error('Error fetching positions:', error)
@@ -82,6 +87,7 @@ const AddContact = () => {
   }, [])
 
   const onSubmit = async (data: ContactPersonType) => {
+    data.created_user = userId
     try {
       const formData = new FormData()
       formData.append('data', JSON.stringify(data))

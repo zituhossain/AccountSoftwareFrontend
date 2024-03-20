@@ -219,9 +219,12 @@ const CompaniesList = () => {
     // Fetch companies data from API
     const fetchCompanies = async () => {
       try {
-        const response = await fetchDataFromApi('/companies')
-        console.log('companies', response.data)
-        setCompanies(response.data)
+        const userData = JSON.parse(localStorage.getItem('userData')!)
+        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+
+        const companyResponse = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
+
+        setCompanies(companyResponse.data)
       } catch (error) {
         console.error('Error fetching companies:', error)
       }

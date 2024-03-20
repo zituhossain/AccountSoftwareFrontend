@@ -16,6 +16,7 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { ContactType } from 'src/types/apps/userTypes'
 import { API_URL } from 'src/utils/urls'
 import { FormEventHandler } from 'react'
+import { storedToken } from 'src/utils/api'
 
 const AddContactType = () => {
   const router = useRouter()
@@ -42,9 +43,17 @@ const AddContactType = () => {
 
   const onSubmit = async (data: ContactType) => {
     try {
-      await axios.post(`${API_URL}/api/contact-types`, {
-        data: data
-      })
+      await axios.post(
+        `${API_URL}/contact-types`,
+        {
+          data: data
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${storedToken}`
+          }
+        }
+      )
       console.log('contact added successfully')
       router.push('/apps/company/contact-type')
     } catch (error: any) {
