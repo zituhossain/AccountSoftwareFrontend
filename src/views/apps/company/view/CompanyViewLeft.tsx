@@ -41,6 +41,7 @@ import { UsersType } from 'src/types/apps/userTypes'
 
 // ** Utils Import
 import { getInitials } from 'src/@core/utils/get-initials'
+import { STRAPI_URL } from 'src/utils/urls'
 
 interface ColorsType {
   [key: string]: ThemeColor
@@ -90,7 +91,9 @@ const Sub = styled('sub')({
   alignSelf: 'flex-end'
 })
 
-const CompanyViewLeft = () => {
+const CompanyViewLeft = ({ companyData }: { companyData: any }) => {
+  console.log('companyData===', companyData)
+
   // ** States
   const [openEdit, setOpenEdit] = useState<boolean>(false)
   const [openPlans, setOpenPlans] = useState<boolean>(false)
@@ -105,18 +108,24 @@ const CompanyViewLeft = () => {
   const handlePlansClickOpen = () => setOpenPlans(true)
   const handlePlansClose = () => setOpenPlans(false)
 
+  const {
+    attributes: { name, phone, email, website, code, address, status, legal_information, logo }
+  } = companyData
+
+  const imageUrl = `${STRAPI_URL}${logo.data.attributes.url}`
+
   if (data) {
     return (
       <Grid container spacing={6}>
         <Grid item xs={12}>
           <Card>
             <CardContent sx={{ pt: 15, display: 'flex', alignItems: 'center', flexDirection: 'column' }}>
-              {data.avatar ? (
+              {imageUrl ? (
                 <CustomAvatar
-                  src={data.avatar}
+                  src={imageUrl}
                   variant='rounded'
-                  alt={data.fullName}
-                  sx={{ width: 120, height: 120, fontWeight: 600, mb: 4 }}
+                  alt={name}
+                  sx={{ width: 'auto', height: 'auto', fontWeight: 600, mb: 4 }}
                 />
               ) : (
                 <CustomAvatar
@@ -129,67 +138,55 @@ const CompanyViewLeft = () => {
                 </CustomAvatar>
               )}
               <Typography variant='h6' sx={{ mb: 2 }}>
-                {data.fullName}
+                {name}
               </Typography>
-              <CustomChip
-                skin='light'
-                size='small'
-                label={data.role}
-                color={roleColors[data.role]}
-                sx={{
-                  height: 20,
-                  fontWeight: 600,
-                  borderRadius: '5px',
-                  fontSize: '0.875rem',
-                  textTransform: 'capitalize',
-                  '& .MuiChip-label': { mt: -0.25 }
-                }}
-              />
-            </CardContent>
-
-            <CardContent sx={{ my: 1 }}>
-              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <Box sx={{ mr: 8, display: 'flex', alignItems: 'center' }}>
-                  <CustomAvatar skin='light' variant='rounded' sx={{ mr: 3 }}>
-                    <Icon icon='mdi:check' />
-                  </CustomAvatar>
-                  <div>
-                    <Typography variant='h6' sx={{ lineHeight: 1.3 }}>
-                      1.23k
-                    </Typography>
-                    <Typography variant='body2'>Task Done</Typography>
-                  </div>
-                </Box>
-                <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                  <CustomAvatar skin='light' variant='rounded' sx={{ mr: 3 }}>
-                    <Icon icon='mdi:briefcase-variant-outline' />
-                  </CustomAvatar>
-                  <div>
-                    <Typography variant='h6' sx={{ lineHeight: 1.3 }}>
-                      568
-                    </Typography>
-                    <Typography variant='body2'>Project Done</Typography>
-                  </div>
-                </Box>
-              </Box>
             </CardContent>
 
             <CardContent>
               <Typography variant='h6'>Details</Typography>
               <Divider sx={{ mt: theme => `${theme.spacing(4)} !important` }} />
               <Box sx={{ pt: 2, pb: 1 }}>
-                <Box sx={{ display: 'flex', mb: 2.7 }}>
-                  <Typography variant='subtitle2' sx={{ mr: 2, color: 'text.primary' }}>
-                    Username:
-                  </Typography>
-                  <Typography variant='body2'>@{data.username}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', mb: 2.7 }}>
-                  <Typography variant='subtitle2' sx={{ mr: 2, color: 'text.primary' }}>
-                    Billing Email:
-                  </Typography>
-                  <Typography variant='body2'>{data.email}</Typography>
-                </Box>
+                {phone && (
+                  <Box sx={{ display: 'flex', mb: 2.7 }}>
+                    <Typography variant='subtitle2' sx={{ mr: 2, color: 'text.primary' }}>
+                      Phone:
+                    </Typography>
+                    <Typography variant='body2'>{phone}</Typography>
+                  </Box>
+                )}
+
+                {email && (
+                  <Box sx={{ display: 'flex', mb: 2.7 }}>
+                    <Typography variant='subtitle2' sx={{ mr: 2, color: 'text.primary' }}>
+                      Email:
+                    </Typography>
+                    <Typography variant='body2'>{email}</Typography>
+                  </Box>
+                )}
+
+                {website && (
+                  <Box sx={{ display: 'flex', mb: 2.7 }}>
+                    <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Website:</Typography>
+                    <Typography variant='body2'> {website}</Typography>
+                  </Box>
+                )}
+
+                {address && (
+                  <Box sx={{ display: 'flex', mb: 2.7 }}>
+                    <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Address:</Typography>
+                    <Typography variant='body2'>{address}</Typography>
+                  </Box>
+                )}
+
+                {code && (
+                  <Box sx={{ display: 'flex', mb: 2.7 }}>
+                    <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Code:</Typography>
+                    <Typography variant='body2' sx={{ textTransform: 'capitalize' }}>
+                      {code}
+                    </Typography>
+                  </Box>
+                )}
+
                 <Box sx={{ display: 'flex', mb: 2.7 }}>
                   <Typography variant='subtitle2' sx={{ mr: 2, color: 'text.primary' }}>
                     Status:
@@ -197,8 +194,8 @@ const CompanyViewLeft = () => {
                   <CustomChip
                     skin='light'
                     size='small'
-                    label={data.status}
-                    color={statusColors[data.status]}
+                    label={status === true ? 'Active' : 'Inactive'}
+                    color={statusColors[status === true ? 'active' : 'inactive']}
                     sx={{
                       height: 20,
                       fontWeight: 500,
@@ -208,28 +205,12 @@ const CompanyViewLeft = () => {
                     }}
                   />
                 </Box>
-                <Box sx={{ display: 'flex', mb: 2.7 }}>
-                  <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Role:</Typography>
-                  <Typography variant='body2' sx={{ textTransform: 'capitalize' }}>
-                    {data.role}
-                  </Typography>
-                </Box>
-                <Box sx={{ display: 'flex', mb: 2.7 }}>
-                  <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Tax ID:</Typography>
-                  <Typography variant='body2'>Tax-8894</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', mb: 2.7 }}>
-                  <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Contact:</Typography>
-                  <Typography variant='body2'>+1 {data.contact}</Typography>
-                </Box>
-                <Box sx={{ display: 'flex', mb: 2.7 }}>
-                  <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Language:</Typography>
-                  <Typography variant='body2'>English</Typography>
-                </Box>
-                <Box sx={{ display: 'flex' }}>
-                  <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Country:</Typography>
-                  <Typography variant='body2'>{data.country}</Typography>
-                </Box>
+                {legal_information && (
+                  <Box sx={{ display: 'flex', mb: 2.7 }}>
+                    <Typography sx={{ mr: 2, fontWeight: 500, fontSize: '0.875rem' }}>Legal Information:</Typography>
+                    <Typography variant='body2'>{legal_information}</Typography>
+                  </Box>
+                )}
               </Box>
             </CardContent>
 

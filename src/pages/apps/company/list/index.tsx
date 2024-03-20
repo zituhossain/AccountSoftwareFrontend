@@ -114,7 +114,7 @@ const RowOptions = ({ companyId }: { companyId: number | string }) => {
           component={Link}
           sx={{ '& svg': { mr: 2 } }}
           onClick={handleRowOptionsClose}
-          href='/apps/company/view/overview/'
+          href={`/apps/company/view/${companyId}`}
         >
           <Icon icon='mdi:eye-outline' fontSize={20} />
           View
