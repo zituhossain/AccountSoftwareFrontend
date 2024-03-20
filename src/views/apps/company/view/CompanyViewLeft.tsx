@@ -125,7 +125,7 @@ const CompanyViewLeft = ({ companyData }: { companyData: any }) => {
                   src={imageUrl}
                   variant='rounded'
                   alt={name}
-                  sx={{ width: 'auto', height: 'auto', fontWeight: 600, mb: 4 }}
+                  sx={{ width: 200, height: 200, fontWeight: 600, mb: 4 }}
                 />
               ) : (
                 <CustomAvatar

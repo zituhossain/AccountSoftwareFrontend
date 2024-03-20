@@ -59,18 +59,35 @@ const invoiceStatusObj: InvoiceStatusObj = {
 
 const columns: GridColDef[] = [
   {
-    flex: 0.2,
-    field: 'id',
-    minWidth: 90,
-    headerName: '# ID',
-    renderCell: ({ row }: CellType) => <LinkStyled href={`/apps/invoice/preview/${row.id}`}>{`#${row.id}`}</LinkStyled>
+    sortable: true,
+    field: 'slNo',
+    headerName: '#',
+    flex: 0,
+    editable: false,
+    renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
   },
   {
     flex: 0.25,
     minWidth: 90,
-    field: 'total',
-    headerName: 'Total',
-    renderCell: ({ row }: CellType) => <Typography variant='body2'>${row.attributes.name || 0}</Typography>
+    field: 'name',
+    headerName: 'Name',
+    renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes.name || 0}</Typography>
+  },
+  {
+    flex: 0.25,
+    minWidth: 90,
+    field: 'phone',
+    headerName: 'Phone',
+    renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes.phone || 0}</Typography>
+  },
+  {
+    flex: 0.25,
+    minWidth: 90,
+    field: 'position',
+    headerName: 'Position',
+    renderCell: ({ row }: CellType) => (
+      <Typography variant='body2'>{row.attributes.contact_type.data.attributes.title || 0}</Typography>
+    )
   },
   {
     flex: 0.1,

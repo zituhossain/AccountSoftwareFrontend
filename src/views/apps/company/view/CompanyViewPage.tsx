@@ -9,12 +9,11 @@ import CompanyViewLeft from 'src/views/apps/company/view/CompanyViewLeft'
 import CompanyViewRight from 'src/views/apps/company/view/CompanyViewRight'
 
 type Props = {
-  tab: string
-  invoiceData: InvoiceType[]
   companyData: any
+  contactPersonData: any
 }
 
-const CompanyView = ({ tab, invoiceData, companyData }: Props) => {
+const CompanyView = ({ companyData, contactPersonData }: Props) => {
   console.log(companyData)
 
   return (
@@ -23,7 +22,7 @@ const CompanyView = ({ tab, invoiceData, companyData }: Props) => {
         <CompanyViewLeft companyData={companyData} />
       </Grid>
       <Grid item xs={12} md={7} lg={8}>
-        <CompanyViewRight tab={tab} invoiceData={invoiceData} />
+        <CompanyViewRight contactPersonData={contactPersonData} />
       </Grid>
     </Grid>
   )

@@ -7,6 +7,7 @@ const CompanyDetails = () => {
   const router = useRouter()
   const { companyId } = router.query
   const [companyData, setCompanyData] = useState(null)
+  const [contactPersonData, setContactPersonData] = useState([])
 
   useEffect(() => {
     const fetchCompanies = async () => {
@@ -14,6 +15,12 @@ const CompanyDetails = () => {
         if (companyId) {
           const response = await fetchDataFromApi(`/companies/${companyId}?populate=*`)
           setCompanyData(response.data)
+
+          // Contact Person
+          const contactPersonResponse = await fetchDataFromApi(
+            `/contact-people?populate=*&filters[company][id][$eq]=${companyId}`
+          )
+          setContactPersonData(contactPersonResponse.data)
         }
       } catch (error) {
         console.error('Error fetching company details:', error)
@@ -24,7 +31,11 @@ const CompanyDetails = () => {
 
   return (
     <div>
-      {companyData ? <CompanyViewPage companyData={companyData} tab={''} invoiceData={[]} /> : <p>Loading...</p>}
+      {companyData ? (
+        <CompanyViewPage companyData={companyData} contactPersonData={contactPersonData} />
+      ) : (
+        <p>Loading...</p>
+      )}
     </div>
   )
 }
