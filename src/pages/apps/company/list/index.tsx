@@ -69,7 +69,7 @@ const LinkStyled = styled(Link)(({ theme }) => ({
   }
 }))
 
-const RowOptions = ({ id }: { id: number | string }) => {
+const RowOptions = ({ companyId }: { companyId: number | string }) => {
   // ** Hooks
   const dispatch = useDispatch<AppDispatch>()
 
@@ -86,7 +86,7 @@ const RowOptions = ({ id }: { id: number | string }) => {
   }
 
   const handleDelete = () => {
-    dispatch(deleteUser(id))
+    dispatch(deleteUser(companyId))
     handleRowOptionsClose()
   }
 
@@ -114,7 +114,7 @@ const RowOptions = ({ id }: { id: number | string }) => {
           component={Link}
           sx={{ '& svg': { mr: 2 } }}
           onClick={handleRowOptionsClose}
-          href='/apps/user/view/overview/'
+          href='/apps/company/view/overview/'
         >
           <Icon icon='mdi:eye-outline' fontSize={20} />
           View
@@ -202,7 +202,7 @@ const columns: GridColDef[] = [
     sortable: false,
     field: 'actions',
     headerName: 'Actions',
-    renderCell: ({ row }: CellType) => <RowOptions id={row.id} />
+    renderCell: ({ row }: CellType) => <RowOptions companyId={row.id} />
   }
 ]
 
@@ -220,6 +220,7 @@ const CompaniesList = () => {
     const fetchCompanies = async () => {
       try {
         const response = await fetchDataFromApi('/companies')
+        console.log('companies', response.data)
         setCompanies(response.data)
       } catch (error) {
         console.error('Error fetching companies:', error)
