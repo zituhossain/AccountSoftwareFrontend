@@ -44,7 +44,8 @@ const UserDropdown = (props: Props) => {
   // ** States
   const [anchorEl, setAnchorEl] = useState<Element | null>(null)
   const [userData, setUserData] = useState<any>(null)
-  console.log('image', userData?.image ? `http://127.0.0.1:1337${userData.image.url}` : '/images/avatars/1.png')
+
+  // console.log('image', userData?.image ? `http://127.0.0.1:1337${userData.image.url}` : '/images/avatars/1.png')
 
   // ** Hooks
   const router = useRouter()
@@ -89,7 +90,8 @@ const UserDropdown = (props: Props) => {
   useEffect(() => {
     ;(async () => {
       const response = await fetchDataFromApi(`/users/${storedUser.id}?populate=*`)
-      console.log('response', response)
+
+      // console.log('response', response)
       setUserData(response)
     })()
   }, [])

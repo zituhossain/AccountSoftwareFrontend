@@ -1,41 +1,34 @@
 // ** React Imports
-import { useState, forwardRef, SyntheticEvent, ForwardedRef } from 'react'
+import { ForwardedRef, SyntheticEvent, forwardRef, useState } from 'react'
 
 // ** MUI Imports
-import Card from '@mui/material/Card'
-import Table from '@mui/material/Table'
-import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
-import Tooltip from '@mui/material/Tooltip'
-import TableRow from '@mui/material/TableRow'
-import Collapse from '@mui/material/Collapse'
-import TableBody from '@mui/material/TableBody'
-import TextField from '@mui/material/TextField'
-import IconButton from '@mui/material/IconButton'
-import Typography from '@mui/material/Typography'
-import InputLabel from '@mui/material/InputLabel'
 import Box, { BoxProps } from '@mui/material/Box'
+import Card from '@mui/material/Card'
+import CardContent, { CardContentProps } from '@mui/material/CardContent'
+import Collapse from '@mui/material/Collapse'
+import Divider from '@mui/material/Divider'
 import Grid, { GridProps } from '@mui/material/Grid'
 import InputAdornment from '@mui/material/InputAdornment'
-import TableContainer from '@mui/material/TableContainer'
-import { styled, alpha, useTheme } from '@mui/material/styles'
-import Select, { SelectChangeEvent } from '@mui/material/Select'
 import MenuItem, { MenuItemProps } from '@mui/material/MenuItem'
+import Select, { SelectChangeEvent } from '@mui/material/Select'
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
 import TableCell, { TableCellBaseProps } from '@mui/material/TableCell'
-import CardContent, { CardContentProps } from '@mui/material/CardContent'
+import TableContainer from '@mui/material/TableContainer'
+import TableRow from '@mui/material/TableRow'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import { alpha, styled, useTheme } from '@mui/material/styles'
 
 // ** Icon Imports
-import Icon from 'src/@core/components/icon'
 
 // ** Third Party Imports
 import DatePicker from 'react-datepicker'
 
 // ** Configs
-import themeConfig from 'src/configs/themeConfig'
 
 // ** Types
 import { DateType } from 'src/types/forms/reactDatepickerTypes'
-import { InvoiceClientType } from 'src/types/apps/invoiceTypes'
 
 // ** Custom Component Imports
 import Repeater from 'src/@core/components/repeater'
@@ -47,9 +40,11 @@ interface PickerProps {
 interface Props {
   toggleAddCustomerDrawer: () => void
   invoiceNumber: number
-  clients: InvoiceClientType[] | undefined
-  selectedClient: InvoiceClientType | null
-  setSelectedClient: (val: InvoiceClientType | null) => void
+  clients: any
+  selectedClient: any
+  setSelectedClient: (val: any) => void
+  setFormData: any
+  formData: any
 }
 
 const CustomInput = forwardRef(({ ...props }: PickerProps, ref: ForwardedRef<HTMLElement>) => {
@@ -125,13 +120,29 @@ const tomorrowDate = now.setDate(now.getDate() + 7)
 
 const AddCard = (props: Props) => {
   // ** Props
-  const { clients, invoiceNumber, selectedClient, setSelectedClient, toggleAddCustomerDrawer } = props
+  const { clients, invoiceNumber, selectedClient, setSelectedClient, setFormData, formData } = props
+
+  console.log('invoiceNumber', invoiceNumber)
 
   // ** States
   const [count, setCount] = useState<number>(1)
   const [selected, setSelected] = useState<string>('')
   const [issueDate, setIssueDate] = useState<DateType>(new Date())
-  const [dueDate, setDueDate] = useState<DateType>(new Date(tomorrowDate))
+
+  // const [formData, setFormData] = useState<any>({
+  //   client: '',
+  //   date: new Date(),
+  //   subject: '',
+  //   bl_number: '',
+  //   lc_number: '',
+  //   remarks: '',
+  //   client_rate: '',
+  //   our_rate: '',
+  //   no_of_items: '',
+  //   overweight: ''
+  // })
+
+  // console.log('formData', formData)
 
   // ** Hook
   const theme = useTheme()
@@ -148,12 +159,21 @@ const AddCard = (props: Props) => {
   const handleInvoiceChange = (event: SelectChangeEvent) => {
     setSelected(event.target.value)
     if (clients !== undefined) {
-      setSelectedClient(clients.filter(i => i.name === event.target.value)[0])
+      setSelectedClient(clients.filter(i => i.id === event.target.value)[0])
+      setFormData({ ...formData, client: event.target.value })
     }
   }
 
-  const handleAddNewCustomer = () => {
-    toggleAddCustomerDrawer()
+  // Update formData whenever form fields change
+  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target
+    setFormData({ ...formData, [name]: value })
+  }
+
+  // Update formData whenever date picker changes
+  const handleDateChange = (date: Date, fieldName: string) => {
+    setIssueDate(date)
+    setFormData({ ...formData, [fieldName]: date })
   }
 
   return (
@@ -205,7 +225,7 @@ const AddCard = (props: Props) => {
                   id='issue-date'
                   selected={issueDate}
                   customInput={<CustomInput />}
-                  onChange={(date: Date) => setIssueDate(date)}
+                  onChange={(date: Date) => handleDateChange(date, 'date')}
                 />
               </Box>
             </Box>
@@ -222,32 +242,27 @@ const AddCard = (props: Props) => {
               Quotation To:
             </Typography>
             <Select size='small' value={selected} onChange={handleInvoiceChange} sx={{ mb: 4, width: '200px' }}>
-              <CustomSelectItem value='' onClick={handleAddNewCustomer}>
-                <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main', '& svg': { mr: 2 } }}>
-                  <Icon icon='mdi:plus' fontSize={20} />
-                  Add New Customer
-                </Box>
-              </CustomSelectItem>
+              {/* <MenuItem value={0}>Select Client</MenuItem> */}
               {clients !== undefined &&
                 clients.map(client => (
-                  <MenuItem key={client.name} value={client.name}>
-                    {client.name}
+                  <MenuItem key={client.id} value={client.id}>
+                    {client.attributes.name}
                   </MenuItem>
                 ))}
             </Select>
             {selectedClient !== null && selectedClient !== undefined ? (
               <div>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.company}
+                  {selectedClient.attributes.name}
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.address}
+                  {selectedClient.attributes.address}
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.contact}
+                  {selectedClient.attributes.phone}
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.companyEmail}
+                  {selectedClient.attributes.email}
                 </Typography>
               </div>
             ) : null}
@@ -268,6 +283,8 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
+                          onChange={e => handleInputChange(e)}
+                          name='subject'
                         />
                       </MUITableCell>
                     </TableRow>
@@ -283,6 +300,8 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
+                          onChange={e => handleInputChange(e)}
+                          name='bl_number'
                         />
                       </MUITableCell>
                     </TableRow>
@@ -297,6 +316,8 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
+                          onChange={e => handleInputChange(e)}
+                          name='lc_number'
                         />
                       </MUITableCell>
                     </TableRow>
@@ -307,7 +328,15 @@ const AddCard = (props: Props) => {
                         </Typography>
                       </MUITableCell>
                       <MUITableCell>
-                        <TextField rows={2} fullWidth multiline size='small' sx={{ mt: 3.5 }} />
+                        <TextField
+                          rows={2}
+                          fullWidth
+                          multiline
+                          size='small'
+                          sx={{ mt: 3.5 }}
+                          onChange={e => handleInputChange(e)}
+                          name='remarks'
+                        />
                       </MUITableCell>
                     </TableRow>
                   </TableBody>
@@ -336,9 +365,16 @@ const AddCard = (props: Props) => {
                           className='col-title'
                           sx={{ mb: { md: 2, xs: 0 }, color: 'text.primary' }}
                         >
-                          Supplier Rate
+                          Client Rate
                         </Typography>
-                        <TextField size='small' type='number' placeholder='' InputProps={{ inputProps: { min: 0 } }} />
+                        <TextField
+                          size='small'
+                          type='number'
+                          placeholder=''
+                          InputProps={{ inputProps: { min: 0 } }}
+                          onChange={e => handleInputChange(e)}
+                          name='client_rate'
+                        />
                       </Grid>
                       <Grid item lg={4} xs={12} sx={{ px: 4, my: { lg: 0, xs: 4 } }}>
                         <Typography
@@ -346,9 +382,16 @@ const AddCard = (props: Props) => {
                           className='col-title'
                           sx={{ mb: { md: 2, xs: 0 }, color: 'text.primary' }}
                         >
-                          Top 4 Rate
+                          Our Rate
                         </Typography>
-                        <TextField size='small' type='number' placeholder='' InputProps={{ inputProps: { min: 0 } }} />
+                        <TextField
+                          size='small'
+                          type='number'
+                          placeholder=''
+                          InputProps={{ inputProps: { min: 0 } }}
+                          onChange={e => handleInputChange(e)}
+                          name='our_rate'
+                        />
                       </Grid>
                       <Grid item lg={2} xs={12} sx={{ px: 4, my: { lg: 0, xs: 4 } }}>
                         <Typography
@@ -358,7 +401,14 @@ const AddCard = (props: Props) => {
                         >
                           No. of Items
                         </Typography>
-                        <TextField size='small' type='number' placeholder='' InputProps={{ inputProps: { min: 0 } }} />
+                        <TextField
+                          size='small'
+                          type='number'
+                          placeholder=''
+                          InputProps={{ inputProps: { min: 0 } }}
+                          onChange={e => handleInputChange(e)}
+                          name='no_of_items'
+                        />
                       </Grid>
                       <Grid item lg={2} xs={12} sx={{ px: 4, my: { lg: 0 }, mt: 2 }}>
                         <Typography
@@ -368,14 +418,16 @@ const AddCard = (props: Props) => {
                         >
                           Overweight
                         </Typography>
-                        <TextField size='small' type='number' placeholder='' InputProps={{ inputProps: { min: 0 } }} />
+                        <TextField
+                          size='small'
+                          type='number'
+                          placeholder=''
+                          InputProps={{ inputProps: { min: 0 } }}
+                          onChange={e => handleInputChange(e)}
+                          name='overweight'
+                        />
                       </Grid>
                     </Grid>
-                    <InvoiceAction>
-                      <IconButton size='small' onClick={deleteForm}>
-                        <Icon icon='mdi:close' fontSize={20} />
-                      </IconButton>
-                    </InvoiceAction>
                   </RepeatingContent>
                 </Grid>
               </Tag>
@@ -389,69 +441,41 @@ const AddCard = (props: Props) => {
       <CardContent>
         <Grid container>
           <Grid item xs={12} sm={9} sx={{ order: { sm: 1, xs: 2 } }}>
+            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', height: '100px' }}>{/* Signature Image */}</Box>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Typography
-                variant='body2'
+                variant='subtitle2'
                 sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
               >
-                Salesperson:
+                Thanking You
               </Typography>
-              <TextField
-                size='small'
-                defaultValue='Tommy Shelby'
-                sx={{ maxWidth: '150px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-              />
             </Box>
-            <TextField
-              size='small'
-              placeholder='Thanks for your business'
-              sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-            />
-          </Grid>
-          <Grid item xs={12} sm={3} sx={{ mb: { sm: 0, xs: 4 }, order: { sm: 2, xs: 1 } }}>
-            <CalcWrapper>
-              <Typography variant='body2'>Subtotal:</Typography>
-              <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: '.25px' }}>
-                $1800
+            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant='subtitle2'
+                sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+              >
+                Joyes Ahmed
               </Typography>
-            </CalcWrapper>
-            <CalcWrapper>
-              <Typography variant='body2'>Discount:</Typography>
-              <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: '.25px' }}>
-                $28
+            </Box>
+            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant='subtitle2'
+                sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+              >
+                For: Top-4 Logistics
               </Typography>
-            </CalcWrapper>
-            <CalcWrapper>
-              <Typography variant='body2'>Tax:</Typography>
-              <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: '.25px' }}>
-                21%
+            </Box>
+            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant='subtitle2'
+                sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+              >
+                Cell: +8801852244141
               </Typography>
-            </CalcWrapper>
-            <Divider
-              sx={{ mt: theme => `${theme.spacing(6)} !important`, mb: theme => `${theme.spacing(1.5)} !important` }}
-            />
-            <CalcWrapper>
-              <Typography variant='body2'>Total:</Typography>
-              <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: '.25px' }}>
-                $1690
-              </Typography>
-            </CalcWrapper>
+            </Box>
           </Grid>
         </Grid>
-      </CardContent>
-
-      <Divider sx={{ my: theme => `${theme.spacing(1)} !important` }} />
-
-      <CardContent sx={{ pt: 4 }}>
-        <InputLabel htmlFor='invoice-note'>Note:</InputLabel>
-        <TextField
-          rows={2}
-          fullWidth
-          multiline
-          id='invoice-note'
-          sx={{ '& .MuiInputBase-input': { color: 'text.secondary' } }}
-          defaultValue='It was a pleasure working with you and your team. We hope you will keep us in mind for future freelance projects. Thank You!'
-        />
       </CardContent>
     </Card>
   )

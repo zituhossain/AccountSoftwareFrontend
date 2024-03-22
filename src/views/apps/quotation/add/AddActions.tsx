@@ -23,7 +23,7 @@ const OptionsWrapper = styled(Box)<BoxProps>(() => ({
   justifyContent: 'space-between'
 }))
 
-const AddActions = () => {
+const AddActions = ({ handleSave }: any) => {
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
@@ -35,29 +35,13 @@ const AddActions = () => {
             <Button fullWidth component={Link} sx={{ mb: 3.5 }} variant='outlined' href='/apps/invoice/preview/4987'>
               Preview
             </Button>
-            <Button fullWidth variant='outlined' sx={{ mb: 3.5 }}>
+            <Button fullWidth variant='outlined' sx={{ mb: 3.5 }} onClick={handleSave}>
               Save
             </Button>
           </CardContent>
         </Card>
       </Grid>
-      <Grid item xs={12}>
-        <FormControl fullWidth>
-          <InputLabel id='payment-select'>Accept payments via</InputLabel>
-          <Select
-            fullWidth
-            defaultValue='Internet Banking'
-            label='Accept payments via'
-            labelId='payment-select'
-            sx={{ mb: 4 }}
-          >
-            <MenuItem value='Internet Banking'>Internet Banking</MenuItem>
-            <MenuItem value='Debit Card'>Debit Card</MenuItem>
-            <MenuItem value='Credit Card'>Credit Card</MenuItem>
-            <MenuItem value='Paypal'>Paypal</MenuItem>
-            <MenuItem value='UPI Transfer'>UPI Transfer</MenuItem>
-          </Select>
-        </FormControl>
+      {/* <Grid item xs={12}>
         <OptionsWrapper sx={{ mb: 1 }}>
           <InputLabel
             htmlFor='invoice-add-payment-terms'
@@ -67,25 +51,7 @@ const AddActions = () => {
           </InputLabel>
           <Switch defaultChecked id='invoice-add-payment-terms' />
         </OptionsWrapper>
-        <OptionsWrapper sx={{ mb: 1 }}>
-          <InputLabel
-            htmlFor='invoice-add-client-notes'
-            sx={{ cursor: 'pointer', fontSize: '0.875rem', color: 'text.secondary' }}
-          >
-            Client Notes
-          </InputLabel>
-          <Switch id='invoice-add-client-notes' />
-        </OptionsWrapper>
-        <OptionsWrapper>
-          <InputLabel
-            htmlFor='invoice-add-payment-stub'
-            sx={{ cursor: 'pointer', fontSize: '0.875rem', color: 'text.secondary' }}
-          >
-            Payment Stub
-          </InputLabel>
-          <Switch id='invoice-add-payment-stub' />
-        </OptionsWrapper>
-      </Grid>
+      </Grid> */}
     </Grid>
   )
 }
