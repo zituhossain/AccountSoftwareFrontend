@@ -173,10 +173,15 @@ const ContactTypeList = () => {
 
   const handleDeleteConfirm = async () => {
     if (deleteId !== null) {
-      await deleteDataFromApi(`/contact-types/${deleteId}`)
-      setContact(contact.filter(item => item.id !== deleteId))
-      setDialogOpen(false)
-      toast.success('Contact type deleted successfully')
+      try {
+        await deleteDataFromApi(`/contact-types/${deleteId}`)
+        setContact(contact.filter(item => item.id !== deleteId))
+        setDialogOpen(false)
+        toast.success('Contact type deleted successfully')
+      } catch (error) {
+        console.error('Error deleting contact type:', error)
+        toast.error('Failed to delete contact type')
+      }
     }
   }
 

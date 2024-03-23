@@ -1,26 +1,27 @@
-import { useState } from 'react'
-import Box from '@mui/material/Box'
-import Typography from '@mui/material/Typography'
-import Card from '@mui/material/Card'
-import Grid from '@mui/material/Grid'
-import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
-import TextField from '@mui/material/TextField'
-import CardHeader from '@mui/material/CardHeader'
-import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
-import { FormControlLabel, Switch } from '@mui/material'
-import { useRouter } from 'next/navigation'
-import * as yup from 'yup'
-import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { CompanyType } from 'src/types/apps/userTypes'
-import { FormEventHandler } from 'react'
-import { postDataToApi, storedToken } from 'src/utils/api'
+import { FormControlLabel, Switch } from '@mui/material'
+import Box from '@mui/material/Box'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardActions from '@mui/material/CardActions'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import Divider from '@mui/material/Divider'
+import Grid from '@mui/material/Grid'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import { useRouter } from 'next/router'
+import { FormEventHandler, useEffect, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
+import { CompanyType } from 'src/types/apps/userTypes'
+import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
+import { STRAPI_URL } from 'src/utils/urls'
+import * as yup from 'yup'
 
 const AddCompany = () => {
   const router = useRouter()
+  const { id } = router.query
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
@@ -51,6 +52,8 @@ const AddCompany = () => {
   const [logo, setLogo] = useState<File | null>(null)
   const [imgSrc, setImgSrc] = useState<string | null>(null)
 
+  console.log('imgSrc', imgSrc)
+
   const handleInputImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length) {
       const selectedFile = e.target.files[0]
@@ -64,29 +67,64 @@ const AddCompany = () => {
     setImgSrc(null)
   }
 
-  const onSubmit = async (data: CompanyType) => {
-    try {
-      const formData = new FormData()
-      formData.append('data', JSON.stringify(data))
-      if (logo) {
-        formData.append('files.logo', logo)
-      }
+  useEffect(() => {
+    const fetchCompanyData = async () => {
+      if (id) {
+        try {
+          const response = await fetchDataFromApi(`/companies/${id}?populate=*`)
+          const {
+            data: { attributes }
+          } = response
 
-      await postDataToApi('/companies', formData)
-      if (storedToken) {
-        router.push('/apps/company/list')
-        toast.success('Company added successfully')
-      } else {
-        toast.error('Something went wrong! Please try again.')
+          // Set the form values using reset
+          reset({
+            ...attributes,
+            status: attributes.status || false, // Ensure a boolean value for the switch
+            logo: attributes.logo?.data?.id // Set logo ID if available, or null
+          })
+
+          // If there's an existing logo, set it for preview
+          if (attributes.logo?.data?.attributes?.url) {
+            setImgSrc(`${STRAPI_URL}${attributes.logo.data.attributes.url}`) // Prepend API_URL if needed
+          }
+        } catch (error: any) {
+          console.error('Error fetching company data:', error.message)
+        }
       }
+    }
+
+    fetchCompanyData()
+  }, [id, reset])
+
+  const onSubmit = async (data: CompanyType) => {
+    console.log('Form data before appending:', data)
+
+    const formData = new FormData()
+    formData.append('data', JSON.stringify(data))
+    if (logo) {
+      formData.append('files.logo', logo)
+    }
+
+    try {
+      if (id) {
+        // Update existing company
+        await putDataToApi(`/companies/${id}`, formData)
+        toast.success('Company updated successfully')
+      } else {
+        // Add new company
+        await postDataToApiAxios('/companies', formData)
+        toast.success('Company added successfully')
+      }
+      router.push('/apps/company/list')
     } catch (error: any) {
-      console.error('Error adding company:', error.message)
+      console.error('Error saving company:', error.message)
+      toast.error('Something went wrong! Please try again.')
     }
   }
 
   return (
     <Card>
-      <CardHeader title='Add Company' />
+      <CardHeader title={id ? 'Edit Company' : 'Add Company'} />
       <Divider sx={{ m: '0 !important' }} />
       <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
@@ -254,7 +292,7 @@ const AddCompany = () => {
         <Divider sx={{ m: '0 !important' }} />
         <CardActions>
           <Button size='large' type='submit' sx={{ mr: 2 }} variant='contained'>
-            Submit
+            {id ? 'Update' : 'Submit'}
           </Button>
           <Button type='reset' size='large' color='secondary' variant='outlined'>
             Reset

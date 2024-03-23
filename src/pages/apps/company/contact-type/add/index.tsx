@@ -59,12 +59,14 @@ const AddContactType = () => {
   }, [id, reset])
 
   const onSubmit = async (data: ContactType) => {
+    const formData = new FormData()
+    formData.append('data', JSON.stringify(data))
     try {
       if (id) {
-        await putDataToApi(`/contact-types/${id}`, data)
+        await putDataToApi(`/contact-types/${id}`, formData)
         toast.success('Contact type updated successfully')
       } else {
-        await postDataToApiAxios('/contact-types', data)
+        await postDataToApiAxios('/contact-types', formData)
         toast.success('Contact type added successfully')
       }
       router.push('/apps/company/contact-type')

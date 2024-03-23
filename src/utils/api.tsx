@@ -24,7 +24,7 @@ export const fetchDataFromApi = async (endpoint: string) => {
   return res.data
 }
 
-export const postDataToApi = async (endpoint: string, data: any) => {
+export const postDataToApiFetch = async (endpoint: string, data: any) => {
   const options = {
     method: 'POST',
     headers: {
@@ -40,45 +40,57 @@ export const postDataToApi = async (endpoint: string, data: any) => {
   return res.json()
 }
 
-// AXIOS
-
-export const putDataToApi = async (endpoint: string, data: any) => {
+export const postDataToApiAxios = async (endpoint: string, formData: FormData) => {
   try {
-    const response = await axios.put(
-      `${API_URL}${endpoint}`,
-      { data },
-      {
-        headers: {
-          Authorization: `Bearer ${storedToken}`
-        }
+    const response = await axios.post(`${API_URL}${endpoint}`, formData, {
+      headers: {
+        Authorization: `Bearer ${storedToken}`
       }
-    )
-    console.log('Data updated successfully:', response.data)
+    })
+    console.log('Data added successfully:', response.data)
+
+    return response.data
+  } catch (error: any) {
+    console.error('Error posting data:', error.response ? error.response.data : error)
+    throw error
+  }
+}
+
+// export const putDataToApi = async (endpoint: string, data: any) => {
+//   try {
+//     const response = await axios.put(
+//       `${API_URL}${endpoint}`,
+//       { data },
+//       {
+//         headers: {
+//           Authorization: `Bearer ${storedToken}`
+//         }
+//       }
+//     )
+//     console.log('Data updated successfully:', response.data)
+
+//     return response.data
+//   } catch (error) {
+//     console.error('Error updating data:', error)
+//     throw error // Rethrow the error for handling by the calling function
+//   }
+// }
+
+export const putDataToApi = async (endpoint: string, formData: FormData) => {
+  try {
+    const response = await axios.put(`${API_URL}${endpoint}`, formData, {
+      headers: {
+        Authorization: `Bearer ${storedToken}`
+
+        // 'Content-Type': 'multipart/form-data'
+      }
+    })
+    console.log('Update successful:', response.data)
 
     return response.data
   } catch (error) {
     console.error('Error updating data:', error)
-    throw error // Rethrow the error for handling by the calling function
-  }
-}
-
-export const postDataToApiAxios = async (endpoint: string, data: any) => {
-  try {
-    const response = await axios.post(
-      `${API_URL}${endpoint}`,
-      { data },
-      {
-        headers: {
-          Authorization: `Bearer ${storedToken}`
-        }
-      }
-    )
-    console.log('Data added successfully:', response.data)
-
-    return response.data
-  } catch (error) {
-    console.error('Error posting data:', error)
-    throw error // Rethrow the error for handling by the calling function
+    throw error
   }
 }
 
