@@ -1,16 +1,15 @@
 // ** React Imports
-import { useState, MouseEvent, useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
 import Grid from '@mui/material/Grid'
-import { styled } from '@mui/material/styles'
 import MenuItem from '@mui/material/MenuItem'
-import IconButton from '@mui/material/IconButton'
+import { styled } from '@mui/material/styles'
 
 // import Typography from '@mui/material/Typography'
-import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
 // ** Icon Imports
@@ -23,14 +22,12 @@ import CustomChip from 'src/@core/components/mui/chip'
 // ** Third Party Components
 
 // ** Types Imports
-import { ThemeColor } from 'src/@core/layouts/types'
-import { useDispatch } from 'react-redux'
-import { AppDispatch } from 'src/store'
-import { Menu } from '@mui/material'
-import { deleteUser } from 'src/store/apps/user'
-import TableHeader from 'src/views/apps/company/contact-type/list/TableHeader'
-import { fetchDataFromApi } from 'src/utils/api'
 import router from 'next/router'
+import { ThemeColor } from 'src/@core/layouts/types'
+import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
+import TableHeader from 'src/views/apps/company/contact-type/list/TableHeader'
+import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
+import toast from 'react-hot-toast'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -69,6 +66,9 @@ const ContactTypeList = () => {
   const [contact, setContact] = useState<ContactType[]>([])
   const [value, setValue] = useState<string>('')
 
+  const [deleteId, setDeleteId] = useState<string | number | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
+
   const handleFilter = useCallback((val: string) => {
     setValue(val)
   }, [])
@@ -87,80 +87,45 @@ const ContactTypeList = () => {
     fetchContact()
   }, [])
 
-  const handleEdit = (id: number) => {
+  const handleEdit = (id: string | number) => {
     // Find the contact type by id
     const selectedContact = contact.find(item => item.id === id)
     if (selectedContact) {
-      // Redirect to AddContactType component with the contact type data for editing
-      // router.push(`/add-contact-type?id=${selectedContact.id}`)
-
       router.push(`/apps/company/contact-type/add?id=${selectedContact.id}`)
     }
   }
 
   const RowOptions = ({ id }: { id: number | string }) => {
     // ** Hooks
-    const dispatch = useDispatch<AppDispatch>()
 
     // ** State
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+    // const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
 
-    const rowOptionsOpen = Boolean(anchorEl)
+    // const rowOptionsOpen = Boolean(anchorEl)
 
-    const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
-      setAnchorEl(event.currentTarget)
-    }
-    const handleRowOptionsClose = () => {
-      setAnchorEl(null)
-    }
+    // const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
+    //   setAnchorEl(event.currentTarget)
+    // }
+    // const handleRowOptionsClose = () => {
+    //   setAnchorEl(null)
+    // }
 
-    const handleEditClick = (id: number) => {
+    const handleEditClick = (id: string | number) => {
       handleEdit(id)
     }
 
-    const handleDelete = () => {
-      dispatch(deleteUser(id))
-      handleRowOptionsClose()
-    }
+    // const handleDelete = async () => {
+    //   await deleteDataFromApi(`/contact-types/${id}`)
+    // }
 
     return (
       <>
-        <IconButton size='small' onClick={handleRowOptionsClick}>
-          <Icon icon='mdi:dots-vertical' />
-        </IconButton>
-        <Menu
-          keepMounted
-          anchorEl={anchorEl}
-          open={rowOptionsOpen}
-          onClose={handleRowOptionsClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right'
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right'
-          }}
-          PaperProps={{ style: { minWidth: '8rem' } }}
-        >
-          <MenuItem
-            component={Link}
-            sx={{ '& svg': { mr: 2 } }}
-            onClick={handleRowOptionsClose}
-            href='/apps/user/view/overview/'
-          >
-            <Icon icon='mdi:eye-outline' fontSize={20} />
-            View
-          </MenuItem>
-          <MenuItem onClick={() => handleEditClick(id)} sx={{ '& svg': { mr: 2 } }}>
-            <Icon icon='mdi:pencil-outline' fontSize={20} />
-            Edit
-          </MenuItem>
-          <MenuItem onClick={handleDelete} sx={{ '& svg': { mr: 2 } }}>
-            <Icon icon='mdi:delete-outline' fontSize={20} />
-            Delete
-          </MenuItem>
-        </Menu>
+        <MenuItem onClick={() => handleEditClick(id)} sx={{ '& svg': { mr: 2 } }}>
+          <Icon icon='mdi:pencil-outline' fontSize={20} />
+        </MenuItem>
+        <MenuItem onClick={() => handleDeleteClick(id)} sx={{ '& svg': { mr: 2 } }}>
+          <Icon icon='mdi:delete-outline' fontSize={20} />
+        </MenuItem>
       </>
     )
   }
@@ -179,7 +144,7 @@ const ContactTypeList = () => {
       minWidth: 230,
       field: 'title',
       headerName: 'Title',
-      renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes.title}</LinkStyled>
+      renderCell: ({ row }: CellType) => <LinkStyled href={'#'}>{row.attributes.title}</LinkStyled>
     },
     {
       flex: 0.1,
@@ -206,6 +171,24 @@ const ContactTypeList = () => {
     }
   ]
 
+  const handleDeleteConfirm = async () => {
+    if (deleteId !== null) {
+      await deleteDataFromApi(`/contact-types/${deleteId}`)
+      setContact(contact.filter(item => item.id !== deleteId))
+      setDialogOpen(false)
+      toast.success('Contact type deleted successfully')
+    }
+  }
+
+  const handleDeleteClick = (id: string | number) => {
+    setDeleteId(id)
+    setDialogOpen(true)
+  }
+
+  const handleDialogClose = () => {
+    setDialogOpen(false)
+  }
+
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
@@ -226,6 +209,13 @@ const ContactTypeList = () => {
           </CardContent>
         </Card>
       </Grid>
+      <ConfirmDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        onConfirm={handleDeleteConfirm}
+        title='Confirm Deletion'
+        message='Are you sure you want to delete this contact type?'
+      />
     </Grid>
   )
 }

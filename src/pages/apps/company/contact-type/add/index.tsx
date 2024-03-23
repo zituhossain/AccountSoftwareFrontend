@@ -1,24 +1,23 @@
-import { useEffect } from 'react'
-import axios from 'axios'
-import { useRouter } from 'next/router'
-import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import * as yup from 'yup'
-import { API_URL } from 'src/utils/urls'
-import { storedToken } from 'src/utils/api'
 import {
-  Card,
-  Grid,
   Button,
-  Divider,
-  TextField,
-  CardHeader,
-  CardContent,
+  Card,
   CardActions,
+  CardContent,
+  CardHeader,
+  Divider,
   FormControlLabel,
-  Switch
+  Grid,
+  Switch,
+  TextField
 } from '@mui/material'
+import { useRouter } from 'next/router'
+import { FormEventHandler, useEffect } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 import { ContactType } from 'src/types/apps/userTypes'
+import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
+import * as yup from 'yup'
 
 const AddContactType = () => {
   const router = useRouter()
@@ -28,52 +27,49 @@ const AddContactType = () => {
     title: yup.string().required('Title is required')
   })
 
+  const defaultValues = { title: '', status: true }
+
   const {
     handleSubmit,
     control,
     reset,
-    setValue,
     formState: { errors }
+
+    // setValue
   } = useForm<ContactType>({
     resolver: yupResolver(schema),
-    defaultValues: { title: '', status: true }
+    defaultValues: defaultValues
   })
-
   useEffect(() => {
-    if (id) {
-      axios
-        .get(`${API_URL}/contact-types/${id}`)
-        .then(response => {
-          const { title, status } = response.data
-          setValue('title', title)
-          setValue('status', status)
-        })
-        .catch(error => {
-          console.error('Error fetching contact type:', error.message)
-        })
+    const fetchData = async () => {
+      try {
+        if (id) {
+          const response = await fetchDataFromApi(`/contact-types/${id}`)
+          const {
+            data: { attributes }
+          } = response
+          reset(attributes)
+        }
+      } catch (error: any) {
+        console.error('Error fetching contact type:', error.message)
+      }
     }
-  }, [id, setValue])
+
+    fetchData()
+  }, [id, reset])
 
   const onSubmit = async (data: ContactType) => {
     try {
       if (id) {
-        await axios.put(
-          `${API_URL}/contact-types/${id}`,
-          { data: data },
-          { headers: { Authorization: `Bearer ${storedToken}` } }
-        )
-        console.log('Contact type updated successfully')
+        await putDataToApi(`/contact-types/${id}`, data)
+        toast.success('Contact type updated successfully')
       } else {
-        await axios.post(
-          `${API_URL}/contact-types`,
-          { data: data },
-          { headers: { Authorization: `Bearer ${storedToken}` } }
-        )
-        console.log('Contact type added successfully')
+        await postDataToApiAxios('/contact-types', data)
+        toast.success('Contact type added successfully')
       }
       router.push('/apps/company/contact-type')
     } catch (error) {
-      console.error('Error saving contact type:', error.message)
+      toast.error('Something went wrong! Please try again.')
     }
   }
 
@@ -81,7 +77,7 @@ const AddContactType = () => {
     <Card>
       <CardHeader title={id ? 'Edit Contact Type' : 'Add Contact Type'} />
       <Divider sx={{ m: '0 !important' }} />
-      <form onSubmit={handleSubmit(onSubmit)} onReset={reset}>
+      <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
           <Grid container spacing={5}>
             <Grid item xs={12} sm={6}>
@@ -105,7 +101,9 @@ const AddContactType = () => {
               <Controller
                 name='status'
                 control={control}
-                render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
+                render={({ field }) => (
+                  <FormControlLabel control={<Switch {...field} checked={field.value} />} label='Status' />
+                )}
               />
             </Grid>
           </Grid>

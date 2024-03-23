@@ -39,3 +39,61 @@ export const postDataToApi = async (endpoint: string, data: any) => {
 
   return res.json()
 }
+
+// AXIOS
+
+export const putDataToApi = async (endpoint: string, data: any) => {
+  try {
+    const response = await axios.put(
+      `${API_URL}${endpoint}`,
+      { data },
+      {
+        headers: {
+          Authorization: `Bearer ${storedToken}`
+        }
+      }
+    )
+    console.log('Data updated successfully:', response.data)
+
+    return response.data
+  } catch (error) {
+    console.error('Error updating data:', error)
+    throw error // Rethrow the error for handling by the calling function
+  }
+}
+
+export const postDataToApiAxios = async (endpoint: string, data: any) => {
+  try {
+    const response = await axios.post(
+      `${API_URL}${endpoint}`,
+      { data },
+      {
+        headers: {
+          Authorization: `Bearer ${storedToken}`
+        }
+      }
+    )
+    console.log('Data added successfully:', response.data)
+
+    return response.data
+  } catch (error) {
+    console.error('Error posting data:', error)
+    throw error // Rethrow the error for handling by the calling function
+  }
+}
+
+export const deleteDataFromApi = async (endpoint: string) => {
+  try {
+    const response = await axios.delete(`${API_URL}${endpoint}`, {
+      headers: {
+        Authorization: `Bearer ${storedToken}`
+      }
+    })
+    console.log('Data deleted successfully:', response.data)
+
+    return response.data
+  } catch (error) {
+    console.error('Error updating data:', error)
+    throw error // Rethrow the error for handling by the calling function
+  }
+}
