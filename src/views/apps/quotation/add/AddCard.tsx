@@ -122,8 +122,6 @@ const AddCard = (props: Props) => {
   // ** Props
   const { clients, invoiceNumber, selectedClient, setSelectedClient, setFormData, formData } = props
 
-  console.log('invoiceNumber', invoiceNumber)
-
   // ** States
   const [count, setCount] = useState<number>(1)
   const [selected, setSelected] = useState<string>('')

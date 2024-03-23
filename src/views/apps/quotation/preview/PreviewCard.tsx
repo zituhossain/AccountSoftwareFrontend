@@ -37,7 +37,9 @@ const CalcWrapper = styled(Box)<BoxProps>(({ theme }) => ({
   }
 }))
 
-const PreviewCard = ({ data }: Props) => {
+const PreviewCard = ({ data }: any) => {
+  console.log('data: from preview card', data.attributes.quotation_no)
+
   // ** Hook
   const theme = useTheme()
 
@@ -141,10 +143,10 @@ const PreviewCard = ({ data }: Props) => {
                   <TableBody>
                     <TableRow>
                       <MUITableCell>
-                        <Typography variant='h6'>Invoice</Typography>
+                        <Typography variant='h6'>Quotation</Typography>
                       </MUITableCell>
                       <MUITableCell>
-                        <Typography variant='h6'>{`#${data.invoice.id}`}</Typography>
+                        <Typography variant='h6'>{`#${data.attributes.quotation_no}`}</Typography>
                       </MUITableCell>
                     </TableRow>
                     <TableRow>
@@ -152,15 +154,7 @@ const PreviewCard = ({ data }: Props) => {
                         <Typography variant='body2'>Date Issued:</Typography>
                       </MUITableCell>
                       <MUITableCell>
-                        <Typography variant='body2'>{data.invoice.issuedDate}</Typography>
-                      </MUITableCell>
-                    </TableRow>
-                    <TableRow>
-                      <MUITableCell>
-                        <Typography variant='body2'>Date Due:</Typography>
-                      </MUITableCell>
-                      <MUITableCell>
-                        <Typography variant='body2'>{data.invoice.dueDate}</Typography>
+                        <Typography variant='body2'>{data.attributes.date}</Typography>
                       </MUITableCell>
                     </TableRow>
                   </TableBody>
@@ -178,7 +172,7 @@ const PreviewCard = ({ data }: Props) => {
           <Grid container>
             <Grid item xs={12} sm={6} sx={{ mb: { lg: 0, xs: 4 } }}>
               <Typography variant='subtitle2' sx={{ mb: 3, color: 'text.primary', letterSpacing: '.1px' }}>
-                Invoice To:
+                Quotation To:
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
                 {/* {data.invoice.name} */}
@@ -193,7 +187,7 @@ const PreviewCard = ({ data }: Props) => {
                 Plot-4,Block-b, Tongi, Gazipur, Bangladesh
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
-                {data.invoice.contact}
+                {/* {data.invoice.contact} */}
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
                 {/* {data.invoice.companyEmail} */}
@@ -201,20 +195,12 @@ const PreviewCard = ({ data }: Props) => {
             </Grid>
             <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: ['flex-start', 'flex-end'] }}>
               <div>
-                <Typography variant='subtitle2' sx={{ mb: 3, color: 'text.primary', letterSpacing: '.1px' }}>
-                  Subject:
-                </Typography>
                 <TableContainer>
                   <Table>
                     <TableBody>
                       <TableRow>
                         <MUITableCell>
-                          <Typography variant='subtitle2'>Chittagong Port To S.S Steel</Typography>
-                        </MUITableCell>
-                      </TableRow>
-                      <TableRow>
-                        <MUITableCell>
-                          <Typography variant='body2'>Carrying Bill No:</Typography>
+                          <Typography variant='body2'>Subject:</Typography>
                         </MUITableCell>
                         <MUITableCell>
                           <Typography variant='body2'>TFL2014/2024</Typography>
@@ -260,11 +246,10 @@ const PreviewCard = ({ data }: Props) => {
           <Table>
             <TableHead>
               <TableRow>
-                <TableCell>Vehical No</TableCell>
-                <TableCell>Container Number</TableCell>
-                <TableCell>Rent</TableCell>
+                <TableCell>Client Rate</TableCell>
+                <TableCell>Our Rate</TableCell>
+                <TableCell>No. of Items</TableCell>
                 <TableCell>Overweight</TableCell>
-                <TableCell>Total</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -273,83 +258,59 @@ const PreviewCard = ({ data }: Props) => {
                 <TableCell>FCUI-389098</TableCell>
                 <TableCell>40,000</TableCell>
                 <TableCell>3000</TableCell>
-                <TableCell>43000</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>CMDA81-4372</TableCell>
                 <TableCell>FCUI-389098</TableCell>
                 <TableCell>40,000</TableCell>
                 <TableCell>3000</TableCell>
-                <TableCell>43000</TableCell>
               </TableRow>
               <TableRow>
                 <TableCell>CMDA81-4372</TableCell>
                 <TableCell>FCUI-389098</TableCell>
                 <TableCell>40,000</TableCell>
                 <TableCell>3000</TableCell>
-                <TableCell>43000</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>CMDA81-4372</TableCell>
-                <TableCell>FCUI-389098</TableCell>
-                <TableCell>40,000</TableCell>
-                <TableCell>3000</TableCell>
-                <TableCell>43000</TableCell>
               </TableRow>
             </TableBody>
           </Table>
         </TableContainer>
 
-        <CardContent sx={{ pt: 8 }}>
+        <CardContent>
           <Grid container>
-            <Grid item xs={12} sm={7} lg={9} sx={{ order: { sm: 1, xs: 2 } }}>
-              <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+            <Grid item xs={12} sm={9} sx={{ order: { sm: 1, xs: 2 } }}>
+              <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', height: '100px' }}>{/* Signature Image */}</Box>
+              <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
                 <Typography
-                  variant='body2'
+                  variant='subtitle2'
                   sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
                 >
-                  In Word:
+                  Thanking You
                 </Typography>
-                <Typography variant='body2'>One Lakh seventy thousand taka only</Typography>
               </Box>
-              <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
+              <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
                 <Typography
-                  variant='body2'
+                  variant='subtitle2'
                   sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
                 >
-                  Account Name:
+                  Joyes Ahmed
                 </Typography>
-                <Typography variant='body2'>Top 4 Logistics, A/C No: 123456789, UCB, Kawranbazar branch</Typography>
               </Box>
-            </Grid>
-            <Grid item xs={12} sm={5} lg={3} sx={{ mb: { sm: 0, xs: 4 }, order: { sm: 2, xs: 1 } }}>
-              <CalcWrapper>
-                <Typography variant='body2'>Subtotal:</Typography>
-                <Typography variant='body2' sx={{ color: 'text.primary', letterSpacing: '.25px', fontWeight: 600 }}>
-                  172000
+              <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+                <Typography
+                  variant='subtitle2'
+                  sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+                >
+                  For: Top-4 Logistics
                 </Typography>
-              </CalcWrapper>
-              <CalcWrapper>
-                <Typography variant='body2'>Discount:</Typography>
-                <Typography variant='body2' sx={{ color: 'text.primary', letterSpacing: '.25px', fontWeight: 600 }}>
-                  2000
+              </Box>
+              <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+                <Typography
+                  variant='subtitle2'
+                  sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+                >
+                  Cell: +8801852244141
                 </Typography>
-              </CalcWrapper>
-              {/* <CalcWrapper>
-                <Typography variant='body2'>Tax:</Typography>
-                <Typography variant='body2' sx={{ color: 'text.primary', letterSpacing: '.25px', fontWeight: 600 }}>
-                  21%
-                </Typography>
-              </CalcWrapper> */}
-              <Divider
-                sx={{ mt: theme => `${theme.spacing(5)} !important`, mb: theme => `${theme.spacing(3)} !important` }}
-              />
-              <CalcWrapper>
-                <Typography variant='body2'>Total:</Typography>
-                <Typography variant='body2' sx={{ color: 'text.primary', letterSpacing: '.25px', fontWeight: 600 }}>
-                  170000
-                </Typography>
-              </CalcWrapper>
+              </Box>
             </Grid>
           </Grid>
         </CardContent>

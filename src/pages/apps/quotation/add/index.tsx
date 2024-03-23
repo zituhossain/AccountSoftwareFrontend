@@ -54,18 +54,15 @@ const QuotationAdd = () => {
       try {
         const userData = JSON.parse(localStorage.getItem('userData')!)
         const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
-        console.log('uderResponse', userData.id)
 
         // Fetch the latest quotation number
         const quoteResponse = await fetchDataFromApi(`/quotations`)
-        console.log('quoteResponse', quoteResponse.data)
 
         // Extract IDs from each quotation object
         const ids = quoteResponse.length > 0 ? quoteResponse.data.map((quote: any) => quote.attributes.quotation_no) : 0
 
         // Find the maximum ID
-        console.log('ids', ids)
-        const maxId = Math.max(...ids)
+        const maxId = ids !== 0 ? Math.max(...ids) : 0
 
         // Generate the next quotation number
         const nextQuotationNumber = maxId + 1
@@ -111,8 +108,6 @@ const QuotationAdd = () => {
       setClients(companyResponse.data)
     })()
   }, [])
-
-  console.log('quotationNo', quotationNo)
 
   return (
     <DatePickerWrapper sx={{ '& .react-datepicker-wrapper': { width: 'auto' } }}>

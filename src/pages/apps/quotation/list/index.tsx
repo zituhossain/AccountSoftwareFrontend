@@ -28,7 +28,8 @@ import { AppDispatch } from 'src/store'
 import { Menu } from '@mui/material'
 import { deleteUser } from 'src/store/apps/user'
 import TableHeader from 'src/views/apps/quotation/TableHeader'
-import { fetchDataFromApi } from 'src/utils/api'
+import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
+import axios from 'axios'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -86,9 +87,9 @@ const RowOptions = ({ id }: { id: number | string }) => {
     setAnchorEl(null)
   }
 
-  const handleDelete = () => {
-    dispatch(deleteUser(id))
-    handleRowOptionsClose()
+  const handleDelete = async () => {
+    // const response = await deleteDataFromApi(`/quotations/${id}`)
+    // console.log('response', response)
   }
 
   return (
@@ -115,7 +116,7 @@ const RowOptions = ({ id }: { id: number | string }) => {
           component={Link}
           sx={{ '& svg': { mr: 2 } }}
           onClick={handleRowOptionsClose}
-          href='/apps/user/view/overview/'
+          href={`/apps/quotation/preview/${id}`}
         >
           <Icon icon='mdi:eye-outline' fontSize={20} />
           View
@@ -234,7 +235,6 @@ const Quotation = () => {
     const fetchQuotaiton = async () => {
       try {
         const response = await fetchDataFromApi('/quotations')
-        console.log('zitu', response.data)
         setQuotation(response.data)
       } catch (error) {
         console.error('Error fetching contact type:', error)
