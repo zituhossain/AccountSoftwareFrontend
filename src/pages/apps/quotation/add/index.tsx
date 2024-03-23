@@ -61,9 +61,10 @@ const QuotationAdd = () => {
         console.log('quoteResponse', quoteResponse.data)
 
         // Extract IDs from each quotation object
-        const ids = quoteResponse.data.map((quote: any) => quote.attributes.quotation_no)
+        const ids = quoteResponse.length > 0 ? quoteResponse.data.map((quote: any) => quote.attributes.quotation_no) : 0
 
         // Find the maximum ID
+        console.log('ids', ids)
         const maxId = Math.max(...ids)
 
         // Generate the next quotation number
