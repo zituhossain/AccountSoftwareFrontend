@@ -18,7 +18,7 @@ import AddCard from 'src/views/apps/quotation/add/AddCard'
 // ** Styled Component
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import { CompanyType } from 'src/types/apps/userTypes'
-import { fetchDataFromApi, postDataToApi } from 'src/utils/api'
+import { fetchDataFromApi, postDataToApi, postDataToApiAxios } from 'src/utils/api'
 import toast from 'react-hot-toast'
 import { useRouter } from 'next/navigation'
 
@@ -50,36 +50,52 @@ const QuotationAdd = () => {
   const router = useRouter()
 
   useEffect(() => {
-    const fetchPositions = async () => {
+    const fetchQuotationData = async () => {
       try {
         const userData = JSON.parse(localStorage.getItem('userData')!)
         const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
 
-        // Fetch the latest quotation number
+        // Fetch the latest quotation data
         const quoteResponse = await fetchDataFromApi(`/quotations`)
 
-        // Extract IDs from each quotation object
-        const ids = quoteResponse.length > 0 ? quoteResponse.data.map((quote: any) => quote.attributes.quotation_no) : 0
+        if (quoteResponse && quoteResponse.data && quoteResponse.data.length > 0) {
+          // Extract quotation numbers from each quotation object
+          const quotationNumbers = quoteResponse.data.map((quote: any) => parseInt(quote.attributes.quotation_no, 10))
 
-        // Find the maximum ID
-        const maxId = ids !== 0 ? Math.max(...ids) : 0
+          // Find the maximum quotation number
+          const maxQuotationNumber = Math.max(...quotationNumbers)
 
-        // Generate the next quotation number
-        const nextQuotationNumber = maxId + 1
-        setQuotationNo(nextQuotationNumber)
+          // Generate the next quotation number
+          const nextQuotationNumber = maxQuotationNumber + 1
 
-        // Merge the changes into the existing formData state
-        setFormData(prevState => ({
-          ...prevState,
-          quotation_no: nextQuotationNumber.toString(),
-          created_user: userData.id,
-          company: userResponse.company.id
-        }))
+          // Set the next quotation number
+          setQuotationNo(nextQuotationNumber)
+
+          // Merge the changes into the existing formData state
+          setFormData(prevState => ({
+            ...prevState,
+            quotation_no: nextQuotationNumber.toString(),
+            created_user: userData.id,
+            company: userResponse.company.id
+          }))
+        } else {
+          // If no quotations exist, set the quotation number to 1
+          setQuotationNo(1)
+
+          // Merge the changes into the existing formData state with quotation number as 1
+          setFormData(prevState => ({
+            ...prevState,
+            quotation_no: '1',
+            created_user: userData.id,
+            company: userResponse.company.id
+          }))
+        }
       } catch (error) {
-        console.error('Error fetching positions:', error)
+        console.error('Error fetching quotation data:', error)
       }
     }
-    fetchPositions()
+
+    fetchQuotationData()
   }, [])
 
   // Function to save data
@@ -87,7 +103,7 @@ const QuotationAdd = () => {
     const data = new FormData()
     data.append('data', JSON.stringify(formData))
 
-    const response = await postDataToApi('/quotations', data)
+    const response = await postDataToApiAxios('/quotations', data)
     if (response) {
       router.push('/apps/quotation/list')
       toast.success('Quotation added successfully')

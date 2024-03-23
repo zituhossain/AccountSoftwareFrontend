@@ -175,22 +175,16 @@ const PreviewCard = ({ data }: any) => {
                 Quotation To:
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
-                {/* {data.invoice.name} */}
-                Manager
+                {data.attributes.client.data.attributes.name}
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
-                {/* {data.invoice.company} */}
-                SS Steel Limited
+                {data.attributes.client.data.attributes.address}
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
-                {/* {data.invoice.address} */}
-                Plot-4,Block-b, Tongi, Gazipur, Bangladesh
+                {data.attributes.client.data.attributes.email}
               </Typography>
               <Typography variant='body2' sx={{ mb: 2 }}>
-                {/* {data.invoice.contact} */}
-              </Typography>
-              <Typography variant='body2' sx={{ mb: 2 }}>
-                {/* {data.invoice.companyEmail} */}
+                {data.attributes.client.data.attributes.phone}
               </Typography>
             </Grid>
             <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: ['flex-start', 'flex-end'] }}>
@@ -203,7 +197,7 @@ const PreviewCard = ({ data }: any) => {
                           <Typography variant='body2'>Subject:</Typography>
                         </MUITableCell>
                         <MUITableCell>
-                          <Typography variant='body2'>TFL2014/2024</Typography>
+                          <Typography variant='body2'>{data.attributes.subject}</Typography>
                         </MUITableCell>
                       </TableRow>
                       <TableRow>
@@ -211,7 +205,7 @@ const PreviewCard = ({ data }: any) => {
                           <Typography variant='body2'>B/L NO:</Typography>
                         </MUITableCell>
                         <MUITableCell>
-                          <Typography variant='body2'>SGS2070UTY78, MEDUDO8905T</Typography>
+                          <Typography variant='body2'>{data.attributes.bl_number}</Typography>
                         </MUITableCell>
                       </TableRow>
                       <TableRow>
@@ -219,7 +213,7 @@ const PreviewCard = ({ data }: any) => {
                           <Typography variant='body2'>L/C NO:</Typography>
                         </MUITableCell>
                         <MUITableCell>
-                          <Typography variant='body2'>2356789005674, 209893304749</Typography>
+                          <Typography variant='body2'>{data.attributes.lc_number}</Typography>
                         </MUITableCell>
                       </TableRow>
                       <TableRow>
@@ -229,7 +223,7 @@ const PreviewCard = ({ data }: any) => {
                           </Typography>
                         </MUITableCell>
                         <MUITableCell>
-                          <Typography variant='body2'>Charge 3000/- will be added for overweight</Typography>
+                          <Typography variant='body2'>{data.attributes.remarks}</Typography>
                         </MUITableCell>
                       </TableRow>
                     </TableBody>
@@ -254,22 +248,10 @@ const PreviewCard = ({ data }: any) => {
             </TableHead>
             <TableBody>
               <TableRow>
-                <TableCell>CMDA81-4372</TableCell>
-                <TableCell>FCUI-389098</TableCell>
-                <TableCell>40,000</TableCell>
-                <TableCell>3000</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>CMDA81-4372</TableCell>
-                <TableCell>FCUI-389098</TableCell>
-                <TableCell>40,000</TableCell>
-                <TableCell>3000</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell>CMDA81-4372</TableCell>
-                <TableCell>FCUI-389098</TableCell>
-                <TableCell>40,000</TableCell>
-                <TableCell>3000</TableCell>
+                <TableCell>{data.attributes.client_rate}</TableCell>
+                <TableCell>{data.attributes.our_rate}</TableCell>
+                <TableCell>{data.attributes.no_of_items}</TableCell>
+                <TableCell>{data.attributes.overweight}</TableCell>
               </TableRow>
             </TableBody>
           </Table>
