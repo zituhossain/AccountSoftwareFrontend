@@ -30,6 +30,7 @@ import { deleteUser } from 'src/store/apps/user'
 import TableHeader from 'src/views/apps/quotation/TableHeader'
 import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
 import axios from 'axios'
+import { useRouter } from 'next/navigation'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -71,65 +72,96 @@ const LinkStyled = styled(Link)(({ theme }) => ({
   }
 }))
 
+// const RowOptions = ({ id }: { id: number | string }) => {
+//   // ** Hooks
+//   const dispatch = useDispatch<AppDispatch>()
+
+//   // ** State
+//   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+
+//   const rowOptionsOpen = Boolean(anchorEl)
+
+//   const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
+//     setAnchorEl(event.currentTarget)
+//   }
+//   const handleRowOptionsClose = () => {
+//     setAnchorEl(null)
+//   }
+
+//   const handleDelete = async () => {
+//     // const response = await deleteDataFromApi(`/quotations/${id}`)
+//     // console.log('response', response)
+//   }
+
+//   return (
+//     <>
+//       <IconButton size='small' onClick={handleRowOptionsClick}>
+//         <Icon icon='mdi:dots-vertical' />
+//       </IconButton>
+//       <Menu
+//         keepMounted
+//         anchorEl={anchorEl}
+//         open={rowOptionsOpen}
+//         onClose={handleRowOptionsClose}
+//         anchorOrigin={{
+//           vertical: 'bottom',
+//           horizontal: 'right'
+//         }}
+//         transformOrigin={{
+//           vertical: 'top',
+//           horizontal: 'right'
+//         }}
+//         PaperProps={{ style: { minWidth: '8rem' } }}
+//       >
+//         <MenuItem
+//           component={Link}
+//           sx={{ '& svg': { mr: 2 } }}
+//           onClick={handleRowOptionsClose}
+//           href={`/apps/quotation/preview/${id}`}
+//         >
+//           <Icon icon='mdi:eye-outline' fontSize={20} />
+//           View
+//         </MenuItem>
+//         <MenuItem onClick={handleRowOptionsClose} sx={{ '& svg': { mr: 2 } }}>
+//           <Icon icon='mdi:pencil-outline' fontSize={20} />
+//           Edit
+//         </MenuItem>
+//         <MenuItem onClick={handleDelete} sx={{ '& svg': { mr: 2 } }}>
+//           <Icon icon='mdi:delete-outline' fontSize={20} />
+//           Delete
+//         </MenuItem>
+//       </Menu>
+//     </>
+//   )
+// }
+
 const RowOptions = ({ id }: { id: number | string }) => {
   // ** Hooks
-  const dispatch = useDispatch<AppDispatch>()
+  const router = useRouter()
 
-  // ** State
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
-  const rowOptionsOpen = Boolean(anchorEl)
-
-  const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
+  const handleView = () => {
+    router.push(`/apps/quotation/preview/${id}`)
   }
-  const handleRowOptionsClose = () => {
-    setAnchorEl(null)
+
+  const handleEdit = () => {
+    // Redirect to the edit page
   }
 
   const handleDelete = async () => {
-    // const response = await deleteDataFromApi(`/quotations/${id}`)
-    // console.log('response', response)
+    // Delete the quotation with the specified id
   }
 
   return (
     <>
-      <IconButton size='small' onClick={handleRowOptionsClick}>
-        <Icon icon='mdi:dots-vertical' />
+      <IconButton size='small' onClick={handleView}>
+        <Icon icon='mdi:eye-outline' />
       </IconButton>
-      <Menu
-        keepMounted
-        anchorEl={anchorEl}
-        open={rowOptionsOpen}
-        onClose={handleRowOptionsClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-        PaperProps={{ style: { minWidth: '8rem' } }}
-      >
-        <MenuItem
-          component={Link}
-          sx={{ '& svg': { mr: 2 } }}
-          onClick={handleRowOptionsClose}
-          href={`/apps/quotation/preview/${id}`}
-        >
-          <Icon icon='mdi:eye-outline' fontSize={20} />
-          View
-        </MenuItem>
-        <MenuItem onClick={handleRowOptionsClose} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:pencil-outline' fontSize={20} />
-          Edit
-        </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:delete-outline' fontSize={20} />
-          Delete
-        </MenuItem>
-      </Menu>
+      <IconButton size='small' onClick={handleEdit}>
+        <Icon icon='mdi:pencil-outline' />
+      </IconButton>
+      <IconButton size='small' onClick={handleDelete}>
+        <Icon icon='mdi:delete-outline' />
+      </IconButton>
     </>
   )
 }
@@ -186,7 +218,7 @@ const columns: GridColDef[] = [
     )
   },
   {
-    flex: 0.15,
+    flex: 0.1,
     minWidth: 120,
     headerName: 'Overweight',
     field: 'overweight',
@@ -212,7 +244,7 @@ const columns: GridColDef[] = [
     )
   },
   {
-    flex: 0.1,
+    flex: 0.15,
     minWidth: 90,
     sortable: false,
     field: 'actions',
