@@ -40,6 +40,7 @@ const AddContactType = () => {
     resolver: yupResolver(schema),
     defaultValues: defaultValues
   })
+
   useEffect(() => {
     const fetchData = async () => {
       try {

@@ -1,27 +1,29 @@
-import Card from '@mui/material/Card'
-import Grid from '@mui/material/Grid'
-import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
-import TextField from '@mui/material/TextField'
-import CardHeader from '@mui/material/CardHeader'
-import InputLabel from '@mui/material/InputLabel'
-import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
-import FormControl from '@mui/material/FormControl'
-import Select from '@mui/material/Select'
-import { FormControlLabel, FormHelperText, MenuItem, Switch, Typography } from '@mui/material'
-import { useRouter } from 'next/navigation'
-import * as yup from 'yup'
-import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { CompanyType, ContactPersonType, ContactType } from 'src/types/apps/userTypes'
-import { FormEventHandler, useEffect, useState } from 'react'
-import { fetchDataFromApi, postDataToApi, storedToken } from 'src/utils/api'
-import toast from 'react-hot-toast'
+import { FormControlLabel, FormHelperText, MenuItem, Switch, Typography } from '@mui/material'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardActions from '@mui/material/CardActions'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import Divider from '@mui/material/Divider'
+import FormControl from '@mui/material/FormControl'
+import Grid from '@mui/material/Grid'
+import InputLabel from '@mui/material/InputLabel'
+import Select from '@mui/material/Select'
+import TextField from '@mui/material/TextField'
 import { Box } from '@mui/system'
+import { useRouter } from 'next/router'
+import { FormEventHandler, useEffect, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
+import { CompanyType, ContactPersonType, ContactType } from 'src/types/apps/userTypes'
+import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
+import { STRAPI_URL } from 'src/utils/urls'
+import * as yup from 'yup'
 
 const AddContact = () => {
   const router = useRouter()
+  const { id } = router.query
 
   const [contactImg, setContactImg] = useState<File | null>(null)
   const [imgSrc, setImgSrc] = useState<string | null>(null)
@@ -41,13 +43,16 @@ const AddContact = () => {
     email: '',
     code: '',
     phone: '',
-    status: true
+    status: true,
+    company: 0,
+    contact_type: 0
   }
 
   const {
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors }
   } = useForm<ContactPersonType>({
     resolver: yupResolver(schema),
@@ -75,40 +80,85 @@ const AddContact = () => {
         const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
 
         const companyResponse = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
-        const response1 = await fetchDataFromApi('/contact-types')
-        console.log('first', response1.data)
+        const contactResponse = await fetchDataFromApi('/contact-types')
+        console.log('first', contactResponse.data)
         setCompany(companyResponse.data)
-        setContactType(response1.data)
+        setContactType(contactResponse.data)
+
+        if (id) {
+          const response = await fetchDataFromApi(`/contact-people/${id}?populate=*`)
+          const {
+            data: { attributes }
+          } = response
+
+          setValue('company', attributes.company?.data?.id || 0)
+          setValue('contact_type', attributes.contact_type?.data?.id || 0)
+        }
       } catch (error) {
-        console.error('Error fetching positions:', error)
+        console.error('Error fetching data:', error)
       }
     }
     fetchCompany_Type()
-  }, [])
+  }, [id, setValue])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (id) {
+        try {
+          const response = await fetchDataFromApi(`/contact-people/${id}?populate=*`)
+          const {
+            data: { attributes }
+          } = response
+
+          // Set the form values using reset
+          reset({
+            ...attributes,
+            status: attributes.status || false, // Ensure a boolean value for the switch
+            image: attributes.image?.data?.attributes?.url
+          })
+
+          // If there's an existing image, set it for preview
+          if (attributes.image?.data?.attributes?.url) {
+            setImgSrc(`${STRAPI_URL}${attributes?.image?.data?.attributes?.url}`) // Prepend API_URL if needed
+          }
+        } catch (error: any) {
+          console.error('Error fetching contact data:', error.message)
+        }
+      }
+    }
+
+    fetchData()
+  }, [id, reset])
 
   const onSubmit = async (data: ContactPersonType) => {
     data.created_user = userId
+
     try {
       const formData = new FormData()
       formData.append('data', JSON.stringify(data))
       if (contactImg) {
         formData.append('files.image', contactImg)
       }
-      if (storedToken) {
-        await postDataToApi('/contact-people', formData)
-        router.push('/apps/company/contact-person')
-        toast.success('Contact Person added successfully')
+
+      if (id) {
+        // Update existing contact
+        await putDataToApi(`/contact-people/${id}`, formData)
+        toast.success('Contact Person updated successfully')
       } else {
-        toast.error('Something went wrong! Please try again.')
+        // Add new Contact Person
+        await postDataToApiAxios('/contact-people', formData)
+        toast.success('Contact Person added successfully')
       }
+      router.push('/apps/company/contact-person')
     } catch (error: any) {
       console.error('Error adding contact data:', error.message)
+      toast.error('Something went wrong! Please try again.')
     }
   }
 
   return (
     <Card>
-      <CardHeader title='Add Contact Person' />
+      <CardHeader title={id ? 'Edit Contact Person' : 'Add Contact Person'} />
       <Divider sx={{ m: '0 !important' }} />
       <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
@@ -186,6 +236,7 @@ const AddContact = () => {
                         label='Contact Person Type'
                         labelId='form-layouts-separator-select-label'
                         error={!!errors.contact_type}
+                        value={field.value}
                       >
                         <MenuItem value={0}>Select Type</MenuItem>
                         {contactType.map(type => (

@@ -283,7 +283,7 @@ const AddCompany = () => {
                 name='status'
                 control={control}
                 render={({ field }) => (
-                  <FormControlLabel control={<Switch {...field} defaultChecked />} label='Status' />
+                  <FormControlLabel control={<Switch {...field} checked={field.value} />} label='Status' />
                 )}
               />
             </Grid>
