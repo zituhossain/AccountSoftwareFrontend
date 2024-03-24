@@ -28,9 +28,9 @@ const PreviewActions = ({ id, toggleSendInvoiceDrawer, toggleAddPaymentDrawer }:
         >
           Send Invoice
         </Button>
-        <Button fullWidth sx={{ mb: 3.5 }} color='secondary' variant='outlined'>
+        {/* <Button fullWidth sx={{ mb: 3.5 }} color='secondary' variant='outlined'>
           Download
-        </Button>
+        </Button> */}
         <Button
           fullWidth
           target='_blank'
@@ -38,7 +38,7 @@ const PreviewActions = ({ id, toggleSendInvoiceDrawer, toggleAddPaymentDrawer }:
           component={Link}
           color='secondary'
           variant='outlined'
-          href={`/apps/invoice/print/${id}`}
+          href={`/apps/quotation/print/${id}`}
         >
           Print
         </Button>

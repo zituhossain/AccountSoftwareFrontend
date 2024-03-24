@@ -105,7 +105,7 @@ const QuotationAdd = () => {
 
     const response = await postDataToApiAxios('/quotations', data)
     if (response) {
-      router.push('/apps/quotation/list')
+      router.push(`/apps/quotation/preview/${response.data.id}`)
       toast.success('Quotation added successfully')
     } else {
       toast.error('Something went wrong! Please try again.')
