@@ -1,5 +1,5 @@
 // ** React Imports
-import { MouseEvent, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
@@ -7,7 +7,6 @@ import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
 import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
-import MenuItem from '@mui/material/MenuItem'
 import Typography from '@mui/material/Typography'
 import { styled } from '@mui/material/styles'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
@@ -22,15 +21,13 @@ import CustomChip from 'src/@core/components/mui/chip'
 // ** Third Party Components
 
 // ** Types Imports
-import { Menu } from '@mui/material'
+import router from 'next/router'
 import toast from 'react-hot-toast'
-import { useDispatch } from 'react-redux'
 import { ThemeColor } from 'src/@core/layouts/types'
 import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
-import { AppDispatch } from 'src/store'
 import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
 import TableHeader from 'src/views/apps/company/contact-person/list/TableHeader'
-import router from 'next/router'
+import Tooltip from '@mui/material/Tooltip'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -129,68 +126,89 @@ const ContactPersonList = () => {
     }
   }
 
+  // const RowOptions = ({ id }: { id: number | string }) => {
+  //   // ** Hooks
+
+  //   // ** State
+  //   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
+
+  //   const rowOptionsOpen = Boolean(anchorEl)
+
+  //   const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
+  //     setAnchorEl(event.currentTarget)
+  //   }
+  //   const handleRowOptionsClose = () => {
+  //     setAnchorEl(null)
+  //   }
+
+  //   // const handleDelete = () => {
+  //   //   dispatch(deleteUser(id))
+  //   //   handleRowOptionsClose()
+  //   // }
+
+  //   const handleEditClick = (id: string | number) => {
+  //     handleEdit(id)
+  //   }
+
+  //   return (
+  //     <>
+  //       <IconButton size='small' onClick={handleRowOptionsClick}>
+  //         <Icon icon='mdi:dots-vertical' />
+  //       </IconButton>
+  //       <Menu
+  //         keepMounted
+  //         anchorEl={anchorEl}
+  //         open={rowOptionsOpen}
+  //         onClose={handleRowOptionsClose}
+  //         anchorOrigin={{
+  //           vertical: 'bottom',
+  //           horizontal: 'right'
+  //         }}
+  //         transformOrigin={{
+  //           vertical: 'top',
+  //           horizontal: 'right'
+  //         }}
+  //         PaperProps={{ style: { minWidth: '8rem' } }}
+  //       >
+  //         <MenuItem
+  //           component={Link}
+  //           sx={{ '& svg': { mr: 2 } }}
+  //           onClick={handleRowOptionsClose}
+  //           href='/apps/user/view/overview/'
+  //         >
+  //           <Icon icon='mdi:eye-outline' fontSize={20} />
+  //           View
+  //         </MenuItem>
+  //         <MenuItem onClick={() => handleEditClick(id)} sx={{ '& svg': { mr: 2 } }}>
+  //           <Icon icon='mdi:pencil-outline' fontSize={20} />
+  //           Edit
+  //         </MenuItem>
+  //         <MenuItem onClick={() => handleDeleteClick(id)} sx={{ '& svg': { mr: 2 } }}>
+  //           <Icon icon='mdi:delete-outline' fontSize={20} />
+  //           Delete
+  //         </MenuItem>
+  //       </Menu>
+  //     </>
+  //   )
+  // }
+
   const RowOptions = ({ id }: { id: number | string }) => {
-    // ** Hooks
-
-    // ** State
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
-    const rowOptionsOpen = Boolean(anchorEl)
-
-    const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
-      setAnchorEl(event.currentTarget)
-    }
-    const handleRowOptionsClose = () => {
-      setAnchorEl(null)
-    }
-
-    // const handleDelete = () => {
-    //   dispatch(deleteUser(id))
-    //   handleRowOptionsClose()
-    // }
-
     const handleEditClick = (id: string | number) => {
       handleEdit(id)
     }
 
     return (
       <>
-        <IconButton size='small' onClick={handleRowOptionsClick}>
-          <Icon icon='mdi:dots-vertical' />
-        </IconButton>
-        <Menu
-          keepMounted
-          anchorEl={anchorEl}
-          open={rowOptionsOpen}
-          onClose={handleRowOptionsClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right'
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right'
-          }}
-          PaperProps={{ style: { minWidth: '8rem' } }}
-        >
-          <MenuItem
-            component={Link}
-            sx={{ '& svg': { mr: 2 } }}
-            onClick={handleRowOptionsClose}
-            href='/apps/user/view/overview/'
-          >
-            <Icon icon='mdi:eye-outline' fontSize={20} />
-            View
-          </MenuItem>
-          <MenuItem onClick={() => handleEditClick(id)} sx={{ '& svg': { mr: 2 } }}>
-            <Icon icon='mdi:pencil-outline' fontSize={20} />
-            Edit
-          </MenuItem>
-          <MenuItem onClick={() => handleDeleteClick(id)} sx={{ '& svg': { mr: 2 } }}>
-            <Icon icon='mdi:delete-outline' fontSize={20} />
-            Delete
-          </MenuItem>
-        </Menu>
+        <Tooltip title='Edit' placement='top'>
+          <IconButton size='small' onClick={() => handleEditClick(id)}>
+            <Icon icon='mdi:pencil-outline' />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title='Delete' placement='top'>
+          <IconButton size='small' onClick={() => handleDeleteClick(id)}>
+            <Icon icon='mdi:delete-outline' />
+          </IconButton>
+        </Tooltip>
       </>
     )
   }

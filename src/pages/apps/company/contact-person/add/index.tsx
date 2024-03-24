@@ -114,7 +114,7 @@ const AddContact = () => {
           reset({
             ...attributes,
             status: attributes.status || false, // Ensure a boolean value for the switch
-            image: attributes.image?.data?.attributes?.url
+            image: attributes.image?.data?.id // Set image ID if available, or null
           })
 
           // If there's an existing image, set it for preview
@@ -323,7 +323,7 @@ const AddContact = () => {
                 name='status'
                 control={control}
                 render={({ field }) => (
-                  <FormControlLabel control={<Switch {...field} defaultChecked />} label='Status' />
+                  <FormControlLabel control={<Switch {...field} checked={field.value} />} label='Status' />
                 )}
               />
             </Grid>

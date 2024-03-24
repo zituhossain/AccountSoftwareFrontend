@@ -1,27 +1,27 @@
 // import { useState } from 'react'
-import axios from 'axios'
-import Card from '@mui/material/Card'
-import Grid from '@mui/material/Grid'
-import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
-import CardHeader from '@mui/material/CardHeader'
-import InputLabel from '@mui/material/InputLabel'
-import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
-import FormControl from '@mui/material/FormControl'
-import Select from '@mui/material/Select'
-import { FormControlLabel, MenuItem, Switch } from '@mui/material'
-import { useRouter } from 'next/navigation'
-import * as yup from 'yup'
-import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { B2BRelationType, BusinessRelationType, CompanyType } from 'src/types/apps/userTypes'
+import { FormControlLabel, MenuItem, Switch } from '@mui/material'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardActions from '@mui/material/CardActions'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import Divider from '@mui/material/Divider'
+import FormControl from '@mui/material/FormControl'
+import Grid from '@mui/material/Grid'
+import InputLabel from '@mui/material/InputLabel'
+import Select from '@mui/material/Select'
+import { useRouter } from 'next/router'
 import { FormEventHandler, useEffect, useState } from 'react'
-import { API_URL } from 'src/utils/urls'
-import { fetchDataFromApi, storedToken } from 'src/utils/api'
+import { Controller, useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
+import { B2BRelationType, BusinessRelationType, CompanyType } from 'src/types/apps/userTypes'
+import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
+import * as yup from 'yup'
 
 const AddB2bRelation = () => {
   const router = useRouter()
+  const { id } = router.query
 
   const [userId, setUserId] = useState<number>(0)
   const [companyId, setCompanyId] = useState<number>(0)
@@ -30,13 +30,22 @@ const AddB2bRelation = () => {
 
   const schema = yup.object().shape({})
 
+  const defaultValues: BusinessRelationType = {
+    status: true,
+    company: 0,
+    relation_type: 0,
+    client: 0
+  }
+
   const {
     handleSubmit,
     control,
     reset,
+    setValue,
     formState: { errors }
   } = useForm<BusinessRelationType>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues
   })
 
   useEffect(() => {
@@ -55,32 +64,66 @@ const AddB2bRelation = () => {
 
         setRelationType(relation_response.data)
         setCompanies(company_response.data)
+
+        if (id) {
+          const response = await fetchDataFromApi(`/b2b-relations/${id}?populate=*`)
+          const {
+            data: { attributes }
+          } = response
+
+          setValue('client', attributes.client?.data?.id || 0)
+          setValue('relation_type', attributes.relation_type?.data?.id || 0)
+        }
       } catch (error) {
         console.error('Error fetching positions:', error)
       }
     }
     fetchRelationCompany()
-  }, [])
+  }, [id, setValue])
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (id) {
+        try {
+          const response = await fetchDataFromApi(`/b2b-relations/${id}?populate=*`)
+          const {
+            data: { attributes }
+          } = response
+
+          console.log('attributes', attributes)
+
+          // Set the form values using reset
+          reset({
+            ...attributes,
+            status: attributes.status || false
+          })
+        } catch (error: any) {
+          console.error('Error fetching b2b data:', error.message)
+        }
+      }
+    }
+
+    fetchData()
+  }, [id, reset])
 
   const onSubmit = async (data: BusinessRelationType) => {
-    data.company = companyId
     data.created_user = userId
+    data.company = companyId
+
     try {
-      await axios.post(
-        `${API_URL}/b2b-relations`,
-        {
-          data: data
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${storedToken}`
-          }
-        }
-      )
-      console.log('B2b added successfully')
+      const formData = new FormData()
+      formData.append('data', JSON.stringify(data))
+
+      if (id) {
+        await putDataToApi(`/b2b-relations/${id}`, formData)
+        toast.success('B2b added updated successfully')
+      } else {
+        await postDataToApiAxios('/b2b-relations', formData)
+        toast.success('B2b added added successfully')
+      }
       router.push('/apps/company/business-relation')
-    } catch (error: any) {
-      console.error('Error adding business relation:', error.message)
+    } catch (error) {
+      toast.error('Something went wrong! Please try again.')
     }
   }
 

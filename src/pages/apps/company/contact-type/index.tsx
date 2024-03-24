@@ -96,27 +96,9 @@ const ContactTypeList = () => {
   }
 
   const RowOptions = ({ id }: { id: number | string }) => {
-    // ** Hooks
-
-    // ** State
-    // const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
-    // const rowOptionsOpen = Boolean(anchorEl)
-
-    // const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
-    //   setAnchorEl(event.currentTarget)
-    // }
-    // const handleRowOptionsClose = () => {
-    //   setAnchorEl(null)
-    // }
-
     const handleEditClick = (id: string | number) => {
       handleEdit(id)
     }
-
-    // const handleDelete = async () => {
-    //   await deleteDataFromApi(`/contact-types/${id}`)
-    // }
 
     return (
       <>

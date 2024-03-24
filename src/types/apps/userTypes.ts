@@ -104,15 +104,15 @@ export type AccountHeadType = {
 }
 
 export type BusinessRelationType = {
-  id: number
-  company: number
-  client: number
-  relation_type: number
+  id?: number
+  company?: number
+  client?: number
+  relation_type?: number
   status: boolean
-  created_user: number
-  createdAt: string
-  updatedAt: string
-  publishedAt: string
+  created_user?: number
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
 }
 
 export type B2BRelationType = {
