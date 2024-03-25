@@ -97,8 +97,6 @@ const AddCompany = () => {
   }, [id, reset])
 
   const onSubmit = async (data: CompanyType) => {
-    console.log('Form data before appending:', data)
-
     const formData = new FormData()
     formData.append('data', JSON.stringify(data))
     if (logo) {

@@ -17,6 +17,9 @@ export type UsersType = {
 }
 
 export type UsersTypeFromStrapi = {
+  avatar: any
+  avatarColor: string
+  phone: string
   id: number
   username: string
   email: string

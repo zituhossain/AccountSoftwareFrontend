@@ -187,7 +187,9 @@ const AddB2bRelation = () => {
               <Controller
                 name='status'
                 control={control}
-                render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
+                render={({ field }) => (
+                  <FormControlLabel control={<Switch {...field} />} checked={field.value} label='Status' />
+                )}
               />
             </Grid>
           </Grid>

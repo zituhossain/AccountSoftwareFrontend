@@ -1,79 +1,32 @@
 // ** React Imports
-import { useState, useEffect, MouseEvent, useCallback } from 'react'
-
-// ** Next Imports
-import Link from 'next/link'
-import { GetStaticProps } from 'next/types'
+import { useCallback, useEffect, useState } from 'react'
 
 // ** MUI Imports
-import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
-import Menu from '@mui/material/Menu'
-import Grid from '@mui/material/Grid'
+import CardHeader from '@mui/material/CardHeader'
 import Divider from '@mui/material/Divider'
-import { styled } from '@mui/material/styles'
-import MenuItem from '@mui/material/MenuItem'
+import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
 import Typography from '@mui/material/Typography'
-import CardHeader from '@mui/material/CardHeader'
-import InputLabel from '@mui/material/InputLabel'
-import FormControl from '@mui/material/FormControl'
-import CardContent from '@mui/material/CardContent'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import Select, { SelectChangeEvent } from '@mui/material/Select'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
 
-// ** Store Imports
-import { useDispatch } from 'react-redux'
-
 // ** Custom Components Imports
 import CustomChip from 'src/@core/components/mui/chip'
-import CustomAvatar from 'src/@core/components/mui/avatar'
-
-// import CardStatisticsHorizontal from 'src/@core/components/card-statistics/card-stats-horizontal'
-
-// ** Utils Import
-import { getInitials } from 'src/@core/utils/get-initials'
-
-// ** Actions Imports
-import { fetchData, deleteUser } from 'src/store/apps/user'
-
-// ** Third Party Components
-// import axios from 'axios'
 
 // ** Types Imports
-import { AppDispatch } from 'src/store'
-
-// import { CardStatsType } from 'src/@fake-db/types'
-// import { ThemeColor } from 'src/@core/layouts/types'
-import { UserPositionType, UserRoleType } from 'src/types/apps/userTypes'
-
-// import { CardStatsHorizontalProps } from 'src/@core/components/card-statistics/types'
+import { UserRoleType } from 'src/types/apps/userTypes'
 
 // ** Custom Table Components Imports
-import TableHeader from 'src/views/apps/user/position/TableHeader'
-import AddUserDrawer from 'src/views/apps/user/position/AddPositionDrawer'
-import { fetchDataFromApi } from 'src/utils/api'
+import Tooltip from '@mui/material/Tooltip'
+import router from 'next/router'
+import toast from 'react-hot-toast'
 import { ThemeColor } from 'src/@core/layouts/types'
-
-// interface UserRoleType {
-//   [key: string]: { icon: string; color: string }
-// }
-
-// interface UserStatusType {
-//   [key: string]: ThemeColor
-// }
-
-// ** Vars
-// const userRoleObj: UserRoleType = {
-//   admin: { icon: 'mdi:laptop', color: 'error.main' },
-//   author: { icon: 'mdi:cog-outline', color: 'warning.main' },
-//   editor: { icon: 'mdi:pencil-outline', color: 'info.main' },
-//   maintainer: { icon: 'mdi:chart-donut', color: 'success.main' },
-//   subscriber: { icon: 'mdi:account-outline', color: 'primary.main' }
-// }
+import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
+import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
+import TableHeader from 'src/views/apps/user/position/TableHeader'
 
 interface CellType {
   row: UserRoleType
@@ -84,169 +37,27 @@ const userStatusObj: { [key: string]: ThemeColor } = {
   false: 'secondary'
 }
 
-const LinkStyled = styled(Link)(({ theme }) => ({
-  fontWeight: 600,
-  fontSize: '1rem',
-  cursor: 'pointer',
-  textDecoration: 'none',
-  color: theme.palette.text.secondary,
-  '&:hover': {
-    color: theme.palette.primary.main
-  }
-}))
-
-// ** renders client column
-const renderClient = (row: UserPositionType) => {
-  if (row.avatar) {
-    return <CustomAvatar src={row.avatar} sx={{ mr: 3, width: 34, height: 34 }} />
-  } else {
-    return (
-      <CustomAvatar
-        skin='light'
-        color={row.avatarColor || 'primary'}
-        sx={{ mr: 3, width: 34, height: 34, fontSize: '1rem' }}
-      >
-        {getInitials(row.username ? row.username : 'John Doe')}
-      </CustomAvatar>
-    )
-  }
-}
-
-const RowOptions = ({ id }: { id: number | string }) => {
-  // ** Hooks
-  const dispatch = useDispatch<AppDispatch>()
-
-  // ** State
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
-  const rowOptionsOpen = Boolean(anchorEl)
-
-  const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
-  const handleRowOptionsClose = () => {
-    setAnchorEl(null)
-  }
-
-  const handleDelete = () => {
-    dispatch(deleteUser(id))
-    handleRowOptionsClose()
-  }
-
-  return (
-    <>
-      <IconButton size='small' onClick={handleRowOptionsClick}>
-        <Icon icon='mdi:dots-vertical' />
-      </IconButton>
-      <Menu
-        keepMounted
-        anchorEl={anchorEl}
-        open={rowOptionsOpen}
-        onClose={handleRowOptionsClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-        PaperProps={{ style: { minWidth: '8rem' } }}
-      >
-        <MenuItem
-          component={Link}
-          sx={{ '& svg': { mr: 2 } }}
-          onClick={handleRowOptionsClose}
-          href='/apps/user/view/overview/'
-        >
-          <Icon icon='mdi:eye-outline' fontSize={20} />
-          View
-        </MenuItem>
-        <MenuItem onClick={handleRowOptionsClose} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:pencil-outline' fontSize={20} />
-          Edit
-        </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:delete-outline' fontSize={20} />
-          Delete
-        </MenuItem>
-      </Menu>
-    </>
-  )
-}
-
-const columns: GridColDef[] = [
-  {
-    sortable: true,
-    field: 'slNo',
-    headerName: '#',
-    flex: 0,
-    editable: false,
-    renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
-  },
-  {
-    flex: 0.2,
-    minWidth: 230,
-    field: 'title',
-    headerName: 'Title',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <Typography noWrap variant='body2'>
-          {row.attributes.title}
-        </Typography>
-      )
-    }
-  },
-
-  {
-    flex: 0.1,
-    minWidth: 110,
-    field: 'status',
-    headerName: 'Status',
-    renderCell: ({ row }: CellType) => {
-      return (
-        <CustomChip
-          skin='light'
-          size='small'
-          label={row.attributes.status ? 'Active' : 'Inactive'}
-          color={userStatusObj[row.attributes.status]}
-          sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
-        />
-      )
-    }
-  },
-  {
-    flex: 0.1,
-    minWidth: 90,
-    sortable: false,
-    field: 'actions',
-    headerName: 'Actions',
-    renderCell: ({ row }: CellType) => <RowOptions id={row.id} />
-  }
-]
-
-// const UserList = ({ apiData }: InferGetStaticPropsType<typeof getStaticProps>) => {
-const UserList = () => {
+const PositionList = () => {
   // ** State
   const [value, setValue] = useState<string>('')
   const [addUserOpen, setAddUserOpen] = useState<boolean>(false)
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
-  const [userRole, setUserRole] = useState<UserRoleType[]>([])
+  const [position, setPosition] = useState<UserRoleType[]>([])
 
-  // ** Hooks
+  const [deleteId, setDeleteId] = useState<string | number | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
-  // const store = useSelector((state: RootState) => state.user)
   useEffect(() => {
     // Fetch companies data from API
-    const fetchCompanies = async () => {
+    const fetchPosition = async () => {
       try {
         const response = await fetchDataFromApi('/organizational-positions')
-        setUserRole(response.data)
+        setPosition(response.data)
       } catch (error) {
-        console.error('Error fetching companies:', error)
+        console.error('Error fetching position:', error)
       }
     }
-    fetchCompanies()
+    fetchPosition()
   }, [])
 
   const handleFilter = useCallback((val: string) => {
@@ -254,6 +65,107 @@ const UserList = () => {
   }, [])
 
   const toggleAddUserDrawer = () => setAddUserOpen(!addUserOpen)
+
+  const handleEdit = (id: string | number) => {
+    const selectedPosition = position.find(item => item.id === id)
+    if (selectedPosition) {
+      router.push(`/apps/user/position/add?id=${selectedPosition.id}`)
+    }
+  }
+
+  const RowOptions = ({ id }: { id: number | string }) => {
+    const handleEditClick = (id: string | number) => {
+      handleEdit(id)
+    }
+
+    return (
+      <>
+        <Tooltip title='Edit' placement='top'>
+          <IconButton size='small' onClick={() => handleEditClick(id)}>
+            <Icon icon='mdi:pencil-outline' />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title='Delete' placement='top'>
+          <IconButton size='small' onClick={() => handleDeleteClick(id)}>
+            <Icon icon='mdi:delete-outline' />
+          </IconButton>
+        </Tooltip>
+      </>
+    )
+  }
+
+  const columns: GridColDef[] = [
+    {
+      sortable: true,
+      field: 'slNo',
+      headerName: '#',
+      flex: 0,
+      editable: false,
+      renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
+    },
+    {
+      flex: 0.2,
+      minWidth: 230,
+      field: 'title',
+      headerName: 'Title',
+      renderCell: ({ row }: CellType) => {
+        return (
+          <Typography noWrap variant='body2'>
+            {row.attributes.title}
+          </Typography>
+        )
+      }
+    },
+
+    {
+      flex: 0.1,
+      minWidth: 110,
+      field: 'status',
+      headerName: 'Status',
+      renderCell: ({ row }: CellType) => {
+        return (
+          <CustomChip
+            skin='light'
+            size='small'
+            label={row.attributes.status ? 'Active' : 'Inactive'}
+            color={userStatusObj[row.attributes.status]}
+            sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
+          />
+        )
+      }
+    },
+    {
+      flex: 0.1,
+      minWidth: 90,
+      sortable: false,
+      field: 'actions',
+      headerName: 'Actions',
+      renderCell: ({ row }: CellType) => <RowOptions id={row.id} />
+    }
+  ]
+
+  const handleDeleteConfirm = async () => {
+    if (deleteId !== null) {
+      try {
+        await deleteDataFromApi(`/organizational-positions/${deleteId}`)
+        setPosition(position.filter(item => item.id !== deleteId))
+        setDialogOpen(false)
+        toast.success('User deleted successfully')
+      } catch (error) {
+        console.error('Error deleting User:', error)
+        toast.error('Failed to delete User')
+      }
+    }
+  }
+
+  const handleDeleteClick = (id: string | number) => {
+    setDeleteId(id)
+    setDialogOpen(true)
+  }
+
+  const handleDialogClose = () => {
+    setDialogOpen(false)
+  }
 
   return (
     <>
@@ -265,7 +177,7 @@ const UserList = () => {
             <TableHeader value={value} handleFilter={handleFilter} toggle={toggleAddUserDrawer} />
             <DataGrid
               autoHeight
-              rows={userRole}
+              rows={position}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
@@ -276,22 +188,16 @@ const UserList = () => {
             />
           </Card>
         </Grid>
-
-        <AddUserDrawer open={addUserOpen} toggle={toggleAddUserDrawer} />
+        <ConfirmDialog
+          open={dialogOpen}
+          onClose={handleDialogClose}
+          onConfirm={handleDeleteConfirm}
+          title='Confirm Deletion'
+          message='Are you sure you want to delete this Position?'
+        />
       </Grid>
     </>
   )
 }
 
-// export const getStaticProps: GetStaticProps = async () => {
-//   const res = await axios.get('/cards/statistics')
-//   const apiData: CardStatsType = res.data
-
-//   return {
-//     props: {
-//       apiData
-//     }
-//   }
-// }
-
-export default UserList
+export default PositionList

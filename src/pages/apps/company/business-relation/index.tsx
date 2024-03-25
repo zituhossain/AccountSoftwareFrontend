@@ -27,6 +27,8 @@ import { ThemeColor } from 'src/@core/layouts/types'
 import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
 import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
 import TableHeader from 'src/views/apps/company/business-relation/TableHeader'
+import Tooltip from '@mui/material/Tooltip'
+import IconButton from '@mui/material/IconButton'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -141,12 +143,16 @@ const BusinessRelationList = () => {
 
     return (
       <>
-        <MenuItem onClick={() => handleEditClick(id)} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:pencil-outline' fontSize={20} />
-        </MenuItem>
-        <MenuItem onClick={() => handleDeleteClick(id)} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:delete-outline' fontSize={20} />
-        </MenuItem>
+        <Tooltip title='Edit' placement='top'>
+          <IconButton size='small' onClick={() => handleEditClick(id)}>
+            <Icon icon='mdi:pencil-outline' />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title='Delete' placement='top'>
+          <IconButton size='small' onClick={() => handleDeleteClick(id)}>
+            <Icon icon='mdi:delete-outline' />
+          </IconButton>
+        </Tooltip>
       </>
     )
   }
