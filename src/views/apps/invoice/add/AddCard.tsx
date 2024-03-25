@@ -1,28 +1,27 @@
 // ** React Imports
-import { useState, forwardRef, SyntheticEvent, ForwardedRef } from 'react'
+import { ForwardedRef, SyntheticEvent, forwardRef, useEffect, useState } from 'react'
 
 // ** MUI Imports
-import Card from '@mui/material/Card'
-import Table from '@mui/material/Table'
-import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
-import Tooltip from '@mui/material/Tooltip'
-import TableRow from '@mui/material/TableRow'
-import Collapse from '@mui/material/Collapse'
-import TableBody from '@mui/material/TableBody'
-import TextField from '@mui/material/TextField'
-import IconButton from '@mui/material/IconButton'
-import Typography from '@mui/material/Typography'
-import InputLabel from '@mui/material/InputLabel'
 import Box, { BoxProps } from '@mui/material/Box'
-import Grid, { GridProps } from '@mui/material/Grid'
-import InputAdornment from '@mui/material/InputAdornment'
-import TableContainer from '@mui/material/TableContainer'
-import { styled, alpha, useTheme } from '@mui/material/styles'
-import Select, { SelectChangeEvent } from '@mui/material/Select'
-import MenuItem, { MenuItemProps } from '@mui/material/MenuItem'
-import TableCell, { TableCellBaseProps } from '@mui/material/TableCell'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
 import CardContent, { CardContentProps } from '@mui/material/CardContent'
+import Collapse from '@mui/material/Collapse'
+import Divider from '@mui/material/Divider'
+import Grid, { GridProps } from '@mui/material/Grid'
+import IconButton from '@mui/material/IconButton'
+import InputAdornment from '@mui/material/InputAdornment'
+import InputLabel from '@mui/material/InputLabel'
+import MenuItem, { MenuItemProps } from '@mui/material/MenuItem'
+import Select, { SelectChangeEvent } from '@mui/material/Select'
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
+import TableCell, { TableCellBaseProps } from '@mui/material/TableCell'
+import TableContainer from '@mui/material/TableContainer'
+import TableRow from '@mui/material/TableRow'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import { alpha, styled, useTheme } from '@mui/material/styles'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
@@ -31,13 +30,12 @@ import Icon from 'src/@core/components/icon'
 import DatePicker from 'react-datepicker'
 
 // ** Configs
-import themeConfig from 'src/configs/themeConfig'
 
 // ** Types
 import { DateType } from 'src/types/forms/reactDatepickerTypes'
-import { InvoiceClientType } from 'src/types/apps/invoiceTypes'
 
 // ** Custom Component Imports
+import { Controller, useForm } from 'react-hook-form'
 import Repeater from 'src/@core/components/repeater'
 
 interface PickerProps {
@@ -47,9 +45,11 @@ interface PickerProps {
 interface Props {
   toggleAddCustomerDrawer: () => void
   invoiceNumber: number
-  clients: InvoiceClientType[] | undefined
-  selectedClient: InvoiceClientType | null
-  setSelectedClient: (val: InvoiceClientType | null) => void
+  clients: any | undefined
+  selectedClient: any | null
+  setSelectedClient: (val: any | null) => void
+  setFormData: any
+  formData: any
 }
 
 const CustomInput = forwardRef(({ ...props }: PickerProps, ref: ForwardedRef<HTMLElement>) => {
@@ -125,13 +125,18 @@ const tomorrowDate = now.setDate(now.getDate() + 7)
 
 const AddCard = (props: Props) => {
   // ** Props
-  const { clients, invoiceNumber, selectedClient, setSelectedClient, toggleAddCustomerDrawer } = props
+  const { clients, invoiceNumber, selectedClient, setSelectedClient, setFormData, formData } = props
+  console.log('selectedClient:', selectedClient)
+  const { control } = useForm()
+  console.log('formData:', formData)
 
   // ** States
   const [count, setCount] = useState<number>(1)
   const [selected, setSelected] = useState<string>('')
   const [issueDate, setIssueDate] = useState<DateType>(new Date())
-  const [dueDate, setDueDate] = useState<DateType>(new Date(tomorrowDate))
+  const [invoiceDetails, setInvoiceDetails] = useState<any[]>([])
+
+  console.log('selected:', selected)
 
   // ** Hook
   const theme = useTheme()
@@ -148,12 +153,66 @@ const AddCard = (props: Props) => {
   const handleInvoiceChange = (event: SelectChangeEvent) => {
     setSelected(event.target.value)
     if (clients !== undefined) {
-      setSelectedClient(clients.filter(i => i.name === event.target.value)[0])
+      setSelectedClient(clients.filter(i => i.id === event.target.value)[0])
+      setFormData({ ...formData, client: event.target.value })
     }
   }
 
-  const handleAddNewCustomer = () => {
-    toggleAddCustomerDrawer()
+  const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const { name, value } = event.target
+    setInvoiceDetails({ ...invoiceDetails, [name]: value })
+  }
+
+  useEffect(() => {
+    console.log('invoiceDetails:', invoiceDetails)
+  }, [invoiceDetails])
+
+  // Function to handle changes in input fields
+  const handleInputChange = (name: string, value: string, index: number) => {
+    // Create a copy of the invoice details array
+    const updatedInvoiceDetails = [...invoiceDetails]
+
+    // Check if the array element at index exists, if not, initialize it
+    if (!updatedInvoiceDetails[index]) {
+      updatedInvoiceDetails[index] = {} // Initialize as empty object
+    }
+
+    // Update the corresponding item in the array
+    updatedInvoiceDetails[index][name] = value
+
+    // Update the state with the modified array
+    setInvoiceDetails(updatedInvoiceDetails)
+  }
+
+  // Function to add a new invoice item
+  // const addInvoiceItem = () => {
+  //   // Create a new invoice item object with default values
+  //   const newInvoiceItem = {
+  //     driver_name: '',
+  //     driver_phone: '',
+  //     vehicle_no: '',
+  //     container_number: '',
+  //     amount: '',
+  //     overweight: '',
+  //     total_amount: ''
+  //   }
+
+  //   // Add the new invoice item to the array
+  //   setInvoiceDetails([...invoiceDetails, newInvoiceItem])
+  // }
+
+  // Function to delete an invoice item
+  const deleteInvoiceItem = (index: number) => {
+    // Create a copy of the invoice details array
+    const updatedInvoiceDetails = [...invoiceDetails]
+
+    // Remove the item at the specified index
+    updatedInvoiceDetails.splice(index, 1)
+
+    // Update the state with the modified array
+    setInvoiceDetails(updatedInvoiceDetails)
+
+    setCount(prevCount => prevCount - 1)
   }
 
   return (
@@ -163,89 +222,22 @@ const AddCard = (props: Props) => {
           <Grid item xl={6} xs={12} sx={{ mb: { xl: 0, xs: 4 } }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Box sx={{ mb: 6, display: 'flex', alignItems: 'center' }}>
-                <svg width={40} fill='none' height={22} viewBox='0 0 268 150' xmlns='http://www.w3.org/2000/svg'>
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 195.571 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fillOpacity='0.4'
-                    fill='url(#paint0_linear_7821_79167)'
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 196.084 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(0.865206 0.501417 -0.498585 0.866841 173.147 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 94.1973 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fillOpacity='0.4'
-                    fill='url(#paint1_linear_7821_79167)'
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 94.1973 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(0.865206 0.501417 -0.498585 0.866841 71.7728 0)'
-                  />
-                  <defs>
-                    <linearGradient
-                      y1='0'
-                      x1='25.1443'
-                      x2='25.1443'
-                      y2='143.953'
-                      id='paint0_linear_7821_79167'
-                      gradientUnits='userSpaceOnUse'
-                    >
-                      <stop />
-                      <stop offset='1' stopOpacity='0' />
-                    </linearGradient>
-                    <linearGradient
-                      y1='0'
-                      x1='25.1443'
-                      x2='25.1443'
-                      y2='143.953'
-                      id='paint1_linear_7821_79167'
-                      gradientUnits='userSpaceOnUse'
-                    >
-                      <stop />
-                      <stop offset='1' stopOpacity='0' />
-                    </linearGradient>
-                  </defs>
-                </svg>
                 <Typography variant='h6' sx={{ ml: 2, fontWeight: 700, lineHeight: 1.2 }}>
-                  {themeConfig.templateName}
+                  Top-4 Logistics
                 </Typography>
               </Box>
-              <div>
-                <Typography variant='body2' sx={{ mb: 1 }}>
-                  Office 149, 450 South Brand Brooklyn
-                </Typography>
-                <Typography variant='body2' sx={{ mb: 1 }}>
-                  San Diego County, CA 91905, USA
-                </Typography>
-                <Typography variant='body2'>+1 (123) 456 7891, +44 (876) 543 2198</Typography>
-              </div>
+              <Box sx={{ mb: 6, display: 'flex', alignItems: 'center' }}>
+                <div>
+                  <Typography variant='body2' sx={{ mb: 1 }}>
+                    9/31, F, Eastern Plaza, Hatirpul
+                  </Typography>
+                  <Typography variant='body2' sx={{ mb: 1 }}>
+                    Dhaka - 1205, Bangladesh
+                  </Typography>
+                  <Typography variant='body2'>+8801852244141</Typography>
+                  <Typography variant='body2'>top4we@gmail.com</Typography>
+                </div>
+              </Box>
             </Box>
           </Grid>
           <Grid item xl={6} xs={12}>
@@ -272,18 +264,7 @@ const AddCard = (props: Props) => {
                   id='issue-date'
                   selected={issueDate}
                   customInput={<CustomInput />}
-                  onChange={(date: Date) => setIssueDate(date)}
-                />
-              </Box>
-              <Box sx={{ display: 'flex' }}>
-                <Typography variant='body2' sx={{ mr: 2, width: '100px' }}>
-                  Date Due:
-                </Typography>
-                <DatePicker
-                  id='due-date'
-                  selected={dueDate}
-                  customInput={<CustomInput />}
-                  onChange={(date: Date) => setDueDate(date)}
+                  onChange={(date: Date) => handleDateChange(date, 'date')}
                 />
               </Box>
             </Box>
@@ -297,85 +278,104 @@ const AddCard = (props: Props) => {
         <Grid container>
           <Grid item xs={12} sm={6} sx={{ mb: { lg: 0, xs: 4 } }}>
             <Typography variant='subtitle2' sx={{ mb: 3, color: 'text.primary' }}>
-              Invoice To:
+              Quotation To:
             </Typography>
             <Select size='small' value={selected} onChange={handleInvoiceChange} sx={{ mb: 4, width: '200px' }}>
-              <CustomSelectItem value='' onClick={handleAddNewCustomer}>
-                <Box sx={{ display: 'flex', alignItems: 'center', color: 'success.main', '& svg': { mr: 2 } }}>
-                  <Icon icon='mdi:plus' fontSize={20} />
-                  Add New Customer
-                </Box>
-              </CustomSelectItem>
+              {/* <MenuItem value={0}>Select Client</MenuItem> */}
               {clients !== undefined &&
                 clients.map(client => (
-                  <MenuItem key={client.name} value={client.name}>
-                    {client.name}
+                  <MenuItem key={client.id} value={client.id}>
+                    {client.attributes.name}
                   </MenuItem>
                 ))}
             </Select>
             {selectedClient !== null && selectedClient !== undefined ? (
               <div>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.company}
+                  {selectedClient.attributes.name}
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.address}
+                  {selectedClient.attributes.address}
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.contact}
+                  {selectedClient.attributes.phone}
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.companyEmail}
+                  {selectedClient.attributes.email}
                 </Typography>
               </div>
             ) : null}
           </Grid>
           <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: ['flex-start', 'flex-end'] }}>
             <div>
-              <Typography variant='subtitle2' sx={{ mb: 2.5, color: 'text.primary' }}>
-                Bill To:
-              </Typography>
               <TableContainer>
                 <Table>
                   <TableBody>
                     <TableRow>
                       <MUITableCell>
-                        <Typography variant='body2'>Total Due:</Typography>
+                        <Typography variant='subtitle2' sx={{ color: 'text.primary', letterSpacing: '.1px' }}>
+                          Subject:
+                        </Typography>
                       </MUITableCell>
                       <MUITableCell>
-                        <Typography variant='body2'>$12,110.55</Typography>
+                        <TextField
+                          size='small'
+                          placeholder=''
+                          sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
+                          onChange={e => handleInputChange(e)}
+                          name='subject'
+                        />
+                      </MUITableCell>
+                    </TableRow>
+
+                    <TableRow>
+                      <MUITableCell>
+                        <Typography variant='subtitle2' sx={{ color: 'text.primary', letterSpacing: '.1px' }}>
+                          B/L NO:
+                        </Typography>
+                      </MUITableCell>
+                      <MUITableCell>
+                        <TextField
+                          size='small'
+                          placeholder=''
+                          sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
+                          onChange={e => handleInputChange(e)}
+                          name='bl_number'
+                        />
                       </MUITableCell>
                     </TableRow>
                     <TableRow>
                       <MUITableCell>
-                        <Typography variant='body2'>Bank name:</Typography>
+                        <Typography variant='subtitle2' sx={{ color: 'text.primary', letterSpacing: '.1px' }}>
+                          L/C NO:
+                        </Typography>
                       </MUITableCell>
                       <MUITableCell>
-                        <Typography variant='body2'>American Bank</Typography>
-                      </MUITableCell>
-                    </TableRow>
-                    <TableRow>
-                      <MUITableCell>
-                        <Typography variant='body2'>Country:</Typography>
-                      </MUITableCell>
-                      <MUITableCell>
-                        <Typography variant='body2'>United States</Typography>
-                      </MUITableCell>
-                    </TableRow>
-                    <TableRow>
-                      <MUITableCell>
-                        <Typography variant='body2'>IBAN:</Typography>
-                      </MUITableCell>
-                      <MUITableCell>
-                        <Typography variant='body2'>ETD95476213874685</Typography>
+                        <TextField
+                          size='small'
+                          placeholder=''
+                          sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
+                          onChange={e => handleInputChange(e)}
+                          name='lc_number'
+                        />
                       </MUITableCell>
                     </TableRow>
                     <TableRow>
                       <MUITableCell>
-                        <Typography variant='body2'>SWIFT code:</Typography>
+                        <Typography variant='subtitle2' sx={{ color: 'text.primary', letterSpacing: '.1px' }}>
+                          Remarks:
+                        </Typography>
                       </MUITableCell>
                       <MUITableCell>
-                        <Typography variant='body2'>BR91905</Typography>
+                        <TextField
+                          rows={2}
+                          fullWidth
+                          multiline
+                          size='small'
+                          sx={{ mt: 3.5 }}
+                          onChange={e => handleInputChange(e)}
+                          name='remarks'
+                        />
                       </MUITableCell>
                     </TableRow>
                   </TableBody>
@@ -398,92 +398,117 @@ const AddCard = (props: Props) => {
                 <Grid container>
                   <RepeatingContent item xs={12}>
                     <Grid container sx={{ py: 4, width: '100%', pr: { lg: 0, xs: 4 } }}>
-                      <Grid item lg={6} md={5} xs={12} sx={{ px: 4, my: { lg: 0, xs: 4 } }}>
-                        <Typography
-                          variant='subtitle2'
-                          className='col-title'
-                          sx={{ mb: { md: 2, xs: 0 }, color: 'text.primary' }}
-                        >
-                          Item
-                        </Typography>
-                        <Select fullWidth size='small' defaultValue='App Design'>
-                          <MenuItem value='App Design'>App Design</MenuItem>
-                          <MenuItem value='App Customization'>App Customization</MenuItem>
-                          <MenuItem value='ABC Template'>ABC Template</MenuItem>
-                          <MenuItem value='App Development'>App Development</MenuItem>
-                        </Select>
-                        <TextField
-                          rows={2}
-                          fullWidth
-                          multiline
-                          size='small'
-                          sx={{ mt: 3.5 }}
-                          defaultValue='Customization & Bug Fixes'
+                      <Grid item lg={3} md={3} xs={12} sx={{ px: 4, my: { lg: 0, xs: 4 } }}>
+                        <Controller
+                          name='driver_name'
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              fullWidth
+                              label='Driver Name'
+                              placeholder='Driver Name'
+                              onChange={e => handleInputChange('driver_name', e.target.value, i)}
+                            />
+                          )}
                         />
                       </Grid>
-                      <Grid item lg={2} md={3} xs={12} sx={{ px: 4, my: { lg: 0, xs: 4 } }}>
-                        <Typography
-                          variant='subtitle2'
-                          className='col-title'
-                          sx={{ mb: { md: 2, xs: 0 }, color: 'text.primary' }}
-                        >
-                          Cost
-                        </Typography>
-                        <TextField
-                          size='small'
-                          type='number'
-                          placeholder='24'
-                          defaultValue='24'
-                          InputProps={{ inputProps: { min: 0 } }}
-                        />
-                        <Box sx={{ mt: 3.5 }}>
-                          <Typography component='span' variant='body2' sx={{ lineHeight: 2 }}>
-                            Discount:
-                          </Typography>{' '}
-                          <Typography component='span' variant='body2'>
-                            0%
-                          </Typography>
-                          <Tooltip title='Tax 1' placement='top'>
-                            <Typography component='span' variant='body2' sx={{ mx: 2 }}>
-                              0%
-                            </Typography>
-                          </Tooltip>
-                          <Tooltip title='Tax 2' placement='top'>
-                            <Typography component='span' variant='body2'>
-                              0%
-                            </Typography>
-                          </Tooltip>
-                        </Box>
-                      </Grid>
-                      <Grid item lg={2} md={2} xs={12} sx={{ px: 4, my: { lg: 0, xs: 4 } }}>
-                        <Typography
-                          variant='subtitle2'
-                          className='col-title'
-                          sx={{ mb: { md: 2, xs: 0 }, color: 'text.primary' }}
-                        >
-                          Hours
-                        </Typography>
-                        <TextField
-                          size='small'
-                          type='number'
-                          placeholder='1'
-                          defaultValue='1'
-                          InputProps={{ inputProps: { min: 0 } }}
+                      <Grid item lg={3} md={3} xs={12} sx={{ px: 4, my: { lg: 0, xs: 4 } }}>
+                        <Controller
+                          name='driver_phone'
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              fullWidth
+                              label='Driver Phone'
+                              placeholder='Driver Phone'
+                              onChange={e => handleInputChange('driver_phone', e.target.value, i)}
+                            />
+                          )}
                         />
                       </Grid>
-                      <Grid item lg={2} md={1} xs={12} sx={{ px: 4, my: { lg: 0 }, mt: 2 }}>
-                        <Typography
-                          variant='subtitle2'
-                          className='col-title'
-                          sx={{ mb: { md: 2, xs: 0 }, color: 'text.primary' }}
-                        >
-                          Price
-                        </Typography>
-                        <Typography variant='body2'>$24.00</Typography>
+                      <Grid item lg={3} md={3} xs={12} sx={{ px: 4, my: { lg: 0, xs: 4 } }}>
+                        <Controller
+                          name='vehicle_no'
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              fullWidth
+                              label='Vehicle No'
+                              placeholder='Vehicle No'
+                              onChange={e => handleInputChange('vehicle_number', e.target.value, i)}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid item lg={3} md={3} xs={12} sx={{ px: 4, my: { lg: 0, xs: 4 } }}>
+                        <Controller
+                          name='container_number'
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              fullWidth
+                              label='Container Number'
+                              placeholder='Container Number'
+                              onChange={e => handleInputChange('container_number', e.target.value, i)}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid item lg={3} md={2} xs={12} sx={{ px: 4, my: { lg: 8, xs: 4 } }}>
+                        <Controller
+                          name='amount'
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              size='small'
+                              type='number'
+                              label='Amount'
+                              placeholder='Amount'
+                              onChange={e => handleInputChange('rate', e.target.value, i)}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid item lg={2.5} md={2} xs={12} sx={{ px: 4, my: { lg: 8, xs: 4 } }}>
+                        <Controller
+                          name='overweight'
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              size='small'
+                              type='number'
+                              label='Overweight'
+                              placeholder='Overweight'
+                              onChange={e => handleInputChange('overweight', e.target.value, i)}
+                            />
+                          )}
+                        />
+                      </Grid>
+                      <Grid item lg={3} md={2} xs={12} sx={{ px: 4, my: { lg: 8, xs: 4 } }}>
+                        <Controller
+                          name='total_amount'
+                          control={control}
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              size='small'
+                              type='number'
+                              label='Total Amount'
+                              value={Number(invoiceDetails[i]?.rate) + Number(invoiceDetails[i]?.overweight)}
+                              disabled
+                            />
+                          )}
+                        />
                       </Grid>
                     </Grid>
                     <InvoiceAction>
-                      <IconButton size='small' onClick={deleteForm}>
+                      <IconButton size='small' onClick={() => deleteInvoiceItem(i)}>
                         <Icon icon='mdi:close' fontSize={20} />
                       </IconButton>
                     </InvoiceAction>

@@ -1,33 +1,127 @@
 // ** React Imports
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // ** Next Imports
-import { GetStaticProps, InferGetStaticPropsType } from 'next/types'
 
 // ** MUI Imports
 import Grid from '@mui/material/Grid'
 
 // ** Third Party Components
-import axios from 'axios'
 
 // ** Types
-import { InvoiceType, InvoiceClientType } from 'src/types/apps/invoiceTypes'
+import { InvoiceClientType } from 'src/types/apps/invoiceTypes'
 
 // ** Demo Components Imports
-import AddCard from 'src/views/apps/invoice/add/AddCard'
 import AddActions from 'src/views/apps/invoice/add/AddActions'
-import AddNewCustomers from 'src/views/apps/invoice/add/AddNewCustomer'
+import AddCard from 'src/views/apps/invoice/add/AddCard'
 
 // ** Styled Component
+import { useRouter } from 'next/navigation'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
+import { fetchDataFromApi, postDataToApiAxios } from 'src/utils/api'
 
-const InvoiceAdd = ({ apiClientData, invoiceNumber }: InferGetStaticPropsType<typeof getStaticProps>) => {
+const InvoiceAdd = () => {
   // ** State
   const [addCustomerOpen, setAddCustomerOpen] = useState<boolean>(false)
   const [selectedClient, setSelectedClient] = useState<InvoiceClientType | null>(null)
-  const [clients, setClients] = useState<InvoiceClientType[] | undefined>(apiClientData)
+  const [clients, setClients] = useState<any | undefined>()
+  const [quotationNo, setQuotationNo] = useState<number>(0)
+  const [formData, setFormData] = useState<any>({
+    quotation_no: '1',
+    client: '',
+    date: new Date(),
+    subject: '',
+    bl_number: '',
+    lc_number: '',
+    remarks: '',
+    client_rate: '',
+    our_rate: '',
+    no_of_items: '',
+    overweight: '',
+    status: true,
+    send_status: false,
+    revision_count: 0,
+    created_user: 0,
+    company: 0
+  })
+
+  const router = useRouter()
+
+  useEffect(() => {
+    const fetchQuotationData = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData')!)
+        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+
+        // Fetch the latest quotation data
+        const quoteResponse = await fetchDataFromApi(`/quotations`)
+
+        if (quoteResponse && quoteResponse.data && quoteResponse.data.length > 0) {
+          // Extract quotation numbers from each quotation object
+          const quotationNumbers = quoteResponse.data.map((quote: any) => parseInt(quote.attributes.quotation_no, 10))
+
+          // Find the maximum quotation number
+          const maxQuotationNumber = Math.max(...quotationNumbers)
+
+          // Generate the next quotation number
+          const nextQuotationNumber = maxQuotationNumber + 1
+
+          // Set the next quotation number
+          setQuotationNo(nextQuotationNumber)
+
+          // Merge the changes into the existing formData state
+          setFormData(prevState => ({
+            ...prevState,
+            quotation_no: nextQuotationNumber.toString(),
+            created_user: userData.id,
+            company: userResponse.company.id
+          }))
+        } else {
+          // If no quotations exist, set the quotation number to 1
+          setQuotationNo(1)
+
+          // Merge the changes into the existing formData state with quotation number as 1
+          setFormData(prevState => ({
+            ...prevState,
+            quotation_no: '1',
+            created_user: userData.id,
+            company: userResponse.company.id
+          }))
+        }
+      } catch (error) {
+        console.error('Error fetching quotation data:', error)
+      }
+    }
+
+    fetchQuotationData()
+  }, [])
+
+  // Function to save data
+  const handleSave = async () => {
+    const data = new FormData()
+    data.append('data', JSON.stringify(formData))
+
+    const response = await postDataToApiAxios('/quotations', data)
+    if (response) {
+      router.push(`/apps/quotation/preview/${response.data.id}`)
+      toast.success('Quotation added successfully')
+    } else {
+      toast.error('Something went wrong! Please try again.')
+    }
+  }
 
   const toggleAddCustomerDrawer = () => setAddCustomerOpen(!addCustomerOpen)
+
+  useEffect(() => {
+    ;(async () => {
+      const userData = JSON.parse(localStorage.getItem('userData')!)
+      const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+
+      const companyResponse = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
+
+      setClients(companyResponse.data)
+    })()
+  }, [])
 
   return (
     <DatePickerWrapper sx={{ '& .react-datepicker-wrapper': { width: 'auto' } }}>
@@ -35,40 +129,20 @@ const InvoiceAdd = ({ apiClientData, invoiceNumber }: InferGetStaticPropsType<ty
         <Grid item xl={9} md={8} xs={12}>
           <AddCard
             clients={clients}
-            invoiceNumber={invoiceNumber}
+            invoiceNumber={quotationNo}
             selectedClient={selectedClient}
             setSelectedClient={setSelectedClient}
             toggleAddCustomerDrawer={toggleAddCustomerDrawer}
+            setFormData={setFormData}
+            formData={formData}
           />
         </Grid>
         <Grid item xl={3} md={4} xs={12}>
-          <AddActions />
+          <AddActions handleSave={handleSave} />
         </Grid>
       </Grid>
-      <AddNewCustomers
-        clients={clients}
-        open={addCustomerOpen}
-        setClients={setClients}
-        toggle={toggleAddCustomerDrawer}
-        setSelectedClient={setSelectedClient}
-      />
     </DatePickerWrapper>
   )
-}
-
-export const getStaticProps: GetStaticProps = async () => {
-  const clientResponse = await axios.get('/apps/invoice/clients')
-  const apiClientData: InvoiceClientType = clientResponse.data
-
-  const allInvoicesResponse = await axios.get('/apps/invoice/invoices', { params: { q: '', status: '' } })
-  const lastInvoiceNumber = Math.max(...allInvoicesResponse.data.allData.map((i: InvoiceType) => i.id))
-
-  return {
-    props: {
-      apiClientData,
-      invoiceNumber: lastInvoiceNumber + 1
-    }
-  }
 }
 
 export default InvoiceAdd
