@@ -121,7 +121,7 @@ const defaultColumns: GridColDef[] = [
     minWidth: 300,
     headerName: 'Client',
     renderCell: ({ row }: CellType) => {
-      const { name, email } = row.attributes?.business_contact?.data?.attributes
+      const { name, email } = row.attributes?.client?.data?.attributes
 
       return (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>

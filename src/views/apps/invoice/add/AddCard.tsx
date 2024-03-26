@@ -48,8 +48,11 @@ interface Props {
   clients: any | undefined
   selectedClient: any | null
   setSelectedClient: (val: any | null) => void
-  setFormData: any
-  formData: any
+  invoiceDetails: any[]
+  setInvoiceDetails: any
+  invoiceMasterId: number
+  invoiceMasterData: any
+  setInvoiceMasterData: any
 }
 
 const CustomInput = forwardRef(({ ...props }: PickerProps, ref: ForwardedRef<HTMLElement>) => {
@@ -121,51 +124,50 @@ const CustomSelectItem = styled(MenuItem)<MenuItemProps>(({ theme }) => ({
 }))
 
 const now = new Date()
-const tomorrowDate = now.setDate(now.getDate() + 7)
 
 const AddCard = (props: Props) => {
   // ** Props
-  const { clients, invoiceNumber, selectedClient, setSelectedClient, setFormData, formData } = props
-  console.log('selectedClient:', selectedClient)
+  const {
+    clients,
+    invoiceNumber,
+    selectedClient,
+    setSelectedClient,
+    invoiceDetails,
+    setInvoiceDetails,
+    invoiceMasterData,
+    setInvoiceMasterData
+  } = props
   const { control } = useForm()
-  console.log('formData:', formData)
 
   // ** States
   const [count, setCount] = useState<number>(1)
   const [selected, setSelected] = useState<string>('')
   const [issueDate, setIssueDate] = useState<DateType>(new Date())
-  const [invoiceDetails, setInvoiceDetails] = useState<any[]>([])
 
   console.log('selected:', selected)
 
   // ** Hook
   const theme = useTheme()
 
-  // ** Deletes form
-  const deleteForm = (e: SyntheticEvent) => {
-    e.preventDefault()
-
-    // @ts-ignore
-    e.target.closest('.repeater-wrapper').remove()
-  }
-
   // ** Handle Invoice To Change
   const handleInvoiceChange = (event: SelectChangeEvent) => {
     setSelected(event.target.value)
     if (clients !== undefined) {
       setSelectedClient(clients.filter(i => i.id === event.target.value)[0])
-      setFormData({ ...formData, client: event.target.value })
+      setInvoiceMasterData({ ...invoiceMasterData, client: event.target.value })
     }
   }
 
   const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
-    setInvoiceDetails({ ...invoiceDetails, [name]: value })
+    setInvoiceMasterData({ ...invoiceMasterData, [name]: value })
   }
 
-  useEffect(() => {
-    console.log('invoiceDetails:', invoiceDetails)
-  }, [invoiceDetails])
+  // Update formData whenever date picker changes
+  const handleDateChange = (date: Date, fieldName: string) => {
+    setIssueDate(date)
+    setInvoiceMasterData({ ...invoiceMasterData, [fieldName]: date })
+  }
 
   // Function to handle changes in input fields
   const handleInputChange = (name: string, value: string, index: number) => {
@@ -184,23 +186,6 @@ const AddCard = (props: Props) => {
     setInvoiceDetails(updatedInvoiceDetails)
   }
 
-  // Function to add a new invoice item
-  // const addInvoiceItem = () => {
-  //   // Create a new invoice item object with default values
-  //   const newInvoiceItem = {
-  //     driver_name: '',
-  //     driver_phone: '',
-  //     vehicle_no: '',
-  //     container_number: '',
-  //     amount: '',
-  //     overweight: '',
-  //     total_amount: ''
-  //   }
-
-  //   // Add the new invoice item to the array
-  //   setInvoiceDetails([...invoiceDetails, newInvoiceItem])
-  // }
-
   // Function to delete an invoice item
   const deleteInvoiceItem = (index: number) => {
     // Create a copy of the invoice details array
@@ -213,6 +198,27 @@ const AddCard = (props: Props) => {
     setInvoiceDetails(updatedInvoiceDetails)
 
     setCount(prevCount => prevCount - 1)
+  }
+
+  // Function to calculate total amount
+  // Function to calculate total amount
+  const calculateTotalAmount = () => {
+    let total = 0
+
+    // Iterate over each invoice detail and calculate total amount
+    invoiceDetails.forEach(detail => {
+      // Assuming rate and overweight are present in each detail object
+      const rate = Number(detail.rate) ? Number(detail.rate) : 0
+      const overweight = Number(detail.overweight) ? Number(detail.overweight) : 0
+
+      // Calculate total amount for the current detail
+      const detailTotal = rate + overweight
+
+      // Add the detail total to the overall total
+      total += detailTotal
+    })
+
+    return total
   }
 
   return (
@@ -278,7 +284,7 @@ const AddCard = (props: Props) => {
         <Grid container>
           <Grid item xs={12} sm={6} sx={{ mb: { lg: 0, xs: 4 } }}>
             <Typography variant='subtitle2' sx={{ mb: 3, color: 'text.primary' }}>
-              Quotation To:
+              Invoice To:
             </Typography>
             <Select size='small' value={selected} onChange={handleInvoiceChange} sx={{ mb: 4, width: '200px' }}>
               {/* <MenuItem value={0}>Select Client</MenuItem> */}
@@ -322,7 +328,7 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleInputChange(e)}
+                          onChange={e => handleFieldChange(e)}
                           name='subject'
                         />
                       </MUITableCell>
@@ -339,7 +345,7 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleInputChange(e)}
+                          onChange={e => handleFieldChange(e)}
                           name='bl_number'
                         />
                       </MUITableCell>
@@ -355,7 +361,7 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleInputChange(e)}
+                          onChange={e => handleFieldChange(e)}
                           name='lc_number'
                         />
                       </MUITableCell>
@@ -373,7 +379,7 @@ const AddCard = (props: Props) => {
                           multiline
                           size='small'
                           sx={{ mt: 3.5 }}
-                          onChange={e => handleInputChange(e)}
+                          onChange={e => handleFieldChange(e)}
                           name='remarks'
                         />
                       </MUITableCell>
@@ -561,10 +567,10 @@ const AddCard = (props: Props) => {
             <CalcWrapper>
               <Typography variant='body2'>Subtotal:</Typography>
               <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: '.25px' }}>
-                $1800
+                {calculateTotalAmount()}
               </Typography>
             </CalcWrapper>
-            <CalcWrapper>
+            {/* <CalcWrapper>
               <Typography variant='body2'>Discount:</Typography>
               <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: '.25px' }}>
                 $28
@@ -584,7 +590,7 @@ const AddCard = (props: Props) => {
               <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: '.25px' }}>
                 $1690
               </Typography>
-            </CalcWrapper>
+            </CalcWrapper> */}
           </Grid>
         </Grid>
       </CardContent>
