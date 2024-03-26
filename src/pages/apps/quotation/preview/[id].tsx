@@ -1,17 +1,14 @@
 // ** Next Import
-import { GetStaticPaths, GetStaticProps, GetStaticPropsContext, InferGetStaticPropsType } from 'next/types'
 
 // ** Third Party Imports
-import axios from 'axios'
 
 // ** Types
-import { InvoiceType } from 'src/types/apps/invoiceTypes'
 
 // ** Demo Components Imports
-import Preview from 'src/views/apps/quotation/preview/Preview'
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
 import { fetchDataFromApi } from 'src/utils/api'
+import Preview from 'src/views/apps/quotation/preview/Preview'
 
 const QuotationPreview = () => {
   const router = useRouter()

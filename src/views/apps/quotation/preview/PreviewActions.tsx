@@ -2,8 +2,8 @@
 import Link from 'next/link'
 
 // ** MUI Imports
-import Card from '@mui/material/Card'
 import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 
 // ** Icon Imports
@@ -15,7 +15,7 @@ interface Props {
   toggleSendInvoiceDrawer: () => void
 }
 
-const PreviewActions = ({ id, toggleSendInvoiceDrawer, toggleAddPaymentDrawer }: Props) => {
+const PreviewActions = ({ id, toggleSendInvoiceDrawer }: Props) => {
   return (
     <Card>
       <CardContent>
@@ -26,7 +26,7 @@ const PreviewActions = ({ id, toggleSendInvoiceDrawer, toggleAddPaymentDrawer }:
           onClick={toggleSendInvoiceDrawer}
           startIcon={<Icon icon='mdi:send-outline' />}
         >
-          Send Invoice
+          Send Quotation
         </Button>
         {/* <Button fullWidth sx={{ mb: 3.5 }} color='secondary' variant='outlined'>
           Download
@@ -50,7 +50,7 @@ const PreviewActions = ({ id, toggleSendInvoiceDrawer, toggleAddPaymentDrawer }:
           variant='outlined'
           href={`/apps/invoice/edit/${id}`}
         >
-          Edit Invoice
+          Edit Quotation
         </Button>
       </CardContent>
     </Card>
