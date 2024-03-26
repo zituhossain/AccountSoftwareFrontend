@@ -8,6 +8,10 @@ import CardContent from '@mui/material/CardContent'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
+import axios from 'axios'
+import { API_URL } from 'src/utils/urls'
+import toast from 'react-hot-toast'
+import { storedToken } from 'src/utils/api'
 
 interface Props {
   id: string | undefined
@@ -16,6 +20,31 @@ interface Props {
 }
 
 const PreviewActions = ({ id, toggleSendInvoiceDrawer }: Props) => {
+  const handleSendQuotation = async () => {
+    try {
+      // Here, replace `/send-quotation` with your actual endpoint path
+      const response = await axios.post(
+        `${API_URL}/mails`,
+        { id },
+        {
+          headers: {
+            Authorization: `Bearer ${storedToken}`
+          }
+        }
+      )
+
+      if (response.data) {
+        toast.success('Quotation sent successfully!')
+        console.log('Quotation sent:', response.data)
+      } else {
+        toast.error('Failed to send the quotation.')
+      }
+    } catch (error) {
+      console.error('Error sending quotation:', error)
+      toast.error('Error sending quotation. Please try again.')
+    }
+  }
+
   return (
     <Card>
       <CardContent>
@@ -23,7 +52,7 @@ const PreviewActions = ({ id, toggleSendInvoiceDrawer }: Props) => {
           fullWidth
           sx={{ mb: 3.5 }}
           variant='contained'
-          onClick={toggleSendInvoiceDrawer}
+          onClick={handleSendQuotation}
           startIcon={<Icon icon='mdi:send-outline' />}
         >
           Send Quotation
