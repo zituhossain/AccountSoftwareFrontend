@@ -1,5 +1,5 @@
 // ** React Imports
-import { ForwardedRef, SyntheticEvent, forwardRef, useState } from 'react'
+import { ForwardedRef, SyntheticEvent, forwardRef, useEffect, useState } from 'react'
 
 // ** MUI Imports
 import Box, { BoxProps } from '@mui/material/Box'
@@ -32,6 +32,7 @@ import { DateType } from 'src/types/forms/reactDatepickerTypes'
 
 // ** Custom Component Imports
 import Repeater from 'src/@core/components/repeater'
+import { Controller } from 'react-hook-form'
 
 interface PickerProps {
   label?: string
@@ -120,58 +121,67 @@ const tomorrowDate = now.setDate(now.getDate() + 7)
 
 const AddCard = (props: Props) => {
   // ** Props
-  const { clients, invoiceNumber, selectedClient, setSelectedClient, setFormData, formData } = props
+  const {
+    clients,
+    invoiceNumber,
+    selectedClient,
+    setSelectedClient,
+    setFormData,
+    formData,
+    control,
+    errors,
+    initialData
+  } = props
 
   // ** States
   const [count, setCount] = useState<number>(1)
   const [selected, setSelected] = useState<string>('')
   const [issueDate, setIssueDate] = useState<DateType>(new Date())
 
-  // const [formData, setFormData] = useState<any>({
-  //   client: '',
-  //   date: new Date(),
-  //   subject: '',
-  //   bl_number: '',
-  //   lc_number: '',
-  //   remarks: '',
-  //   client_rate: '',
-  //   our_rate: '',
-  //   no_of_items: '',
-  //   overweight: ''
-  // })
-
-  // console.log('formData', formData)
-
-  // ** Hook
-  const theme = useTheme()
-
-  // ** Deletes form
-  const deleteForm = (e: SyntheticEvent) => {
-    e.preventDefault()
-
-    // @ts-ignore
-    e.target.closest('.repeater-wrapper').remove()
-  }
-
   // ** Handle Invoice To Change
-  const handleInvoiceChange = (event: SelectChangeEvent) => {
-    setSelected(event.target.value)
-    if (clients !== undefined) {
-      setSelectedClient(clients.filter(i => i.id === event.target.value)[0])
-      setFormData({ ...formData, client: event.target.value })
-    }
-  }
-
-  // Update formData whenever form fields change
-  const handleInputChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = event.target
-    setFormData({ ...formData, [name]: value })
-  }
+  // const handleQuotationChange = (event: SelectChangeEvent) => {
+  //   setSelected(event.target.value)
+  //   if (clients !== undefined) {
+  //     setSelectedClient(clients.filter(i => i.id === event.target.value)[0])
+  //     setFormData({ ...formData, client: event.target.value })
+  //   }
+  // }
 
   // Update formData whenever date picker changes
   const handleDateChange = (date: Date, fieldName: string) => {
     setIssueDate(date)
     setFormData({ ...formData, [fieldName]: date })
+  }
+
+  // React to changes in initialData to initialize the selected client
+  useEffect(() => {
+    // Check if initialData contains a client ID and clients are loaded
+    if (initialData && initialData.client && initialData.client.data && clients) {
+      const initialClientId = initialData.client.data.id
+
+      const client = clients.find(c => c.id === initialClientId)
+
+      if (client) {
+        setSelectedClient(client)
+        setSelected(initialClientId)
+
+        // Update formData with the initial client ID
+        setFormData(prevFormData => ({ ...prevFormData, client: initialData.client }))
+      }
+    }
+  }, [initialData, clients, setFormData])
+
+  // Handler for when a new client is selected from the dropdown
+  const handleQuotationChange = (event: SelectChangeEvent) => {
+    const newSelectedId = event.target.value
+    setSelected(newSelectedId)
+    const newSelectedClient = clients.find(c => c.id === newSelectedId)
+    if (newSelectedClient) {
+      setSelectedClient(newSelectedClient)
+
+      // Update the formData state in the parent component
+      setFormData({ ...formData, client: newSelectedId })
+    }
   }
 
   return (
@@ -219,11 +229,17 @@ const AddCard = (props: Props) => {
                 <Typography variant='body2' sx={{ mr: 2, width: '100px' }}>
                   Date Issued:
                 </Typography>
-                <DatePicker
-                  id='issue-date'
-                  selected={issueDate}
-                  customInput={<CustomInput />}
-                  onChange={(date: Date) => handleDateChange(date, 'date')}
+                <Controller
+                  name='date'
+                  control={control}
+                  defaultValue={initialData?.date || new Date()} // Adjust the default value as needed
+                  render={({ field }) => (
+                    <DatePicker
+                      selected={field.value}
+                      onChange={date => field.onChange(date)}
+                      customInput={<CustomInput />}
+                    />
+                  )}
                 />
               </Box>
             </Box>
@@ -239,7 +255,7 @@ const AddCard = (props: Props) => {
             <Typography variant='subtitle2' sx={{ mb: 3, color: 'text.primary' }}>
               Quotation To:
             </Typography>
-            <Select size='small' value={selected} onChange={handleInvoiceChange} sx={{ mb: 4, width: '200px' }}>
+            <Select size='small' value={selected} onChange={handleQuotationChange} sx={{ mb: 4, width: '200px' }}>
               {/* <MenuItem value={0}>Select Client</MenuItem> */}
               {clients !== undefined &&
                 clients.map(client => (
@@ -277,12 +293,18 @@ const AddCard = (props: Props) => {
                         </Typography>
                       </MUITableCell>
                       <MUITableCell>
-                        <TextField
-                          size='small'
-                          placeholder=''
-                          sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleInputChange(e)}
+                        <Controller
                           name='subject'
+                          control={control}
+                          defaultValue={initialData?.subject || ''} // Use initialData for setting the default value
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              error={!!errors.subject}
+                              helperText={errors.subject?.message || ''}
+                              fullWidth
+                            />
+                          )}
                         />
                       </MUITableCell>
                     </TableRow>
@@ -294,12 +316,18 @@ const AddCard = (props: Props) => {
                         </Typography>
                       </MUITableCell>
                       <MUITableCell>
-                        <TextField
-                          size='small'
-                          placeholder=''
-                          sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleInputChange(e)}
+                        <Controller
                           name='bl_number'
+                          control={control}
+                          defaultValue={initialData?.bl_number || ''} // Use initialData for setting the default value
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              error={!!errors.bl_number}
+                              helperText={errors.bl_number?.message || ''}
+                              fullWidth
+                            />
+                          )}
                         />
                       </MUITableCell>
                     </TableRow>
@@ -310,12 +338,18 @@ const AddCard = (props: Props) => {
                         </Typography>
                       </MUITableCell>
                       <MUITableCell>
-                        <TextField
-                          size='small'
-                          placeholder=''
-                          sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleInputChange(e)}
+                        <Controller
                           name='lc_number'
+                          control={control}
+                          defaultValue={initialData?.lc_number || ''} // Use initialData for setting the default value
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              error={!!errors.lc_number}
+                              helperText={errors.lc_number?.message || ''}
+                              fullWidth
+                            />
+                          )}
                         />
                       </MUITableCell>
                     </TableRow>
@@ -326,14 +360,19 @@ const AddCard = (props: Props) => {
                         </Typography>
                       </MUITableCell>
                       <MUITableCell>
-                        <TextField
-                          rows={2}
-                          fullWidth
-                          multiline
-                          size='small'
-                          sx={{ mt: 3.5 }}
-                          onChange={e => handleInputChange(e)}
+                        <Controller
                           name='remarks'
+                          control={control}
+                          defaultValue={initialData?.remarks || ''} // Use initialData for setting the default value
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              multiline
+                              error={!!errors.remarks}
+                              helperText={errors.remarks?.message || ''}
+                              fullWidth
+                            />
+                          )}
                         />
                       </MUITableCell>
                     </TableRow>
@@ -365,13 +404,19 @@ const AddCard = (props: Props) => {
                         >
                           Client Rate
                         </Typography>
-                        <TextField
-                          size='small'
-                          type='number'
-                          placeholder=''
-                          InputProps={{ inputProps: { min: 0 } }}
-                          onChange={e => handleInputChange(e)}
+                        <Controller
                           name='client_rate'
+                          control={control}
+                          defaultValue={initialData?.client_rate || ''} // Use initialData for setting the default value
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              type='number'
+                              error={!!errors.client_rate}
+                              helperText={errors.client_rate?.message || ''}
+                              fullWidth
+                            />
+                          )}
                         />
                       </Grid>
                       <Grid item lg={4} xs={12} sx={{ px: 4, my: { lg: 0, xs: 4 } }}>
@@ -382,13 +427,19 @@ const AddCard = (props: Props) => {
                         >
                           Our Rate
                         </Typography>
-                        <TextField
-                          size='small'
-                          type='number'
-                          placeholder=''
-                          InputProps={{ inputProps: { min: 0 } }}
-                          onChange={e => handleInputChange(e)}
+                        <Controller
                           name='our_rate'
+                          control={control}
+                          defaultValue={initialData?.our_rate || ''} // Use initialData for setting the default value
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              type='number'
+                              error={!!errors.our_rate}
+                              helperText={errors.our_rate?.message || ''}
+                              fullWidth
+                            />
+                          )}
                         />
                       </Grid>
                       <Grid item lg={2} xs={12} sx={{ px: 4, my: { lg: 0, xs: 4 } }}>
@@ -399,13 +450,19 @@ const AddCard = (props: Props) => {
                         >
                           No. of Items
                         </Typography>
-                        <TextField
-                          size='small'
-                          type='number'
-                          placeholder=''
-                          InputProps={{ inputProps: { min: 0 } }}
-                          onChange={e => handleInputChange(e)}
+                        <Controller
                           name='no_of_items'
+                          control={control}
+                          defaultValue={initialData?.no_of_items || ''} // Use initialData for setting the default value
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              type='number'
+                              error={!!errors.no_of_items}
+                              helperText={errors.no_of_items?.message || ''}
+                              fullWidth
+                            />
+                          )}
                         />
                       </Grid>
                       <Grid item lg={2} xs={12} sx={{ px: 4, my: { lg: 0 }, mt: 2 }}>
@@ -416,13 +473,19 @@ const AddCard = (props: Props) => {
                         >
                           Overweight
                         </Typography>
-                        <TextField
-                          size='small'
-                          type='number'
-                          placeholder=''
-                          InputProps={{ inputProps: { min: 0 } }}
-                          onChange={e => handleInputChange(e)}
+                        <Controller
                           name='overweight'
+                          control={control}
+                          defaultValue={initialData?.overweight || ''} // Use initialData for setting the default value
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              type='number'
+                              error={!!errors.overweight}
+                              helperText={errors.overweight?.message || ''}
+                              fullWidth
+                            />
+                          )}
                         />
                       </Grid>
                     </Grid>

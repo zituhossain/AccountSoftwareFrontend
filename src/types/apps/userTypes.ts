@@ -143,6 +143,8 @@ export type QuotationType = {
   status: boolean
   send_status: boolean
   revision_count: number
+  date: Date
+  created_user?: string
   createdAt?: string
   updatedAt?: string
   publishedAt?: string
