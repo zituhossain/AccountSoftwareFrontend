@@ -12,6 +12,7 @@ import axios from 'axios'
 import { API_URL } from 'src/utils/urls'
 import toast from 'react-hot-toast'
 import { storedToken } from 'src/utils/api'
+import router from 'next/router'
 
 interface Props {
   id: string | undefined
@@ -77,7 +78,7 @@ const PreviewActions = ({ id, toggleSendInvoiceDrawer }: Props) => {
           component={Link}
           color='secondary'
           variant='outlined'
-          href={`/apps/invoice/edit/${id}`}
+          href={`/apps/quotation/add?id=${id}`}
         >
           Edit Quotation
         </Button>
