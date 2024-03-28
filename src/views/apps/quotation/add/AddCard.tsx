@@ -1,5 +1,5 @@
 // ** React Imports
-import { ForwardedRef, SyntheticEvent, forwardRef, useEffect, useState } from 'react'
+import { ForwardedRef, forwardRef, useEffect, useState } from 'react'
 
 // ** MUI Imports
 import Box, { BoxProps } from '@mui/material/Box'
@@ -18,7 +18,7 @@ import TableContainer from '@mui/material/TableContainer'
 import TableRow from '@mui/material/TableRow'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
-import { alpha, styled, useTheme } from '@mui/material/styles'
+import { alpha, styled } from '@mui/material/styles'
 
 // ** Icon Imports
 
@@ -31,8 +31,8 @@ import DatePicker from 'react-datepicker'
 import { DateType } from 'src/types/forms/reactDatepickerTypes'
 
 // ** Custom Component Imports
-import Repeater from 'src/@core/components/repeater'
 import { Controller } from 'react-hook-form'
+import Repeater from 'src/@core/components/repeater'
 
 interface PickerProps {
   label?: string
@@ -46,6 +46,9 @@ interface Props {
   setSelectedClient: (val: any) => void
   setFormData: any
   formData: any
+  control: any
+  errors: any
+  initialData: any
 }
 
 const CustomInput = forwardRef(({ ...props }: PickerProps, ref: ForwardedRef<HTMLElement>) => {
@@ -148,10 +151,6 @@ const AddCard = (props: Props) => {
   // }
 
   // Update formData whenever date picker changes
-  const handleDateChange = (date: Date, fieldName: string) => {
-    setIssueDate(date)
-    setFormData({ ...formData, [fieldName]: date })
-  }
 
   // React to changes in initialData to initialize the selected client
   useEffect(() => {
@@ -166,7 +165,7 @@ const AddCard = (props: Props) => {
         setSelected(initialClientId)
 
         // Update formData with the initial client ID
-        setFormData(prevFormData => ({ ...prevFormData, client: initialData.client }))
+        setFormData((prevFormData: any) => ({ ...prevFormData, client: initialData.client }))
       }
     }
   }, [initialData, clients, setFormData])
