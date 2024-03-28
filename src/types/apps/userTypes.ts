@@ -17,43 +17,108 @@ export type UsersType = {
 }
 
 export type UsersTypeFromStrapi = {
+  avatar: any
+  avatarColor: string
+  phone: string
   id: number
   username: string
   email: string
-  avatar: string
-  avatarColor?: ThemeColor
+  password: string
+  organizational_position?: any
+  confirmed: any
+  company?: string
+  image?: string
+  signature?: string
+  role?: number
 }
 
-export type CompanyTypeFromStrapi = {
+export type UserRoleType = {
   id: number
+  attributes: {
+    title: string
+    status: boolean
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  }
+}
+
+export type UserPositionType = {
+  id: number
+  attributes: {
+    title: string
+    status: boolean
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  }
+}
+
+export type CompanyType = {
+  id?: number
   name: string
   address: string
   email: string
   code: string
   phone: string
+  legal_information: string
+  website: string
+  logo?: string
   status: boolean
-  createdAt: string
-  updatedAt: string
-  publishedAt: string
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
 }
 
 export type ContactPersonType = {
-  id: number
+  id?: number
   name: string
   address: string
   email: string
   code: string
   phone: string
-  image: string
-  company_id: number
-  contact_type: number
+  image?: string
+  company?: number
+  contact_type?: number
+  created_user?: number
+  status: boolean
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
+}
+
+export type ContactType = {
+  id?: number
+  title: string
+  status: boolean
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
+}
+
+export type AccountHeadType = {
+  id: number
+  head_title: string
+  description: string
   status: boolean
   createdAt: string
   updatedAt: string
   publishedAt: string
 }
 
-export type ContactType = {
+export type BusinessRelationType = {
+  id?: number
+  company?: number
+  client?: number
+  relation_type?: number
+  status: boolean
+  created_user?: number
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
+}
+
+export type B2BRelationType = {
   id: number
   title: string
   status: boolean
@@ -62,34 +127,27 @@ export type ContactType = {
   publishedAt: string
 }
 
-export type BusinessRelationType = {
-  id: number
-  attributes: {
-    company_id: number
-    business_contact_id: number
-    relation_type: number
-    status: boolean
-    createdAt: string
-    updatedAt: string
-    publishedAt: string
-  }
-}
-
-export type QuotationFromStrapi = {
-  id: number
+export type QuotationType = {
+  id?: number
   quotation_no: string
   subject: string
-  supplier_rate: number
-  top4_rate: number
-  no_of_trailers: number
+  client_rate: number
+  our_rate: number
+  no_of_items: number
   overweight: number
   lc_number: string
   bl_number: string
   remarks: string
+  company?: string
+  client?: string
   status: boolean
-  createdAt: string
-  updatedAt: string
-  publishedAt: string
+  send_status: boolean
+  revision_count: number
+  date: Date
+  created_user?: string
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
 }
 
 export type ProjectListDataType = {

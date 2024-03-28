@@ -5,6 +5,7 @@ export type InvoiceLayoutProps = {
 }
 
 export type InvoiceClientType = {
+  id: number
   name: string
   address: string
   company: string

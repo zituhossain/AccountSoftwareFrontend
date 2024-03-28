@@ -1,37 +1,29 @@
-// ** React Imports
-import { useState } from 'react'
-
-// ** MUI Imports
-import Drawer from '@mui/material/Drawer'
-import Select from '@mui/material/Select'
+import { yupResolver } from '@hookform/resolvers/yup'
+import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import MenuItem from '@mui/material/MenuItem'
-import { styled } from '@mui/material/styles'
-import TextField from '@mui/material/TextField'
-import IconButton from '@mui/material/IconButton'
-import InputLabel from '@mui/material/InputLabel'
-import Typography from '@mui/material/Typography'
-import Box, { BoxProps } from '@mui/material/Box'
+import Drawer from '@mui/material/Drawer'
 import FormControl from '@mui/material/FormControl'
 import FormHelperText from '@mui/material/FormHelperText'
-
-// ** Third Party Imports
-import * as yup from 'yup'
-import { yupResolver } from '@hookform/resolvers/yup'
-import { useForm, Controller } from 'react-hook-form'
-
-// ** Icon Imports
-import Icon from 'src/@core/components/icon'
-
-// ** Store Imports
+import IconButton from '@mui/material/IconButton'
+import InputLabel from '@mui/material/InputLabel'
+import MenuItem from '@mui/material/MenuItem'
+import Select from '@mui/material/Select'
+import Switch from '@mui/material/Switch'
+import TextField from '@mui/material/TextField'
+import Typography from '@mui/material/Typography'
+import { styled } from '@mui/material/styles'
+import axios from 'axios'
+import { useRouter } from 'next/router'
+import React, { useEffect, useState } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 import { useDispatch, useSelector } from 'react-redux'
-
-// ** Actions Imports
-import { addUser } from 'src/store/apps/user'
-
-// ** Types Imports
-import { RootState, AppDispatch } from 'src/store'
-import { UsersType } from 'src/types/apps/userTypes'
+import Icon from 'src/@core/components/icon'
+import authConfig from 'src/configs/auth'
+import { AppDispatch, RootState } from 'src/store'
+import { UserPositionType } from 'src/types/apps/userTypes'
+import { fetchDataFromApi, postDataToApi, storedToken } from 'src/utils/api'
+import * as yup from 'yup'
 
 interface SidebarAddUserType {
   open: boolean
@@ -39,108 +31,117 @@ interface SidebarAddUserType {
 }
 
 interface UserData {
-  email: string
-  company: string
-  country: string
-  contact: number
-  fullName: string
   username: string
+  email: string
+  password: string
+  confirmed: boolean
+  organizational_position: number
+  company: number
+  role: number
+  created_user: number
 }
 
-const showErrors = (field: string, valueLen: number, min: number) => {
-  if (valueLen === 0) {
-    return `${field} field is required`
-  } else if (valueLen > 0 && valueLen < min) {
-    return `${field} must be at least ${min} characters`
-  } else {
-    return ''
-  }
-}
-
-const Header = styled(Box)<BoxProps>(({ theme }) => ({
+const Header = styled(Box)({
   display: 'flex',
   alignItems: 'center',
-  padding: theme.spacing(3, 4),
+  padding: '20px',
   justifyContent: 'space-between',
-  backgroundColor: theme.palette.background.default
-}))
+  backgroundColor: 'background.default'
+}) as React.ComponentType<any>
 
 const schema = yup.object().shape({
-  company: yup.string().required(),
-  country: yup.string().required(),
-  email: yup.string().email().required(),
-  contact: yup
-    .number()
-    .typeError('Contact Number field is required')
-    .min(10, obj => showErrors('Contact Number', obj.value.length, obj.min))
-    .required(),
-  fullName: yup
-    .string()
-    .min(3, obj => showErrors('First Name', obj.value.length, obj.min))
-    .required(),
-  username: yup
-    .string()
-    .min(3, obj => showErrors('Username', obj.value.length, obj.min))
-    .required()
+  username: yup.string().min(3, 'Username must be at least 3 characters').required('Username is required'),
+  email: yup.string().email('Invalid email').required('Email is required'),
+  password: yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
+  confirmed: yup.boolean().required('Confirmation is required')
 })
 
-const defaultValues = {
-  email: '',
-  company: '',
-  country: '',
-  fullName: '',
-  username: '',
-  contact: Number('')
-}
-
-const SidebarAddUser = (props: SidebarAddUserType) => {
-  // ** Props
-  const { open, toggle } = props
-
-  // ** State
+const AddUserDrawer = ({ open, toggle }: SidebarAddUserType) => {
   const [plan, setPlan] = useState<string>('basic')
   const [role, setRole] = useState<string>('subscriber')
-
-  // ** Hooks
+  const [position, setPosition] = useState<UserPositionType[]>([])
   const dispatch = useDispatch<AppDispatch>()
   const store = useSelector((state: RootState) => state.user)
+
+  const [companyId, setCompanyId] = useState<any>(null)
+  const [userId, setUserId] = useState<any>(null)
+
+  const router = useRouter()
+
   const {
     reset,
     control,
-    setValue,
-    setError,
     handleSubmit,
     formState: { errors }
-  } = useForm({
-    defaultValues,
+  } = useForm<UserData>({
     mode: 'onChange',
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues: {
+      username: '',
+      email: '',
+      password: '',
+      confirmed: false,
+      organizational_position: 0,
+      role: 1,
+      company: 0,
+      created_user: 0
+    }
   })
-  const onSubmit = (data: UserData) => {
-    if (store.allData.some((u: UsersType) => u.email === data.email || u.username === data.username)) {
-      store.allData.forEach((u: UsersType) => {
-        if (u.email === data.email) {
-          setError('email', {
-            message: 'Email already exists!'
-          })
+
+  useEffect(() => {
+    const fetchPositions = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem(authConfig.storageUserKeyName)!)
+        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+
+        if (userResponse) {
+          setUserId(userResponse.id)
+          if (userResponse.company) setCompanyId(userResponse.company.id)
         }
-        if (u.username === data.username) {
-          setError('username', {
-            message: 'Username already exists!'
-          })
+        const response = await fetchDataFromApi('/organizational-positions')
+        setPosition(response.data)
+      } catch (error) {
+        console.error('Error fetching positions:', error)
+      }
+    }
+    fetchPositions()
+  }, [])
+
+  const onSubmit = async (data: UserData) => {
+    try {
+      const formData = new FormData()
+      formData.append('username', data.username)
+      formData.append('email', data.email)
+      formData.append('password', data.password)
+      formData.append('confirmed', data.confirmed.toString())
+      formData.append('organizational_position', data.organizational_position.toString())
+      formData.append('role', data.role.toString())
+      formData.append('company', companyId)
+      formData.append('created_user', userId)
+
+      const response = await axios.post('http://localhost:1337/api/users', formData, {
+        headers: {
+          Authorization: `Bearer ${storedToken}`
         }
       })
-    } else {
-      dispatch(addUser({ ...data, role, currentPlan: plan }))
-      toggle()
-      reset()
+
+      // const response = await postDataToApi('/users', formData)
+
+      if (response.status === 201) {
+        router.reload()
+        toggle() // Close the modal after successful submission
+        toast.success('User added successfully')
+      } else {
+        toast.error('Failed to add user. Please try again.')
+      }
+    } catch (error: any) {
+      console.error('Error adding user:', error.message)
     }
   }
 
   const handleClose = () => {
     setPlan('basic')
     setRole('subscriber')
-    setValue('contact', Number(''))
     toggle()
     reset()
   }
@@ -164,34 +165,10 @@ const SidebarAddUser = (props: SidebarAddUserType) => {
         <form onSubmit={handleSubmit(onSubmit)}>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
-              name='fullName'
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
-                <TextField
-                  value={value}
-                  label='Full Name'
-                  onChange={onChange}
-                  placeholder='John Doe'
-                  error={Boolean(errors.fullName)}
-                />
-              )}
-            />
-            {errors.fullName && <FormHelperText sx={{ color: 'error.main' }}>{errors.fullName.message}</FormHelperText>}
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <Controller
               name='username'
               control={control}
-              rules={{ required: true }}
               render={({ field: { value, onChange } }) => (
-                <TextField
-                  value={value}
-                  label='Username'
-                  onChange={onChange}
-                  placeholder='johndoe'
-                  error={Boolean(errors.username)}
-                />
+                <TextField value={value} label='Username' onChange={onChange} error={Boolean(errors.username)} />
               )}
             />
             {errors.username && <FormHelperText sx={{ color: 'error.main' }}>{errors.username.message}</FormHelperText>}
@@ -200,106 +177,61 @@ const SidebarAddUser = (props: SidebarAddUserType) => {
             <Controller
               name='email'
               control={control}
-              rules={{ required: true }}
               render={({ field: { value, onChange } }) => (
-                <TextField
-                  type='email'
-                  value={value}
-                  label='Email'
-                  onChange={onChange}
-                  placeholder='johndoe@email.com'
-                  error={Boolean(errors.email)}
-                />
+                <TextField type='email' value={value} label='Email' onChange={onChange} error={Boolean(errors.email)} />
               )}
             />
             {errors.email && <FormHelperText sx={{ color: 'error.main' }}>{errors.email.message}</FormHelperText>}
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
             <Controller
-              name='company'
+              name='password'
               control={control}
-              rules={{ required: true }}
               render={({ field: { value, onChange } }) => (
                 <TextField
+                  type='password'
                   value={value}
-                  label='Company'
+                  label='Password'
                   onChange={onChange}
-                  placeholder='Company PVT LTD'
-                  error={Boolean(errors.company)}
+                  error={Boolean(errors.password)}
                 />
               )}
             />
-            {errors.company && <FormHelperText sx={{ color: 'error.main' }}>{errors.company.message}</FormHelperText>}
+            {errors.password && <FormHelperText sx={{ color: 'error.main' }}>{errors.password.message}</FormHelperText>}
           </FormControl>
           <FormControl fullWidth sx={{ mb: 6 }}>
+            <InputLabel id='position-select'>Select Position</InputLabel>
             <Controller
-              name='country'
-              control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
-                <TextField
-                  value={value}
-                  label='Country'
-                  onChange={onChange}
-                  placeholder='Australia'
-                  error={Boolean(errors.country)}
-                />
+              name='organizational_position' // Name of the field in your form data
+              control={control} // Pass the control from react-hook-form
+              render={({ field }) => (
+                <Select
+                  {...field} // Spread the field props into the Select component
+                  fullWidth
+                  label='Select Position'
+                  labelId='position-select'
+                >
+                  <MenuItem value={0}>Select Position</MenuItem>
+                  {position.map(pos => (
+                    <MenuItem key={pos.id} value={pos.id}>
+                      {pos.attributes?.title}
+                    </MenuItem>
+                  ))}
+                </Select>
               )}
             />
-            {errors.country && <FormHelperText sx={{ color: 'error.main' }}>{errors.country.message}</FormHelperText>}
           </FormControl>
+
           <FormControl fullWidth sx={{ mb: 6 }}>
+            <Typography variant='body1'>Confirmed</Typography>
             <Controller
-              name='contact'
+              name='confirmed'
               control={control}
-              rules={{ required: true }}
-              render={({ field: { value, onChange } }) => (
-                <TextField
-                  type='number'
-                  value={value}
-                  label='Contact'
-                  onChange={onChange}
-                  placeholder='(397) 294-5153'
-                  error={Boolean(errors.contact)}
-                />
-              )}
+              render={({ field }) => <Switch {...field} color='primary' />}
             />
-            {errors.contact && <FormHelperText sx={{ color: 'error.main' }}>{errors.contact.message}</FormHelperText>}
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <InputLabel id='role-select'>Select Role</InputLabel>
-            <Select
-              fullWidth
-              value={role}
-              id='select-role'
-              label='Select Role'
-              labelId='role-select'
-              onChange={e => setRole(e.target.value)}
-              inputProps={{ placeholder: 'Select Role' }}
-            >
-              <MenuItem value='admin'>Admin</MenuItem>
-              <MenuItem value='author'>Author</MenuItem>
-              <MenuItem value='editor'>Editor</MenuItem>
-              <MenuItem value='maintainer'>Maintainer</MenuItem>
-              <MenuItem value='subscriber'>Subscriber</MenuItem>
-            </Select>
-          </FormControl>
-          <FormControl fullWidth sx={{ mb: 6 }}>
-            <InputLabel id='plan-select'>Select Plan</InputLabel>
-            <Select
-              fullWidth
-              value={plan}
-              id='select-plan'
-              label='Select Plan'
-              labelId='plan-select'
-              onChange={e => setPlan(e.target.value)}
-              inputProps={{ placeholder: 'Select Plan' }}
-            >
-              <MenuItem value='basic'>Basic</MenuItem>
-              <MenuItem value='company'>Company</MenuItem>
-              <MenuItem value='enterprise'>Enterprise</MenuItem>
-              <MenuItem value='team'>Team</MenuItem>
-            </Select>
+            {errors.confirmed && (
+              <FormHelperText sx={{ color: 'error.main' }}>{errors.confirmed.message}</FormHelperText>
+            )}
           </FormControl>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
             <Button size='large' type='submit' variant='contained' sx={{ mr: 3 }}>
@@ -315,4 +247,4 @@ const SidebarAddUser = (props: SidebarAddUserType) => {
   )
 }
 
-export default SidebarAddUser
+export default AddUserDrawer

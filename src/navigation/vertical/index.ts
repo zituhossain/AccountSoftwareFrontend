@@ -18,12 +18,12 @@ const navigation = (): VerticalNavItemsType => {
         {
           title: 'List',
           path: '/apps/user/list'
-        }
+        },
 
-        // {
-        //   title: 'Roles',
-        //   path: '/apps/roles'
-        // },
+        {
+          title: 'Position',
+          path: '/apps/user/position'
+        }
       ]
     },
     {
@@ -43,6 +43,7 @@ const navigation = (): VerticalNavItemsType => {
           title: 'Contact Type',
           path: '/apps/company/contact-type'
         },
+
         {
           title: 'Business Relationship',
           path: '/apps/company/business-relation'
@@ -70,6 +71,14 @@ const navigation = (): VerticalNavItemsType => {
         {
           title: 'Journal',
           path: '/apps/accounts/journal'
+        },
+        {
+          title: 'Account Receivable',
+          path: '/apps/accounts/account-receivable'
+        },
+        {
+          title: 'Account Payable',
+          path: '/apps/accounts/account-payable'
         }
       ]
     },

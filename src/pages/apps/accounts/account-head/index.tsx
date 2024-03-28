@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState, useEffect, MouseEvent, useCallback } from 'react'
+import { useState, MouseEvent, useCallback, useEffect } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
@@ -7,7 +7,8 @@ import Grid from '@mui/material/Grid'
 import { styled } from '@mui/material/styles'
 import MenuItem from '@mui/material/MenuItem'
 import IconButton from '@mui/material/IconButton'
-import Typography from '@mui/material/Typography'
+
+// import Typography from '@mui/material/Typography'
 import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
@@ -20,7 +21,7 @@ import Link from 'next/link'
 import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Third Party Components
-import axios from 'axios'
+// import axios from 'axios'
 
 // ** Types Imports
 import { ThemeColor } from 'src/@core/layouts/types'
@@ -28,7 +29,8 @@ import { useDispatch } from 'react-redux'
 import { AppDispatch } from 'src/store'
 import { Menu } from '@mui/material'
 import { deleteUser } from 'src/store/apps/user'
-import TableHeader from 'src/views/apps/company/contact-person/list/TableHeader'
+import TableHeader from 'src/views/apps/accounts/TableHeader'
+import { fetchDataFromApi } from 'src/utils/api'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -36,17 +38,11 @@ const companyStatusObj: { [key: string]: ThemeColor } = {
   false: 'secondary'
 }
 
-interface ContactPerson {
+interface AccountHead {
   id: number
   attributes: {
-    name: string
-    address: string
-    email: string
-    code: string
-    phone: string
-    image: string
-    company_id: number
-    contact_type: number
+    head_title: string
+    description: string
     status: boolean
     createdAt: string
     updatedAt: string
@@ -55,7 +51,7 @@ interface ContactPerson {
 }
 
 interface CellType {
-  row: ContactPerson
+  row: AccountHead
 }
 
 const LinkStyled = styled(Link)(({ theme }) => ({
@@ -134,54 +130,29 @@ const RowOptions = ({ id }: { id: number | string }) => {
 
 const columns: GridColDef[] = [
   {
+    sortable: true,
+    field: 'slNo',
+    headerName: '#',
+    flex: 0,
+    editable: false,
+    renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
+  },
+  {
     flex: 0.2,
     minWidth: 230,
-    field: 'name',
-    headerName: 'Name',
-    renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes.name}</LinkStyled>
+    field: 'head_title',
+    headerName: 'Header Name',
+    renderCell: ({ row }: CellType) => (
+      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.head_title}</LinkStyled>
+    )
   },
   {
     flex: 0.2,
-    minWidth: 250,
-    field: 'email',
-    headerName: 'Email',
+    minWidth: 230,
+    field: 'description',
+    headerName: 'Description',
     renderCell: ({ row }: CellType) => (
-      <Typography noWrap variant='body2'>
-        {row.attributes.email}
-      </Typography>
-    )
-  },
-  {
-    flex: 0.15,
-    field: 'phone',
-    minWidth: 150,
-    headerName: 'Phone',
-    renderCell: ({ row }: CellType) => (
-      <Typography noWrap variant='body2'>
-        {row.attributes.phone}
-      </Typography>
-    )
-  },
-  {
-    flex: 0.15,
-    minWidth: 120,
-    headerName: 'Contact Type',
-    field: 'type',
-    renderCell: ({ row }: CellType) => (
-      <Typography variant='subtitle1' noWrap>
-        {row.attributes.contact_type}
-      </Typography>
-    )
-  },
-  {
-    flex: 0.15,
-    minWidth: 120,
-    headerName: 'Company',
-    field: 'company',
-    renderCell: ({ row }: CellType) => (
-      <Typography variant='subtitle1' noWrap>
-        {row.attributes.company_id}
-      </Typography>
+      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.description}</LinkStyled>
     )
   },
   {
@@ -194,7 +165,7 @@ const columns: GridColDef[] = [
         skin='light'
         size='small'
         label={row.attributes.status ? 'Active' : 'Inactive'}
-        color={companyStatusObj[row.attributes.status]}
+        color={companyStatusObj[row.attributes.status.toString()]}
         sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
       />
     )
@@ -209,9 +180,9 @@ const columns: GridColDef[] = [
   }
 ]
 
-const ContactPersonList = () => {
+const AccountHeadList = () => {
   // ** State
-  const [contact, setContact] = useState<ContactPerson[]>([])
+  const [accountHead, setAccountHead] = useState<AccountHead[]>([])
   const [value, setValue] = useState<string>('')
 
   const handleFilter = useCallback((val: string) => {
@@ -220,31 +191,28 @@ const ContactPersonList = () => {
 
   useEffect(() => {
     // Fetch companies data from API
-    const fetchContact = async () => {
+    const fetchAccountHead = async () => {
       try {
-        const response = await axios.get('http://localhost:1337/api/contact-people')
-        console.log('zitu', response.data[0])
-        setContact(response.data.data)
+        const response = await fetchDataFromApi('/account-headers')
+        console.log('zitu', response.data)
+        setAccountHead(response.data)
       } catch (error) {
-        console.error('Error fetching companies:', error)
+        console.error('Error fetching contact type:', error)
       }
     }
-    fetchContact()
+    fetchAccountHead()
   }, [])
 
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card>
-          <CardHeader
-            title='Contact Person List'
-            sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }}
-          />
+          <CardHeader title='Account Head List' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
           <CardContent>
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={contact}
+              rows={accountHead}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
@@ -258,4 +226,4 @@ const ContactPersonList = () => {
   )
 }
 
-export default ContactPersonList
+export default AccountHeadList

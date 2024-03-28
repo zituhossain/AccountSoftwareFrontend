@@ -49,6 +49,7 @@ import TableHeader from 'src/views/apps/invoice/list/TableHeader'
 
 // ** Styled Components
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
+import { fetchDataFromApi } from 'src/utils/api'
 
 interface InvoiceStatusObj {
   [key: string]: {
@@ -66,7 +67,7 @@ interface CustomInputProps {
 }
 
 interface CellType {
-  row: InvoiceType
+  row: any
 }
 
 // ** Styled component for the link in the dataTable
@@ -86,70 +87,33 @@ const invoiceStatusObj: InvoiceStatusObj = {
 }
 
 // ** renders client column
-const renderClient = (row: InvoiceType) => {
-  if (row.avatar.length) {
-    return <CustomAvatar src={row.avatar} sx={{ mr: 3, width: 34, height: 34 }} />
-  } else {
-    return (
-      <CustomAvatar
-        skin='light'
-        color={(row.avatarColor as ThemeColor) || ('primary' as ThemeColor)}
-        sx={{ mr: 3, fontSize: '1rem', width: 34, height: 34 }}
-      >
-        {getInitials(row.name || 'John Doe')}
-      </CustomAvatar>
-    )
-  }
-}
+// const renderClient = async (row: any) => {
+//   if (row?.attributes?.business_contact?.length) {
+//     const client = await fetchDataFromApi(`/companies/${row.attributes.business_contact.data.id}`)
+//     console.log('client', client)
+
+//     return <CustomAvatar src={'#'} sx={{ mr: 3, width: 34, height: 34 }} />
+//   } else {
+//     return (
+//       <CustomAvatar
+//         skin='light'
+//         color={(row.avatarColor as ThemeColor) || ('primary' as ThemeColor)}
+//         sx={{ mr: 3, fontSize: '1rem', width: 34, height: 34 }}
+//       >
+//         {getInitials(row.name || 'John Doe')}
+//       </CustomAvatar>
+//     )
+//   }
+// }
 
 const defaultColumns: GridColDef[] = [
   {
-    flex: 0.1,
-    field: 'id',
-    minWidth: 80,
+    sortable: true,
+    field: 'slNo',
     headerName: '#',
-    renderCell: ({ row }: CellType) => <LinkStyled href={`/apps/invoice/preview/${row.id}`}>{`#${row.id}`}</LinkStyled>
-  },
-  {
-    flex: 0.1,
-    minWidth: 80,
-    field: 'invoiceStatus',
-    renderHeader: () => (
-      <Box sx={{ display: 'flex', color: 'action.active' }}>
-        <Icon icon='mdi:trending-up' fontSize={20} />
-      </Box>
-    ),
-    renderCell: ({ row }: CellType) => {
-      const { dueDate, balance, invoiceStatus } = row
-
-      const color = invoiceStatusObj[invoiceStatus] ? invoiceStatusObj[invoiceStatus].color : 'primary'
-
-      return (
-        <Tooltip
-          title={
-            <div>
-              <Typography variant='caption' sx={{ color: 'common.white', fontWeight: 600 }}>
-                {invoiceStatus}
-              </Typography>
-              <br />
-              <Typography variant='caption' sx={{ color: 'common.white', fontWeight: 600 }}>
-                Balance:
-              </Typography>{' '}
-              {balance}
-              <br />
-              <Typography variant='caption' sx={{ color: 'common.white', fontWeight: 600 }}>
-                Due Date:
-              </Typography>{' '}
-              {dueDate}
-            </div>
-          }
-        >
-          <CustomAvatar skin='light' color={color} sx={{ width: 34, height: 34 }}>
-            <Icon icon={invoiceStatusObj[invoiceStatus].icon} fontSize='1.25rem' />
-          </CustomAvatar>
-        </Tooltip>
-      )
-    }
+    flex: 0,
+    editable: false,
+    renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
   },
   {
     flex: 0.25,
@@ -157,11 +121,11 @@ const defaultColumns: GridColDef[] = [
     minWidth: 300,
     headerName: 'Client',
     renderCell: ({ row }: CellType) => {
-      const { name, companyEmail } = row
+      const { name, email } = row.attributes?.client?.data?.attributes
 
       return (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          {renderClient(row)}
+          {/* {renderClient(row)} */}
           <Box sx={{ display: 'flex', flexDirection: 'column' }}>
             <Typography
               noWrap
@@ -171,7 +135,7 @@ const defaultColumns: GridColDef[] = [
               {name}
             </Typography>
             <Typography noWrap variant='caption'>
-              {companyEmail}
+              {email}
             </Typography>
           </Box>
         </Box>
@@ -183,29 +147,16 @@ const defaultColumns: GridColDef[] = [
     minWidth: 90,
     field: 'total',
     headerName: 'Total',
-    renderCell: ({ row }: CellType) => <Typography variant='body2'>{`$${row.total || 0}`}</Typography>
+    renderCell: ({ row }: CellType) => (
+      <Typography variant='body2'>{`${row?.attributes?.total_amount || 0}`}</Typography>
+    )
   },
   {
     flex: 0.15,
     minWidth: 125,
     field: 'issuedDate',
     headerName: 'Issued Date',
-    renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.issuedDate}</Typography>
-  },
-  {
-    flex: 0.1,
-    minWidth: 90,
-    field: 'balance',
-    headerName: 'Balance',
-    renderCell: ({ row }: CellType) => {
-      return row.balance !== 0 ? (
-        <Typography variant='body2' sx={{ color: 'text.primary' }}>
-          {row.balance}
-        </Typography>
-      ) : (
-        <CustomChip size='small' skin='light' color='success' label='Paid' />
-      )
-    }
+    renderCell: ({ row }: CellType) => <Typography variant='body2'>{row?.attributes?.date}</Typography>
   }
 ]
 
@@ -232,6 +183,13 @@ const InvoiceList = () => {
   const [selectedRows, setSelectedRows] = useState<GridRowId[]>([])
   const [startDateRange, setStartDateRange] = useState<DateType>(null)
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
+  const [invoice, setInvoice] = useState<any>([])
+
+  const { attributes } = invoice
+
+  console.log('attributes', attributes)
+
+  console.log('invoice', invoice)
 
   // ** Hooks
   const dispatch = useDispatch<AppDispatch>()
@@ -271,6 +229,8 @@ const InvoiceList = () => {
       minWidth: 130,
       sortable: false,
       field: 'actions',
+      align: 'center',
+      headerAlign: 'center',
       headerName: 'Actions',
       renderCell: ({ row }: CellType) => (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -284,30 +244,28 @@ const InvoiceList = () => {
               <Icon icon='mdi:eye-outline' />
             </IconButton>
           </Tooltip>
-          <OptionsMenu
-            iconProps={{ fontSize: 20 }}
-            iconButtonProps={{ size: 'small' }}
-            menuProps={{ sx: { '& .MuiMenuItem-root svg': { mr: 2 } } }}
-            options={[
-              {
-                text: 'Download',
-                icon: <Icon icon='mdi:download' fontSize={20} />
-              },
-              {
-                text: 'Edit',
-                href: `/apps/invoice/edit/${row.id}`,
-                icon: <Icon icon='mdi:pencil-outline' fontSize={20} />
-              },
-              {
-                text: 'Duplicate',
-                icon: <Icon icon='mdi:content-copy' fontSize={20} />
-              }
-            ]}
-          />
+          <Tooltip title='Edit'>
+            <IconButton size='small' component={Link} sx={{ mr: 0.5 }} href={`/apps/invoice/edit/${row.id}`}>
+              <Icon icon='mdi:pencil-outline' />
+            </IconButton>
+          </Tooltip>
         </Box>
       )
     }
   ]
+
+  useEffect(() => {
+    // Fetch companies data from API
+    const fetchQuotaiton = async () => {
+      try {
+        const response = await fetchDataFromApi('/invoice-masters?populate=*')
+        setInvoice(response.data)
+      } catch (error) {
+        console.error('Error fetching contact type:', error)
+      }
+    }
+    fetchQuotaiton()
+  }, [])
 
   return (
     <DatePickerWrapper>
@@ -371,7 +329,7 @@ const InvoiceList = () => {
             <DataGrid
               autoHeight
               pagination
-              rows={store.data}
+              rows={invoice}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick

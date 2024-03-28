@@ -1,53 +1,86 @@
-// import { useState } from 'react'
-import axios from 'axios'
-import Card from '@mui/material/Card'
-import Grid from '@mui/material/Grid'
-import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
-import TextField from '@mui/material/TextField'
-import CardHeader from '@mui/material/CardHeader'
-import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
-import { FormControlLabel, Switch } from '@mui/material'
-import { useRouter } from 'next/navigation'
-import * as yup from 'yup'
-import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
+import {
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  Divider,
+  FormControlLabel,
+  Grid,
+  Switch,
+  TextField
+} from '@mui/material'
+import { useRouter } from 'next/router'
+import { FormEventHandler, useEffect } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
 import { ContactType } from 'src/types/apps/userTypes'
+import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
+import * as yup from 'yup'
 
 const AddContactType = () => {
   const router = useRouter()
+  const { id } = router.query
 
   const schema = yup.object().shape({
     title: yup.string().required('Title is required')
   })
+
+  const defaultValues = { title: '', status: true }
 
   const {
     handleSubmit,
     control,
     reset,
     formState: { errors }
+
+    // setValue
   } = useForm<ContactType>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues: defaultValues
   })
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        if (id) {
+          const response = await fetchDataFromApi(`/contact-types/${id}`)
+          const {
+            data: { attributes }
+          } = response
+          reset(attributes)
+        }
+      } catch (error: any) {
+        console.error('Error fetching contact type:', error.message)
+      }
+    }
+
+    fetchData()
+  }, [id, reset])
+
   const onSubmit = async (data: ContactType) => {
+    const formData = new FormData()
+    formData.append('data', JSON.stringify(data))
     try {
-      await axios.post('http://127.0.0.1:1337/api/contact-types', {
-        data: data
-      })
-      console.log('contact added successfully')
+      if (id) {
+        await putDataToApi(`/contact-types/${id}`, formData)
+        toast.success('Contact type updated successfully')
+      } else {
+        await postDataToApiAxios('/contact-types', formData)
+        toast.success('Contact type added successfully')
+      }
       router.push('/apps/company/contact-type')
-    } catch (error: any) {
-      console.error('Error adding contact type:', error.message)
+    } catch (error) {
+      toast.error('Something went wrong! Please try again.')
     }
   }
 
   return (
     <Card>
-      <CardHeader title='Add Contact Type' />
+      <CardHeader title={id ? 'Edit Contact Type' : 'Add Contact Type'} />
       <Divider sx={{ m: '0 !important' }} />
-      <form onSubmit={handleSubmit(onSubmit)} onReset={reset}>
+      <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
           <Grid container spacing={5}>
             <Grid item xs={12} sm={6}>
@@ -71,7 +104,9 @@ const AddContactType = () => {
               <Controller
                 name='status'
                 control={control}
-                render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
+                render={({ field }) => (
+                  <FormControlLabel control={<Switch {...field} checked={field.value} />} label='Status' />
+                )}
               />
             </Grid>
           </Grid>
@@ -79,7 +114,7 @@ const AddContactType = () => {
         <Divider sx={{ m: '0 !important' }} />
         <CardActions>
           <Button size='large' type='submit' sx={{ mr: 2 }} variant='contained'>
-            Submit
+            {id ? 'Update' : 'Submit'}
           </Button>
           <Button type='reset' size='large' color='secondary' variant='outlined'>
             Reset

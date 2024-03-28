@@ -53,7 +53,7 @@ const TableHeader = (props: TableHeaderProps) => {
           onChange={e => handleFilter(e.target.value)}
         />
         <Button sx={{ mb: 2 }} component={Link} variant='contained' href='/apps/company/contact-type/add'>
-          Create Contact Person
+          Create Contact Type
         </Button>
       </Box>
     </Box>

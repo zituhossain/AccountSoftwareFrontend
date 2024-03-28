@@ -28,9 +28,6 @@ const PreviewActions = ({ id, toggleSendInvoiceDrawer, toggleAddPaymentDrawer }:
         >
           Send Invoice
         </Button>
-        <Button fullWidth sx={{ mb: 3.5 }} color='secondary' variant='outlined'>
-          Download
-        </Button>
         <Button
           fullWidth
           target='_blank'
@@ -51,15 +48,6 @@ const PreviewActions = ({ id, toggleSendInvoiceDrawer, toggleAddPaymentDrawer }:
           href={`/apps/invoice/edit/${id}`}
         >
           Edit Invoice
-        </Button>
-        <Button
-          fullWidth
-          color='success'
-          variant='contained'
-          onClick={toggleAddPaymentDrawer}
-          startIcon={<Icon icon='mdi:currency-usd' />}
-        >
-          Add Payment
         </Button>
       </CardContent>
     </Card>

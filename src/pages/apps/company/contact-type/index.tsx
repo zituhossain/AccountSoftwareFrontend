@@ -1,16 +1,15 @@
 // ** React Imports
-import { useState, MouseEvent, useCallback } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
 import Grid from '@mui/material/Grid'
-import { styled } from '@mui/material/styles'
 import MenuItem from '@mui/material/MenuItem'
-import IconButton from '@mui/material/IconButton'
+import { styled } from '@mui/material/styles'
 
 // import Typography from '@mui/material/Typography'
-import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
 // ** Icon Imports
@@ -21,18 +20,14 @@ import Link from 'next/link'
 import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Third Party Components
-// import axios from 'axios'
-
-import { GetStaticProps } from 'next/types'
 
 // ** Types Imports
+import router from 'next/router'
 import { ThemeColor } from 'src/@core/layouts/types'
-import { useDispatch } from 'react-redux'
-import { AppDispatch } from 'src/store'
-import { Menu } from '@mui/material'
-import { deleteUser } from 'src/store/apps/user'
+import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
 import TableHeader from 'src/views/apps/company/contact-type/list/TableHeader'
-import { fetchDataFromApi } from 'src/utils/api'
+import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
+import toast from 'react-hot-toast'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -66,123 +61,120 @@ const LinkStyled = styled(Link)(({ theme }) => ({
   }
 }))
 
-const RowOptions = ({ id }: { id: number | string }) => {
-  // ** Hooks
-  const dispatch = useDispatch<AppDispatch>()
-
+const ContactTypeList = () => {
   // ** State
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
-  const rowOptionsOpen = Boolean(anchorEl)
-
-  const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
-  const handleRowOptionsClose = () => {
-    setAnchorEl(null)
-  }
-
-  const handleDelete = () => {
-    dispatch(deleteUser(id))
-    handleRowOptionsClose()
-  }
-
-  return (
-    <>
-      <IconButton size='small' onClick={handleRowOptionsClick}>
-        <Icon icon='mdi:dots-vertical' />
-      </IconButton>
-      <Menu
-        keepMounted
-        anchorEl={anchorEl}
-        open={rowOptionsOpen}
-        onClose={handleRowOptionsClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-        PaperProps={{ style: { minWidth: '8rem' } }}
-      >
-        <MenuItem
-          component={Link}
-          sx={{ '& svg': { mr: 2 } }}
-          onClick={handleRowOptionsClose}
-          href='/apps/user/view/overview/'
-        >
-          <Icon icon='mdi:eye-outline' fontSize={20} />
-          View
-        </MenuItem>
-        <MenuItem onClick={handleRowOptionsClose} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:pencil-outline' fontSize={20} />
-          Edit
-        </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:delete-outline' fontSize={20} />
-          Delete
-        </MenuItem>
-      </Menu>
-    </>
-  )
-}
-
-const columns: GridColDef[] = [
-  {
-    flex: 0.2,
-    minWidth: 230,
-    field: 'title',
-    headerName: 'Title',
-    renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes.title}</LinkStyled>
-  },
-  {
-    flex: 0.1,
-    minWidth: 110,
-    field: 'status',
-    headerName: 'Status',
-    renderCell: ({ row }: CellType) => (
-      <CustomChip
-        skin='light'
-        size='small'
-        label={row.attributes.status ? 'Active' : 'Inactive'}
-        color={companyStatusObj[row.attributes.status]}
-        sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
-      />
-    )
-  },
-  {
-    flex: 0.1,
-    minWidth: 90,
-    sortable: false,
-    field: 'actions',
-    headerName: 'Actions',
-    renderCell: ({ row }: CellType) => <RowOptions id={row.id} />
-  }
-]
-
-const ContactTypeList = ({ contactTypeData }: { contactTypeData: ContactType[] }) => {
-  // ** State
+  const [contact, setContact] = useState<ContactType[]>([])
   const [value, setValue] = useState<string>('')
+
+  const [deleteId, setDeleteId] = useState<string | number | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
   }, [])
 
-  // useEffect(() => {
-  //   // Fetch companies data from API
-  //   const fetchContact = async () => {
-  //     try {
-  //       const response = await axios.get('http://localhost:1337/api/contact-types')
-  //       console.log('zitu', response.data[0])
-  //       setContact(response.data.data)
-  //     } catch (error) {
-  //       console.error('Error fetching companies:', error)
-  //     }
-  //   }
-  //   fetchContact()
-  // }, [])
+  useEffect(() => {
+    // Fetch companies data from API
+    const fetchContact = async () => {
+      try {
+        const response = await fetchDataFromApi('/contact-types')
+        console.log('zitu', response.data)
+        setContact(response.data)
+      } catch (error) {
+        console.error('Error fetching contact type:', error)
+      }
+    }
+    fetchContact()
+  }, [])
+
+  const handleEdit = (id: string | number) => {
+    // Find the contact type by id
+    const selectedContact = contact.find(item => item.id === id)
+    if (selectedContact) {
+      router.push(`/apps/company/contact-type/add?id=${selectedContact.id}`)
+    }
+  }
+
+  const RowOptions = ({ id }: { id: number | string }) => {
+    const handleEditClick = (id: string | number) => {
+      handleEdit(id)
+    }
+
+    return (
+      <>
+        <MenuItem onClick={() => handleEditClick(id)} sx={{ '& svg': { mr: 2 } }}>
+          <Icon icon='mdi:pencil-outline' fontSize={20} />
+        </MenuItem>
+        <MenuItem onClick={() => handleDeleteClick(id)} sx={{ '& svg': { mr: 2 } }}>
+          <Icon icon='mdi:delete-outline' fontSize={20} />
+        </MenuItem>
+      </>
+    )
+  }
+
+  const columns: GridColDef[] = [
+    {
+      sortable: true,
+      field: 'slNo',
+      headerName: '#',
+      flex: 0,
+      editable: false,
+      renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
+    },
+    {
+      flex: 0.2,
+      minWidth: 230,
+      field: 'title',
+      headerName: 'Title',
+      renderCell: ({ row }: CellType) => <LinkStyled href={'#'}>{row.attributes.title}</LinkStyled>
+    },
+    {
+      flex: 0.1,
+      minWidth: 110,
+      field: 'status',
+      headerName: 'Status',
+      renderCell: ({ row }: CellType) => (
+        <CustomChip
+          skin='light'
+          size='small'
+          label={row.attributes.status ? 'Active' : 'Inactive'}
+          color={companyStatusObj[row.attributes.status.toString()]}
+          sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
+        />
+      )
+    },
+    {
+      flex: 0.1,
+      minWidth: 90,
+      sortable: false,
+      field: 'actions',
+      headerName: 'Actions',
+      renderCell: ({ row }: CellType) => <RowOptions id={row.id} />
+    }
+  ]
+
+  const handleDeleteConfirm = async () => {
+    if (deleteId !== null) {
+      try {
+        await deleteDataFromApi(`/contact-types/${deleteId}`)
+        setContact(contact.filter(item => item.id !== deleteId))
+        setDialogOpen(false)
+        toast.success('Contact type deleted successfully')
+      } catch (error) {
+        console.error('Error deleting contact type:', error)
+        toast.error('Failed to delete contact type')
+      }
+    }
+  }
+
+  const handleDeleteClick = (id: string | number) => {
+    setDeleteId(id)
+    setDialogOpen(true)
+  }
+
+  const handleDialogClose = () => {
+    setDialogOpen(false)
+  }
 
   return (
     <Grid container spacing={6}>
@@ -193,41 +185,49 @@ const ContactTypeList = ({ contactTypeData }: { contactTypeData: ContactType[] }
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={contactTypeData}
+              rows={contact}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
               pageSizeOptions={[10, 25, 50]}
               sx={{ '& .MuiDataGrid-columnHeaders': { borderRadius: 0 } }}
+              onRowDoubleClick={params => handleEdit(params.row.id as number)}
             />
           </CardContent>
         </Card>
       </Grid>
+      <ConfirmDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        onConfirm={handleDeleteConfirm}
+        title='Confirm Deletion'
+        message='Are you sure you want to delete this contact type?'
+      />
     </Grid>
   )
 }
 
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    const contactTypeData = await fetchDataFromApi('/api/contact-types')
+// export const getStaticProps: GetStaticProps = async () => {
+//   try {
+//     const contactTypeData = await fetchDataFromApi('/api/contact-types')
 
-    console.log('mydata', contactTypeData.data)
+//     console.log('mydata', contactTypeData.data)
 
-    return {
-      props: {
-        contactTypeData: contactTypeData.data
-      },
-      revalidate: 60 // Optional: This will re-generate the page every 60 seconds
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error)
+//     return {
+//       props: {
+//         contactTypeData: contactTypeData.data
+//       },
+//       revalidate: 60 // Optional: This will re-generate the page every 60 seconds
+//     }
+//   } catch (error) {
+//     console.error('Error fetching data:', error)
 
-    return {
-      props: {
-        contactTypeData: []
-      }
-    }
-  }
-}
+//     return {
+//       props: {
+//         contactTypeData: []
+//       }
+//     }
+//   }
+// }
 
 export default ContactTypeList
