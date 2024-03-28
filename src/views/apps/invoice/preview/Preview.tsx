@@ -12,7 +12,7 @@ import Alert from '@mui/material/Alert'
 import axios from 'axios'
 
 // ** Types
-import { SingleInvoiceType, InvoiceLayoutProps } from 'src/types/apps/invoiceTypes'
+import { SingleInvoiceType } from 'src/types/apps/invoiceTypes'
 
 // ** Demo Components Imports
 import PreviewCard from 'src/views/apps/invoice/preview/PreviewCard'
@@ -20,39 +20,25 @@ import PreviewActions from 'src/views/apps/invoice/preview/PreviewActions'
 import AddPaymentDrawer from 'src/views/apps/invoice/shared-drawer/AddPaymentDrawer'
 import SendInvoiceDrawer from 'src/views/apps/invoice/shared-drawer/SendInvoiceDrawer'
 
-const InvoicePreview = ({ id }: InvoiceLayoutProps) => {
+const InvoicePreview = ({ invoiceMasterData, invoiceDetailsData }: any) => {
   // ** State
   const [error, setError] = useState<boolean>(false)
-  const [data, setData] = useState<null | SingleInvoiceType>(null)
   const [addPaymentOpen, setAddPaymentOpen] = useState<boolean>(false)
   const [sendInvoiceOpen, setSendInvoiceOpen] = useState<boolean>(false)
-
-  useEffect(() => {
-    axios
-      .get('/apps/invoice/single-invoice', { params: { id } })
-      .then(res => {
-        setData(res.data)
-        setError(false)
-      })
-      .catch(() => {
-        setData(null)
-        setError(true)
-      })
-  }, [id])
 
   const toggleSendInvoiceDrawer = () => setSendInvoiceOpen(!sendInvoiceOpen)
   const toggleAddPaymentDrawer = () => setAddPaymentOpen(!addPaymentOpen)
 
-  if (data) {
+  if (invoiceMasterData) {
     return (
       <>
         <Grid container spacing={6}>
           <Grid item xl={9} md={8} xs={12}>
-            <PreviewCard data={data} />
+            <PreviewCard data={invoiceMasterData} invoiceDetailsData={invoiceDetailsData} />
           </Grid>
           <Grid item xl={3} md={4} xs={12}>
             <PreviewActions
-              id={id}
+              id={invoiceMasterData.id}
               toggleAddPaymentDrawer={toggleAddPaymentDrawer}
               toggleSendInvoiceDrawer={toggleSendInvoiceDrawer}
             />

@@ -491,7 +491,7 @@ const AddCard = (props: Props) => {
                               type='number'
                               label='Overweight'
                               placeholder='Overweight'
-                              onChange={e => handleInputChange('overweight', e.target.value, i)}
+                              onChange={e => handleInputChange('overweight', e.target.value ? e.target.value : '0', i)}
                             />
                           )}
                         />
@@ -544,24 +544,39 @@ const AddCard = (props: Props) => {
       <CardContent>
         <Grid container>
           <Grid item xs={12} sm={9} sx={{ order: { sm: 1, xs: 2 } }}>
+            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', height: '100px' }}>{/* Signature Image */}</Box>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
               <Typography
-                variant='body2'
+                variant='subtitle2'
                 sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
               >
-                Salesperson:
+                Thanking You
               </Typography>
-              <TextField
-                size='small'
-                defaultValue='Tommy Shelby'
-                sx={{ maxWidth: '150px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-              />
             </Box>
-            <TextField
-              size='small'
-              placeholder='Thanks for your business'
-              sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-            />
+            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant='subtitle2'
+                sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+              >
+                Joyes Ahmed
+              </Typography>
+            </Box>
+            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant='subtitle2'
+                sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+              >
+                For: Top-4 Logistics
+              </Typography>
+            </Box>
+            <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+              <Typography
+                variant='subtitle2'
+                sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+              >
+                Cell: +8801852244141
+              </Typography>
+            </Box>
           </Grid>
           <Grid item xs={12} sm={3} sx={{ mb: { sm: 0, xs: 4 }, order: { sm: 2, xs: 1 } }}>
             <CalcWrapper>
@@ -595,7 +610,7 @@ const AddCard = (props: Props) => {
         </Grid>
       </CardContent>
 
-      <Divider sx={{ my: theme => `${theme.spacing(1)} !important` }} />
+      {/* <Divider sx={{ my: theme => `${theme.spacing(1)} !important` }} />
 
       <CardContent sx={{ pt: 4 }}>
         <InputLabel htmlFor='invoice-note'>Note:</InputLabel>
@@ -607,7 +622,7 @@ const AddCard = (props: Props) => {
           sx={{ '& .MuiInputBase-input': { color: 'text.secondary' } }}
           defaultValue='It was a pleasure working with you and your team. We hope you will keep us in mind for future freelance projects. Thank You!'
         />
-      </CardContent>
+      </CardContent> */}
     </Card>
   )
 }

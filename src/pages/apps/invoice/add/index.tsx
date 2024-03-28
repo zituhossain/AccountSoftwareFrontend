@@ -18,7 +18,7 @@ import AddCard from 'src/views/apps/invoice/add/AddCard'
 // ** Styled Component
 import { useRouter } from 'next/navigation'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
-import { fetchDataFromApi, postDataToApiAxios } from 'src/utils/api'
+import { deleteDataFromApi, fetchDataFromApi, postDataToApiAxios } from 'src/utils/api'
 import toast from 'react-hot-toast'
 import { cl } from '@fullcalendar/core/internal-common'
 
@@ -142,16 +142,23 @@ const InvoiceAdd = () => {
 
   // Function to save data
   const handleSave = async () => {
+    let invoiceMasterId = 0
     try {
+      // Begin the transaction
+
       // Add invoice master
       const masterData = new FormData()
       masterData.append('data', JSON.stringify(invoiceMasterData))
       const invoiceMasterResponse = await postDataToApiAxios('/invoice-masters', masterData)
 
+      invoiceMasterId = invoiceMasterResponse.data.id
+
       console.log('invoiceMasterResponse:', invoiceMasterResponse.data.id)
 
       if (!invoiceMasterResponse) {
         toast.error('Something went wrong! Please try again.')
+
+        // Roll back the transaction
 
         return
       }
@@ -167,21 +174,30 @@ const InvoiceAdd = () => {
         )
         const response = await postDataToApiAxios('/invoice-details', detailData)
 
-        if (response) {
-          // router.push(`/apps/quotation/preview/${response.data.id}`)
-          // toast.success('Invoice added successfully')
-        } else {
+        if (!response) {
           toast.error('Something went wrong! Please try again.')
-          console.log('Error adding invoice details:', response)
+
+          // Roll back the transaction
 
           return
         }
       }
-      router.push(`/apps/invoice/list`)
+
+      // Commit the transaction
+      router.push(`/apps/invoice/preview/${invoiceMasterResponse.data.id}`)
       toast.success('Invoice added successfully')
     } catch (error) {
       console.error('Error adding invoice details:', error)
       toast.error('Something went wrong! Please try again.')
+      const invoiceDetailsResponse = await fetchDataFromApi(
+        `/invoice-details?fields=id&filters[invoice_master][id][$eq]=${invoiceMasterId}`
+      )
+      invoiceDetailsResponse.data.forEach(async (detail: any) => {
+        await deleteDataFromApi(`/invoice-details/${detail.id}`)
+      })
+      await deleteDataFromApi(`/invoice-masters/${invoiceMasterId}`)
+
+      // Roll back the transaction
     }
   }
 
