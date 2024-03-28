@@ -5,26 +5,26 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 // ** MUI Imports
-import Grid from '@mui/material/Grid'
 import Alert from '@mui/material/Alert'
-import Table from '@mui/material/Table'
-import Divider from '@mui/material/Divider'
-import TableRow from '@mui/material/TableRow'
-import TableHead from '@mui/material/TableHead'
-import TableBody from '@mui/material/TableBody'
-import Typography from '@mui/material/Typography'
 import Box, { BoxProps } from '@mui/material/Box'
-import { styled, useTheme } from '@mui/material/styles'
+import Divider from '@mui/material/Divider'
+import Grid from '@mui/material/Grid'
+import Table from '@mui/material/Table'
+import TableBody from '@mui/material/TableBody'
 import TableCell, { TableCellBaseProps } from '@mui/material/TableCell'
+import TableHead from '@mui/material/TableHead'
+import TableRow from '@mui/material/TableRow'
+import Typography from '@mui/material/Typography'
+import { styled, useTheme } from '@mui/material/styles'
 
 // ** Types
-import { SingleInvoiceType, InvoiceLayoutProps } from 'src/types/apps/invoiceTypes'
 
 // ** Third Party Components
 import axios from 'axios'
 
 // ** Configs
 import themeConfig from 'src/configs/themeConfig'
+import { CardContent, TableContainer } from '@mui/material'
 
 const CalcWrapper = styled(Box)<BoxProps>(({ theme }) => ({
   display: 'flex',
@@ -40,10 +40,10 @@ const MUITableCell = styled(TableCell)<TableCellBaseProps>(({ theme }) => ({
   padding: `${theme.spacing(1, 0)} !important`
 }))
 
-const InvoicePrint = ({ id }: InvoiceLayoutProps) => {
+const InvoicePrint = ({ invoiceMasterData, invoiceDetailsData }: any) => {
   // ** State
   const [error, setError] = useState<boolean>(false)
-  const [data, setData] = useState<null | SingleInvoiceType>(null)
+  const [data, setData] = useState<null | any>(null)
 
   // ** Hooks
   const theme = useTheme()
@@ -55,20 +55,17 @@ const InvoicePrint = ({ id }: InvoiceLayoutProps) => {
   }, [])
 
   useEffect(() => {
-    axios
-      .get('/apps/invoice/single-invoice', { params: { id } })
-      .then(res => {
-        setData(res.data)
-        setError(false)
-      })
-      .catch(() => {
-        setData(null)
-        setError(true)
-      })
-  }, [id])
+    if (invoiceMasterData) {
+      setData(invoiceMasterData)
+      setError(false)
+    } else {
+      setData(null)
+      setError(true)
+    }
+  }, [invoiceMasterData])
 
   if (data) {
-    const { invoice, paymentDetails } = data
+    // const { invoice, paymentDetails } = data
 
     return (
       <Box sx={{ p: 12, pb: 6 }}>
@@ -164,22 +161,14 @@ const InvoicePrint = ({ id }: InvoiceLayoutProps) => {
           <Grid item xs={4}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: { sm: 'flex-end', xs: 'flex-start' } }}>
               <Typography variant='h6' sx={{ mb: 2 }}>
-                {`Invoice #${invoice.id}`}
+                {`Invoice #${data.attributes.invoice_no}`}
               </Typography>
               <Box sx={{ mb: 2, display: 'flex' }}>
                 <Typography variant='body2' sx={{ mr: 3 }}>
                   Date Issued:
                 </Typography>
                 <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                  {invoice.issuedDate}
-                </Typography>
-              </Box>
-              <Box sx={{ display: 'flex' }}>
-                <Typography variant='body2' sx={{ mr: 3 }}>
-                  Date Due:
-                </Typography>
-                <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                  {invoice.dueDate}
+                  {data.attributes.date}
                 </Typography>
               </Box>
             </Box>
@@ -188,147 +177,180 @@ const InvoicePrint = ({ id }: InvoiceLayoutProps) => {
 
         <Divider sx={{ my: theme => `${theme.spacing(6)} !important` }} />
 
-        <Grid container>
-          <Grid item xs={7} md={8} sx={{ mb: { lg: 0, xs: 4 } }}>
-            <Typography variant='body2' sx={{ mb: 3.5, fontWeight: 600 }}>
-              Invoice To:
-            </Typography>
-            <Typography variant='body2' sx={{ mb: 2 }}>
-              {invoice.name}
-            </Typography>
-            <Typography variant='body2' sx={{ mb: 2 }}>
-              {invoice.company}
-            </Typography>
-            <Typography variant='body2' sx={{ mb: 2 }}>
-              {invoice.address}
-            </Typography>
-            <Typography variant='body2' sx={{ mb: 2 }}>
-              {invoice.contact}
-            </Typography>
-            <Typography variant='body2' sx={{ mb: 2 }}>
-              {invoice.companyEmail}
-            </Typography>
+        <CardContent>
+          <Grid container>
+            <Grid item xs={12} sm={6} sx={{ mb: { lg: 0, xs: 4 } }}>
+              <Typography variant='subtitle2' sx={{ mb: 3, color: 'text.primary', letterSpacing: '.1px' }}>
+                Invoice To:
+              </Typography>
+              <Typography variant='body2' sx={{ mb: 2 }}>
+                {data.attributes.client.data.attributes.name}
+              </Typography>
+              <Typography variant='body2' sx={{ mb: 2 }}>
+                {data.attributes.client.data.attributes.address}
+              </Typography>
+              <Typography variant='body2' sx={{ mb: 2 }}>
+                {data.attributes.client.data.attributes.email}
+              </Typography>
+              <Typography variant='body2' sx={{ mb: 2 }}>
+                {data.attributes.client.data.attributes.phone}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: ['flex-start', 'flex-end'] }}>
+              <div>
+                <TableContainer>
+                  <Table>
+                    <TableBody>
+                      <TableRow>
+                        <MUITableCell>
+                          <Typography variant='body2'>Subject:</Typography>
+                        </MUITableCell>
+                        <MUITableCell>
+                          <Typography variant='body2'>{data.attributes.subject}</Typography>
+                        </MUITableCell>
+                      </TableRow>
+                      <TableRow>
+                        <MUITableCell>
+                          <Typography variant='body2'>B/L NO:</Typography>
+                        </MUITableCell>
+                        <MUITableCell>
+                          <Typography variant='body2'>{data.attributes.bl_number}</Typography>
+                        </MUITableCell>
+                      </TableRow>
+                      <TableRow>
+                        <MUITableCell>
+                          <Typography variant='body2'>L/C NO:</Typography>
+                        </MUITableCell>
+                        <MUITableCell>
+                          <Typography variant='body2'>{data.attributes.lc_number}</Typography>
+                        </MUITableCell>
+                      </TableRow>
+                      <TableRow>
+                        <MUITableCell>
+                          <Typography variant='subtitle2' sx={{ color: 'text.primary', letterSpacing: '.1px' }}>
+                            Remarks:
+                          </Typography>
+                        </MUITableCell>
+                        <MUITableCell>
+                          <Typography variant='body2'>{data.attributes.remarks}</Typography>
+                        </MUITableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </div>
+            </Grid>
           </Grid>
-          <Grid item xs={5} md={4}>
-            <Typography variant='body2' sx={{ mb: 3.5, fontWeight: 600 }}>
-              Bill To:
-            </Typography>
-            <Table>
-              <TableBody>
-                <TableRow>
-                  <MUITableCell>Total Due:</MUITableCell>
-                  <MUITableCell>{paymentDetails.totalDue}</MUITableCell>
-                </TableRow>
-                <TableRow>
-                  <MUITableCell>Bank name:</MUITableCell>
-                  <MUITableCell>{paymentDetails.bankName}</MUITableCell>
-                </TableRow>
-                <TableRow>
-                  <MUITableCell>Country:</MUITableCell>
-                  <MUITableCell>{paymentDetails.country}</MUITableCell>
-                </TableRow>
-                <TableRow>
-                  <MUITableCell>IBAN:</MUITableCell>
-                  <MUITableCell>{paymentDetails.iban}</MUITableCell>
-                </TableRow>
-                <TableRow>
-                  <MUITableCell>SWIFT code:</MUITableCell>
-                  <MUITableCell>{paymentDetails.swiftCode}</MUITableCell>
-                </TableRow>
-              </TableBody>
-            </Table>
-          </Grid>
-        </Grid>
+        </CardContent>
 
         <Divider sx={{ mt: theme => `${theme.spacing(6)} !important`, mb: '0 !important' }} />
 
-        <Table sx={{ mb: 6 }}>
-          <TableHead>
-            <TableRow>
-              <TableCell>Item</TableCell>
-              <TableCell>Description</TableCell>
-              <TableCell>hours</TableCell>
-              <TableCell>qty</TableCell>
-              <TableCell>Total</TableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            <TableRow>
-              <TableCell>Premium Branding Package</TableCell>
-              <TableCell>Branding & Promotion</TableCell>
-              <TableCell>48</TableCell>
-              <TableCell>1</TableCell>
-              <TableCell>$32</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Social Media</TableCell>
-              <TableCell>Social media templates</TableCell>
-              <TableCell>42</TableCell>
-              <TableCell>1</TableCell>
-              <TableCell>$28</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>Web Design</TableCell>
-              <TableCell>Web designing package</TableCell>
-              <TableCell>46</TableCell>
-              <TableCell>1</TableCell>
-              <TableCell>$24</TableCell>
-            </TableRow>
-            <TableRow>
-              <TableCell>SEO</TableCell>
-              <TableCell>Search engine optimization</TableCell>
-              <TableCell>40</TableCell>
-              <TableCell>1</TableCell>
-              <TableCell>$22</TableCell>
-            </TableRow>
-          </TableBody>
-        </Table>
+        <CardContent>
+          <TableContainer>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell align='left'>Driver Name</TableCell>
+                  <TableCell align='left'>Driver Phone</TableCell>
+                  <TableCell align='left'>Vehicle No</TableCell>
+                  <TableCell align='left'>Container No</TableCell>
+                  <TableCell align='right'>Amount</TableCell>
+                  <TableCell align='right'>Overweight</TableCell>
+                </TableRow>
+              </TableHead>
+              {invoiceDetailsData ? (
+                <TableBody>
+                  {invoiceDetailsData.map((item: any) => (
+                    <TableRow key={item.id}>
+                      <MUITableCell align='left'>{item.attributes.driver_name}</MUITableCell>
+                      <MUITableCell align='left'>{item.attributes.driver_phone}</MUITableCell>
+                      <MUITableCell align='left'>{item.attributes.vehicle_number}</MUITableCell>
+                      <MUITableCell align='left'>{item.attributes.container_number}</MUITableCell>
+                      <MUITableCell align='right'>{item.attributes.rate}</MUITableCell>
+                      <MUITableCell align='right'>{item.attributes.overweight}</MUITableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              ) : null}
+            </Table>
+          </TableContainer>
+        </CardContent>
 
-        <Grid container>
-          <Grid item xs={8} sm={7} lg={9}>
-            <Box sx={{ mb: 2, display: 'flex', alignItems: 'center' }}>
-              <Typography variant='body2' sx={{ mr: 2, fontWeight: 600 }}>
-                Salesperson:
-              </Typography>
-              <Typography variant='body2'>Tommy Shelby</Typography>
-            </Box>
-
-            <Typography variant='body2'>Thanks for your business</Typography>
-          </Grid>
-          <Grid item xs={4} sm={5} lg={3}>
-            <CalcWrapper>
-              <Typography variant='body2'>Subtotal:</Typography>
-              <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                $1800
-              </Typography>
-            </CalcWrapper>
-            <CalcWrapper>
+        <Divider sx={{ mt: theme => `${theme.spacing(6.5)} !important`, mb: '0 !important' }} />
+        <CardContent>
+          <Grid container>
+            <Grid item xs={12} sm={9} sx={{ order: { sm: 1, xs: 2 } }}>
+              <Box sx={{ mb: 4, display: 'flex', alignItems: 'center', height: '100px' }}>{/* Signature Image */}</Box>
+              <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+                <Typography
+                  variant='subtitle2'
+                  sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+                >
+                  Thanking You
+                </Typography>
+              </Box>
+              <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+                <Typography
+                  variant='subtitle2'
+                  sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+                >
+                  Joyes Ahmed
+                </Typography>
+              </Box>
+              <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+                <Typography
+                  variant='subtitle2'
+                  sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+                >
+                  For: Top-4 Logistics
+                </Typography>
+              </Box>
+              <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
+                <Typography
+                  variant='subtitle2'
+                  sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
+                >
+                  Cell: +8801852244141
+                </Typography>
+              </Box>
+            </Grid>
+            <Grid item xs={12} sm={3} sx={{ mb: { sm: 0, xs: 4 }, order: { sm: 2, xs: 1 } }}>
+              <CalcWrapper>
+                <Typography variant='body2'>Subtotal:</Typography>
+                <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: '.25px' }}>
+                  {data.attributes.total_amount}
+                </Typography>
+              </CalcWrapper>
+              {/* <CalcWrapper>
               <Typography variant='body2'>Discount:</Typography>
-              <Typography variant='body2' sx={{ fontWeight: 600 }}>
+              <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: '.25px' }}>
                 $28
               </Typography>
             </CalcWrapper>
             <CalcWrapper>
               <Typography variant='body2'>Tax:</Typography>
-              <Typography variant='body2' sx={{ fontWeight: 600 }}>
+              <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: '.25px' }}>
                 21%
               </Typography>
             </CalcWrapper>
-            <Divider />
+            <Divider
+              sx={{ mt: theme => `${theme.spacing(6)} !important`, mb: theme => `${theme.spacing(1.5)} !important` }}
+            />
             <CalcWrapper>
               <Typography variant='body2'>Total:</Typography>
-              <Typography variant='body2' sx={{ fontWeight: 600 }}>
+              <Typography variant='body2' sx={{ fontWeight: 600, color: 'text.primary', lineHeight: '.25px' }}>
                 $1690
               </Typography>
-            </CalcWrapper>
+            </CalcWrapper> */}
+            </Grid>
           </Grid>
-        </Grid>
+        </CardContent>
 
-        <Divider sx={{ my: `${theme.spacing(6)} !important` }} />
+        {/* <Divider sx={{ my: `${theme.spacing(6)} !important` }} />
         <Typography variant='body2'>
           <strong>Note:</strong> It was a pleasure working with you and your team. We hope you will keep us in mind for
           future freelance projects. Thank You!
-        </Typography>
+        </Typography> */}
       </Box>
     )
   } else if (error) {
@@ -337,8 +359,8 @@ const InvoicePrint = ({ id }: InvoiceLayoutProps) => {
         <Grid container spacing={6}>
           <Grid item xs={12}>
             <Alert severity='error'>
-              Invoice with the id: {id} does not exist. Please check the list of invoices:{' '}
-              <Link href='/apps/invoice/list'>Invoice List</Link>
+              Quotation with the id: {} does not exist. Please check the list of invoices:{' '}
+              <Link href='/apps/quotation/list'>Quotation List</Link>
             </Alert>
           </Grid>
         </Grid>
