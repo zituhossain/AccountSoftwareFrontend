@@ -9,7 +9,6 @@ import Grid from '@mui/material/Grid'
 // ** Third Party Components
 
 // ** Types
-import { InvoiceClientType } from 'src/types/apps/invoiceTypes'
 
 // ** Demo Components Imports
 // import AddActions from 'src/views/apps/quotation/add/AddActions'
@@ -23,16 +22,22 @@ import { CompanyType, QuotationType } from 'src/types/apps/userTypes'
 import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
 
 import { yupResolver } from '@hookform/resolvers/yup'
-import * as yup from 'yup'
-import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
 import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardActions from '@mui/material/CardActions'
+import CardContent from '@mui/material/CardContent'
+import * as yup from 'yup'
 
 // Validation Schema
 const schema = yup.object().shape({
-  client_rate: yup.number().required('Client rate is required'),
-  our_rate: yup.number().required('Our rate is required')
+  client_rate: yup.number().required('Client rate is required').typeError('Client rate must be a number'),
+  our_rate: yup.number().required('Our rate is required').typeError('Our rate must be a number'),
+  no_of_items: yup.number().required('Number of items is required').typeError('Number of items must be a number'),
+  overweight: yup
+    .number()
+    .nullable(true)
+    .transform((value, originalValue) => (String(originalValue).trim() === '' ? null : value))
+    .typeError('Overweight must be a number')
 })
 
 const QuotationAdd = () => {
@@ -45,9 +50,8 @@ const QuotationAdd = () => {
   const [selectedClient, setSelectedClient] = useState<QuotationType | null>(null)
   const [clients, setClients] = useState<CompanyType[] | undefined>()
   const [quotationNo, setQuotationNo] = useState<number>(0)
-
-  console.log('initialData', initialData)
-  console.log('clients', clients)
+  const [userId, setUserId] = useState<number>(0)
+  const [companyId, setCompanyId] = useState<number>(0)
 
   const [formData, setFormData] = useState<QuotationType>({
     quotation_no: '1',
@@ -87,6 +91,8 @@ const QuotationAdd = () => {
           if (userResponse && userResponse.company && userResponse.company.id) {
             // Fetch the latest quotation data
             const quoteResponse = await fetchDataFromApi(`/quotations`)
+            setUserId(userResponse.id)
+            if (userResponse.company) setCompanyId(userResponse.company.id)
 
             if (quoteResponse && quoteResponse.data && quoteResponse.data.length > 0) {
               // Extract quotation numbers from each quotation object
@@ -158,14 +164,19 @@ const QuotationAdd = () => {
   }, [id, reset])
 
   const onSubmit = async (data: any) => {
+    data.created_user = userId
+    data.company = companyId
     try {
       const formData = new FormData()
       const extendedData = {
         ...data,
-        quotation_no: quotationNo.toString(), // Ensure quotation number is a string if necessary
-        client: selectedClient ? selectedClient.id : '' // Assuming selectedClient has an id property
+        quotation_no: quotationNo.toString(),
+        client: selectedClient ? selectedClient.id : '',
+        date: data.date.toISOString().split('T')[0],
+        status: true
       }
       formData.append('data', JSON.stringify(extendedData))
+
       if (id) {
         await putDataToApi(`/quotations/${id}`, formData)
         toast.success('Quotation updated successfully.')
@@ -251,7 +262,7 @@ const QuotationAdd = () => {
 //   const clientResponse = await axios.get('/apps/invoice/clients')
 //   const apiClientData: InvoiceClientType = clientResponse.data
 
-//   const allInvoicesResponse = await axios.get('/apps/invoice/invoices', { params: { q: '', status: '' } })
+//   const allInvoicesResponse = await axios.get('/apps/invoice/invoices', { params: { q: '', s: '' } })
 //   const lastInvoiceNumber = Math.max(...allInvoicesResponse.data.allData.map((i: InvoiceType) => i.id))
 
 //   return {
