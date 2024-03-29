@@ -42,6 +42,7 @@ interface AccountHead {
   id: number
   attributes: {
     head_title: string
+    head_type: number
     description: string
     status: boolean
     createdAt: string
@@ -144,6 +145,15 @@ const columns: GridColDef[] = [
     headerName: 'Header Name',
     renderCell: ({ row }: CellType) => (
       <LinkStyled href={`/companies/${row.id}`}>{row.attributes.head_title}</LinkStyled>
+    )
+  },
+  {
+    flex: 0.2,
+    minWidth: 230,
+    field: 'head_type',
+    headerName: 'Header Type',
+    renderCell: ({ row }: CellType) => (
+      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.head_type === 0 ? 'Credit' : 'Debit'}</LinkStyled>
     )
   },
   {

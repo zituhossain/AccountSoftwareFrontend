@@ -1,26 +1,27 @@
-// import { useState } from 'react'
-import Card from '@mui/material/Card'
-import Grid from '@mui/material/Grid'
-import Button from '@mui/material/Button'
-import Divider from '@mui/material/Divider'
-import TextField from '@mui/material/TextField'
-import CardHeader from '@mui/material/CardHeader'
-import CardContent from '@mui/material/CardContent'
-import CardActions from '@mui/material/CardActions'
-import { FormControlLabel, Switch } from '@mui/material'
-import { useRouter } from 'next/navigation'
-import * as yup from 'yup'
-import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { AccountHeadType } from 'src/types/apps/userTypes'
+import { FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, Switch } from '@mui/material'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardActions from '@mui/material/CardActions'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import Divider from '@mui/material/Divider'
+import Grid from '@mui/material/Grid'
+import TextField from '@mui/material/TextField'
+import { useRouter } from 'next/navigation'
 import { FormEventHandler } from 'react'
-import { postDataToApi } from 'src/utils/api'
+import { Controller, useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
+import { AccountHeadType } from 'src/types/apps/userTypes'
+import { postDataToApiAxios } from 'src/utils/api'
+import * as yup from 'yup'
 
 const AddAccountHead = () => {
   const router = useRouter()
 
   const schema = yup.object().shape({
-    head_title: yup.string().required('Account Header is required')
+    head_title: yup.string().required('Account Header is required'),
+    head_type: yup.string().required('Account Type is required')
   })
 
   const {
@@ -37,10 +38,12 @@ const AddAccountHead = () => {
     try {
       const formData = new FormData()
       formData.append('data', JSON.stringify(data))
-      await postDataToApi('/account-headers', formData)
+      await postDataToApiAxios('/account-headers', formData)
       console.log('account header added successfully')
+      toast.success('Account header added successfully')
       router.push('/apps/accounts/account-head')
     } catch (error: any) {
+      toast.error('Error adding account header')
       console.error('Error adding account header:', error.message)
     }
   }
@@ -68,6 +71,22 @@ const AddAccountHead = () => {
                 )}
               />
             </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth error={!!errors.head_type}>
+                <InputLabel id='head_type'>Header Type</InputLabel>
+                <Controller
+                  name='head_type'
+                  control={control}
+                  render={({ field }) => (
+                    <Select {...field} label='Header Type' labelId='head_type'>
+                      <MenuItem value={0}>Credit</MenuItem>
+                      <MenuItem value={1}>Debit</MenuItem>
+                    </Select>
+                  )}
+                />
+                <FormHelperText>{errors.head_type?.message}</FormHelperText>
+              </FormControl>
+            </Grid>
 
             <Grid item xs={12} sm={6}>
               <Controller
@@ -92,7 +111,10 @@ const AddAccountHead = () => {
               <Controller
                 name='status'
                 control={control}
-                render={({ field }) => <FormControlLabel control={<Switch {...field} />} label='Status' />}
+                defaultValue={true} // Set the default value to true
+                render={({ field }) => (
+                  <FormControlLabel control={<Switch {...field} checked={field.value} />} label='Status' />
+                )}
               />
             </Grid>
           </Grid>
