@@ -69,8 +69,8 @@ const navigation = (): VerticalNavItemsType => {
           path: '/apps/accounts/account-head'
         },
         {
-          title: 'Journal',
-          path: '/apps/accounts/journal'
+          title: 'Transaction',
+          path: '/apps/accounts/transaction'
         },
         {
           title: 'Account Receivable',

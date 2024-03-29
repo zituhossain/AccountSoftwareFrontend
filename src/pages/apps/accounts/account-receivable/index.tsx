@@ -31,7 +31,7 @@ import { useDispatch } from 'react-redux'
 import { AppDispatch } from 'src/store'
 import { Menu } from '@mui/material'
 import { deleteUser } from 'src/store/apps/user'
-import TableHeader from 'src/views/apps/accounts/journal/TableHeader'
+import TableHeader from 'src/views/apps/accounts/transaction/TableHeader'
 import { fetchDataFromApi } from 'src/utils/api'
 
 // ** Vars

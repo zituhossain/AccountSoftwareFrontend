@@ -56,18 +56,20 @@ export type UserPositionType = {
 
 export type CompanyType = {
   id?: number
-  name: string
-  address: string
-  email: string
-  code: string
-  phone: string
-  legal_information: string
-  website: string
-  logo?: string
-  status: boolean
-  createdAt?: string
-  updatedAt?: string
-  publishedAt?: string
+  attributes: {
+    name: string
+    address: string
+    email: string
+    code: string
+    phone: string
+    legal_information: string
+    website: string
+    logo?: string
+    status: boolean
+    createdAt?: string
+    updatedAt?: string
+    publishedAt?: string
+  }
 }
 
 export type ContactPersonType = {
@@ -98,13 +100,30 @@ export type ContactType = {
 
 export type AccountHeadType = {
   id: number
-  head_title: string
-  head_type: string
-  description: string
+  attributes: {
+    head_title: string
+    head_type: string
+    head_code: string
+    status: boolean
+    createdAt: string
+    updatedAt: string
+    publishedAt: string
+  }
+}
+
+export type TransactionType = {
+  id?: number
+  account_headers: number
+  company: number
+  client: number
+  payment_option: number
+  created_user: number
+  amount: number
+  notes: string
   status: boolean
-  createdAt: string
-  updatedAt: string
-  publishedAt: string
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
 }
 
 export type BusinessRelationType = {

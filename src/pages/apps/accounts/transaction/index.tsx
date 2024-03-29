@@ -1,5 +1,5 @@
 // ** React Imports
-import { useState, MouseEvent, useCallback } from 'react'
+import { useState, MouseEvent, useCallback, useEffect } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
@@ -23,15 +23,15 @@ import CustomChip from 'src/@core/components/mui/chip'
 // ** Third Party Components
 // import axios from 'axios'
 
-import { GetStaticProps } from 'next/types'
-
 // ** Types Imports
 import { ThemeColor } from 'src/@core/layouts/types'
 import { useDispatch } from 'react-redux'
 import { AppDispatch } from 'src/store'
 import { Menu } from '@mui/material'
 import { deleteUser } from 'src/store/apps/user'
-import TableHeader from 'src/views/apps/accounts/journal/TableHeader'
+import TableHeader from 'src/views/apps/accounts/transaction/TableHeader'
+import { fetchDataFromApi } from 'src/utils/api'
+import { formatDate } from 'src/utils/dateUtils'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -39,22 +39,25 @@ const companyStatusObj: { [key: string]: ThemeColor } = {
   false: 'secondary'
 }
 
-interface AccountHeadType {
+interface TransactionType {
   id: number
   attributes: {
-    journal_no: string
-    date: string
-    debit_amount: number
-    credit_amount: number
+    account_headers: number
+    company: number
+    client: number
+    payment_option: number
+    created_user: number
+    amount: number
+    notes: string
     status: boolean
-    createdAt: string
-    updatedAt: string
-    publishedAt: string
+    createdAt?: string
+    updatedAt?: string
+    publishedAt?: string
   }
 }
 
 interface CellType {
-  row: AccountHeadType
+  row: TransactionType
 }
 
 const LinkStyled = styled(Link)(({ theme }) => ({
@@ -140,39 +143,53 @@ const columns: GridColDef[] = [
     editable: false,
     renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
   },
-  {
-    flex: 0.2,
-    minWidth: 230,
-    field: 'journal_no',
-    headerName: 'Journal No',
-    renderCell: ({ row }: CellType) => (
-      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.journal_no}</LinkStyled>
-    )
-  },
+
+  // {
+  //   flex: 0.2,
+  //   minWidth: 230,
+  //   field: 'journal_no',
+  //   headerName: 'Journal No',
+  //   renderCell: ({ row }: CellType) => (
+  //     <LinkStyled href={`/companies/${row.id}`}>{row.attributes.journal_no}</LinkStyled>
+  //   )
+  // },
   {
     flex: 0.2,
     minWidth: 230,
     field: 'date',
     headerName: 'Date',
-    renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes.date}</LinkStyled>
-  },
-  {
-    flex: 0.2,
-    minWidth: 230,
-    field: 'debit_amount',
-    headerName: 'Debit Amount',
     renderCell: ({ row }: CellType) => (
-      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.debit_amount}</LinkStyled>
+      <LinkStyled href={`/companies/${row.id}`}>{formatDate(row.attributes?.createdAt, 'YYYY-MM-DD')}</LinkStyled>
     )
   },
   {
     flex: 0.2,
     minWidth: 230,
-    field: 'credit_amount',
-    headerName: 'Credit Amount',
+    field: 'account_head',
+    headerName: 'Account Head',
     renderCell: ({ row }: CellType) => (
-      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.credit_amount}</LinkStyled>
+      <LinkStyled href={`/companies/${row.id}`}>
+        {row.attributes?.account_headers?.data?.attributes?.head_title}
+      </LinkStyled>
     )
+  },
+  {
+    flex: 0.2,
+    minWidth: 230,
+    field: 'payment_option',
+    headerName: 'Payment Option',
+    renderCell: ({ row }: CellType) => (
+      <LinkStyled href={`/companies/${row.id}`}>
+        {row.attributes.payment_option === 0 ? 'Cash' : 'On Account'}
+      </LinkStyled>
+    )
+  },
+  {
+    flex: 0.2,
+    minWidth: 230,
+    field: 'amount',
+    headerName: 'Amount',
+    renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes.amount}</LinkStyled>
   },
   {
     flex: 0.1,
@@ -199,12 +216,27 @@ const columns: GridColDef[] = [
   }
 ]
 
-const AccountHeadList = ({ accountHeadData }: { accountHeadData: AccountHeadType[] }) => {
+const AccountHeadList = () => {
   // ** State
   const [value, setValue] = useState<string>('')
+  const [transactionData, setTransactionData] = useState<TransactionType[]>([])
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
+  }, [])
+
+  useEffect(() => {
+    // Fetch companies data from API
+    const fetchAccountHead = async () => {
+      try {
+        const response = await fetchDataFromApi('/transactions?populate=*')
+        console.log('zitu', response.data)
+        setTransactionData(response.data)
+      } catch (error) {
+        console.error('Error fetching contact type:', error)
+      }
+    }
+    fetchAccountHead()
   }, [])
 
   return (
@@ -216,7 +248,7 @@ const AccountHeadList = ({ accountHeadData }: { accountHeadData: AccountHeadType
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={accountHeadData}
+              rows={transactionData}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
@@ -228,60 +260,6 @@ const AccountHeadList = ({ accountHeadData }: { accountHeadData: AccountHeadType
       </Grid>
     </Grid>
   )
-}
-
-export const getStaticProps: GetStaticProps = async () => {
-  try {
-    // const accountHeadData = await fetchDataFromApi('/api/account-headers')
-
-    const accountHeadData: AccountHeadType[] = [
-      {
-        id: 1,
-        attributes: {
-          journal_no: 'JNL001',
-          date: '2024-03-17',
-          debit_amount: 1000,
-          credit_amount: 800,
-          status: true,
-          createdAt: '2024-03-17T10:00:00Z',
-          updatedAt: '2024-03-17T12:00:00Z',
-          publishedAt: '2024-03-17T14:00:00Z'
-        }
-      },
-      {
-        id: 2,
-        attributes: {
-          journal_no: 'JNL002',
-          date: '2024-03-18',
-          debit_amount: 1500,
-          credit_amount: 1200,
-          status: false,
-          createdAt: '2024-03-18T09:00:00Z',
-          updatedAt: '2024-03-18T11:30:00Z',
-          publishedAt: '2024-03-18T13:45:00Z'
-        }
-      }
-
-      // Add more sample data as needed
-    ]
-
-    console.log('accountHeadData', accountHeadData)
-
-    return {
-      props: {
-        accountHeadData: accountHeadData
-      },
-      revalidate: 60 // Optional: This will re-generate the page every 60 seconds
-    }
-  } catch (error) {
-    console.error('Error fetching data:', error)
-
-    return {
-      props: {
-        accountHeadData: []
-      }
-    }
-  }
 }
 
 export default AccountHeadList
