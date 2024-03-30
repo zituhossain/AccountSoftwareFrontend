@@ -53,6 +53,8 @@ interface Props {
   invoiceMasterId: number
   invoiceMasterData: any
   setInvoiceMasterData: any
+  initialMasterData: any
+  setInitialMasterData: any
 }
 
 const CustomInput = forwardRef(({ ...props }: PickerProps, ref: ForwardedRef<HTMLElement>) => {
@@ -139,6 +141,10 @@ const AddCard = (props: Props) => {
   } = props
   const { control } = useForm()
 
+  // console.log('initialMasterData:', initialMasterData)
+  console.log('invoiceDetails:===>', invoiceDetails)
+  console.log('invoiceMasterData:', invoiceMasterData)
+
   // ** States
   const [count, setCount] = useState<number>(1)
   const [selected, setSelected] = useState<string>('')
@@ -168,6 +174,28 @@ const AddCard = (props: Props) => {
     setIssueDate(date)
     setInvoiceMasterData({ ...invoiceMasterData, [fieldName]: date })
   }
+
+  useEffect(() => {
+    // Check if initialData contains a client ID and clients are loaded
+    if (
+      invoiceMasterData &&
+      invoiceMasterData?.attributes?.client &&
+      invoiceMasterData?.attributes?.client.data &&
+      clients
+    ) {
+      const initialClientId = invoiceMasterData?.attributes?.client.data.id
+
+      const client = clients.find(c => c.id === initialClientId)
+
+      if (client) {
+        setSelectedClient(client)
+        setSelected(initialClientId)
+
+        // Update formData with the initial client ID
+        setInvoiceMasterData((prevFormData: any) => ({ ...prevFormData, client: invoiceMasterData.client }))
+      }
+    }
+  }, [invoiceMasterData, clients, setInvoiceMasterData, setSelectedClient])
 
   // Function to handle changes in input fields
   const handleInputChange = (name: string, value: string, index: number) => {
@@ -328,7 +356,8 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleFieldChange(e)}
+                          value={invoiceMasterData ? invoiceMasterData?.attributes?.subject : ''}
+                          onChange={handleFieldChange}
                           name='subject'
                         />
                       </MUITableCell>
@@ -345,8 +374,9 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleFieldChange(e)}
                           name='bl_number'
+                          onChange={handleFieldChange}
+                          value={invoiceMasterData ? invoiceMasterData?.attributes?.bl_number : ''}
                         />
                       </MUITableCell>
                     </TableRow>
@@ -361,7 +391,8 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleFieldChange(e)}
+                          onChange={handleFieldChange}
+                          value={invoiceMasterData ? invoiceMasterData?.attributes?.lc_number : ''}
                           name='lc_number'
                         />
                       </MUITableCell>
@@ -379,7 +410,8 @@ const AddCard = (props: Props) => {
                           multiline
                           size='small'
                           sx={{ mt: 3.5 }}
-                          onChange={e => handleFieldChange(e)}
+                          onChange={handleFieldChange}
+                          value={invoiceMasterData ? invoiceMasterData?.attributes?.remarks : ''}
                           name='remarks'
                         />
                       </MUITableCell>
