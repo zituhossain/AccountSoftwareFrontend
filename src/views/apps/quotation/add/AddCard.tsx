@@ -168,7 +168,7 @@ const AddCard = (props: Props) => {
         setFormData((prevFormData: any) => ({ ...prevFormData, client: initialData.client }))
       }
     }
-  }, [initialData, clients, setFormData, setSelectedClient])
+  }, [initialData, clients, setFormData])
 
   // Handler for when a new client is selected from the dropdown
   const handleQuotationChange = (event: SelectChangeEvent) => {

@@ -195,7 +195,7 @@ const AddCard = (props: Props) => {
         setInvoiceMasterData((prevFormData: any) => ({ ...prevFormData, client: invoiceMasterData.client }))
       }
     }
-  }, [invoiceMasterData, clients, setInvoiceMasterData, setSelectedClient])
+  }, [clients])
 
   // Function to handle changes in input fields
   const handleInputChange = (name: string, value: string, index: number) => {
