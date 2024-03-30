@@ -143,7 +143,6 @@ const AddCard = (props: Props) => {
 
   // console.log('initialMasterData:', initialMasterData)
   console.log('invoiceDetails:===>', invoiceDetails)
-  console.log('invoiceMasterData:', invoiceMasterData)
 
   // ** States
   const [count, setCount] = useState<number>(1)
@@ -151,6 +150,8 @@ const AddCard = (props: Props) => {
   const [issueDate, setIssueDate] = useState<DateType>(new Date())
 
   console.log('selected:', selected)
+
+  console.log('invoiceDetailsLength:', invoiceDetails.length)
 
   // ** Hook
   const theme = useTheme()
@@ -197,10 +198,16 @@ const AddCard = (props: Props) => {
     }
   }, [clients])
 
+  useEffect(() => {
+    setCount(invoiceDetails.length)
+  }, [invoiceDetails])
+
   // Function to handle changes in input fields
   const handleInputChange = (name: string, value: string, index: number) => {
     // Create a copy of the invoice details array
     const updatedInvoiceDetails = [...invoiceDetails]
+
+    console.log('updatedInvoiceDetails:', updatedInvoiceDetails)
 
     // Check if the array element at index exists, if not, initialize it
     if (!updatedInvoiceDetails[index]) {
@@ -236,8 +243,16 @@ const AddCard = (props: Props) => {
     // Iterate over each invoice detail and calculate total amount
     invoiceDetails.forEach(detail => {
       // Assuming rate and overweight are present in each detail object
-      const rate = Number(detail.rate) ? Number(detail.rate) : 0
-      const overweight = Number(detail.overweight) ? Number(detail.overweight) : 0
+      const rate = Number(detail.rate)
+        ? Number(detail.rate)
+        : Number(detail?.attributes?.rate)
+        ? Number(detail?.attributes?.rate)
+        : 0
+      const overweight = Number(detail.overweight)
+        ? Number(detail.overweight)
+        : Number(detail?.attributes?.overweight)
+        ? Number(detail?.attributes?.overweight)
+        : 0
 
       // Calculate total amount for the current detail
       const detailTotal = rate + overweight
@@ -447,6 +462,7 @@ const AddCard = (props: Props) => {
                               label='Driver Name'
                               placeholder='Driver Name'
                               onChange={e => handleInputChange('driver_name', e.target.value, i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.driver_name}
                             />
                           )}
                         />
@@ -462,6 +478,7 @@ const AddCard = (props: Props) => {
                               label='Driver Phone'
                               placeholder='Driver Phone'
                               onChange={e => handleInputChange('driver_phone', e.target.value, i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.driver_phone}
                             />
                           )}
                         />
@@ -477,6 +494,7 @@ const AddCard = (props: Props) => {
                               label='Vehicle No'
                               placeholder='Vehicle No'
                               onChange={e => handleInputChange('vehicle_number', e.target.value, i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.vehicle_number}
                             />
                           )}
                         />
@@ -492,6 +510,7 @@ const AddCard = (props: Props) => {
                               label='Container Number'
                               placeholder='Container Number'
                               onChange={e => handleInputChange('container_number', e.target.value, i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.container_number}
                             />
                           )}
                         />
@@ -508,6 +527,7 @@ const AddCard = (props: Props) => {
                               label='Amount'
                               placeholder='Amount'
                               onChange={e => handleInputChange('rate', e.target.value, i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.rate}
                             />
                           )}
                         />
@@ -524,6 +544,7 @@ const AddCard = (props: Props) => {
                               label='Overweight'
                               placeholder='Overweight'
                               onChange={e => handleInputChange('overweight', e.target.value ? e.target.value : '0', i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.overweight}
                             />
                           )}
                         />

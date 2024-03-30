@@ -130,8 +130,17 @@ const InvoiceAdd = () => {
     const calculateTotalAmount = () => {
       let total = 0
       invoiceDetails.forEach(detail => {
-        const rate = Number(detail.rate) ? Number(detail.rate) : 0
-        const overweight = Number(detail.overweight) ? Number(detail.overweight) : 0
+        const rate = Number(detail.rate)
+          ? Number(detail.rate)
+          : Number(detail?.attributes?.rate)
+          ? Number(detail?.attributes?.rate)
+          : 0
+        const overweight = Number(detail.overweight)
+          ? Number(detail.overweight)
+          : Number(detail?.attributes?.overweight)
+          ? Number(detail?.attributes?.overweight)
+          : 0
+
         const detailTotal = rate + overweight
         total += detailTotal
       })
