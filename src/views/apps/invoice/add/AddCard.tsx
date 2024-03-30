@@ -53,6 +53,8 @@ interface Props {
   invoiceMasterId: number
   invoiceMasterData: any
   setInvoiceMasterData: any
+  initialMasterData: any
+  setInitialMasterData: any
 }
 
 const CustomInput = forwardRef(({ ...props }: PickerProps, ref: ForwardedRef<HTMLElement>) => {
@@ -139,12 +141,17 @@ const AddCard = (props: Props) => {
   } = props
   const { control } = useForm()
 
+  // console.log('initialMasterData:', initialMasterData)
+  console.log('invoiceDetails:===>', invoiceDetails)
+
   // ** States
   const [count, setCount] = useState<number>(1)
   const [selected, setSelected] = useState<string>('')
   const [issueDate, setIssueDate] = useState<DateType>(new Date())
 
   console.log('selected:', selected)
+
+  console.log('invoiceDetailsLength:', invoiceDetails.length)
 
   // ** Hook
   const theme = useTheme()
@@ -169,10 +176,38 @@ const AddCard = (props: Props) => {
     setInvoiceMasterData({ ...invoiceMasterData, [fieldName]: date })
   }
 
+  useEffect(() => {
+    // Check if initialData contains a client ID and clients are loaded
+    if (
+      invoiceMasterData &&
+      invoiceMasterData?.attributes?.client &&
+      invoiceMasterData?.attributes?.client.data &&
+      clients
+    ) {
+      const initialClientId = invoiceMasterData?.attributes?.client.data.id
+
+      const client = clients.find(c => c.id === initialClientId)
+
+      if (client) {
+        setSelectedClient(client)
+        setSelected(initialClientId)
+
+        // Update formData with the initial client ID
+        setInvoiceMasterData((prevFormData: any) => ({ ...prevFormData, client: invoiceMasterData.client }))
+      }
+    }
+  }, [clients])
+
+  useEffect(() => {
+    setCount(invoiceDetails.length)
+  }, [invoiceDetails])
+
   // Function to handle changes in input fields
   const handleInputChange = (name: string, value: string, index: number) => {
     // Create a copy of the invoice details array
     const updatedInvoiceDetails = [...invoiceDetails]
+
+    console.log('updatedInvoiceDetails:', updatedInvoiceDetails)
 
     // Check if the array element at index exists, if not, initialize it
     if (!updatedInvoiceDetails[index]) {
@@ -208,8 +243,16 @@ const AddCard = (props: Props) => {
     // Iterate over each invoice detail and calculate total amount
     invoiceDetails.forEach(detail => {
       // Assuming rate and overweight are present in each detail object
-      const rate = Number(detail.rate) ? Number(detail.rate) : 0
-      const overweight = Number(detail.overweight) ? Number(detail.overweight) : 0
+      const rate = Number(detail.rate)
+        ? Number(detail.rate)
+        : Number(detail?.attributes?.rate)
+        ? Number(detail?.attributes?.rate)
+        : 0
+      const overweight = Number(detail.overweight)
+        ? Number(detail.overweight)
+        : Number(detail?.attributes?.overweight)
+        ? Number(detail?.attributes?.overweight)
+        : 0
 
       // Calculate total amount for the current detail
       const detailTotal = rate + overweight
@@ -328,7 +371,8 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleFieldChange(e)}
+                          value={invoiceMasterData ? invoiceMasterData?.attributes?.subject : ''}
+                          onChange={handleFieldChange}
                           name='subject'
                         />
                       </MUITableCell>
@@ -345,8 +389,9 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleFieldChange(e)}
                           name='bl_number'
+                          onChange={handleFieldChange}
+                          value={invoiceMasterData ? invoiceMasterData?.attributes?.bl_number : ''}
                         />
                       </MUITableCell>
                     </TableRow>
@@ -361,7 +406,8 @@ const AddCard = (props: Props) => {
                           size='small'
                           placeholder=''
                           sx={{ maxWidth: '300px', '& .MuiInputBase-input': { color: 'text.secondary' } }}
-                          onChange={e => handleFieldChange(e)}
+                          onChange={handleFieldChange}
+                          value={invoiceMasterData ? invoiceMasterData?.attributes?.lc_number : ''}
                           name='lc_number'
                         />
                       </MUITableCell>
@@ -379,7 +425,8 @@ const AddCard = (props: Props) => {
                           multiline
                           size='small'
                           sx={{ mt: 3.5 }}
-                          onChange={e => handleFieldChange(e)}
+                          onChange={handleFieldChange}
+                          value={invoiceMasterData ? invoiceMasterData?.attributes?.remarks : ''}
                           name='remarks'
                         />
                       </MUITableCell>
@@ -415,6 +462,7 @@ const AddCard = (props: Props) => {
                               label='Driver Name'
                               placeholder='Driver Name'
                               onChange={e => handleInputChange('driver_name', e.target.value, i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.driver_name}
                             />
                           )}
                         />
@@ -430,6 +478,7 @@ const AddCard = (props: Props) => {
                               label='Driver Phone'
                               placeholder='Driver Phone'
                               onChange={e => handleInputChange('driver_phone', e.target.value, i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.driver_phone}
                             />
                           )}
                         />
@@ -445,6 +494,7 @@ const AddCard = (props: Props) => {
                               label='Vehicle No'
                               placeholder='Vehicle No'
                               onChange={e => handleInputChange('vehicle_number', e.target.value, i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.vehicle_number}
                             />
                           )}
                         />
@@ -460,6 +510,7 @@ const AddCard = (props: Props) => {
                               label='Container Number'
                               placeholder='Container Number'
                               onChange={e => handleInputChange('container_number', e.target.value, i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.container_number}
                             />
                           )}
                         />
@@ -476,6 +527,7 @@ const AddCard = (props: Props) => {
                               label='Amount'
                               placeholder='Amount'
                               onChange={e => handleInputChange('rate', e.target.value, i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.rate}
                             />
                           )}
                         />
@@ -492,6 +544,7 @@ const AddCard = (props: Props) => {
                               label='Overweight'
                               placeholder='Overweight'
                               onChange={e => handleInputChange('overweight', e.target.value ? e.target.value : '0', i)}
+                              defaultValue={invoiceDetails[i]?.attributes?.overweight}
                             />
                           )}
                         />
