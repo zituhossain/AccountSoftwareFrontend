@@ -1,24 +1,24 @@
 // ** React Imports
-import { useState, useEffect, forwardRef } from 'react'
+import { forwardRef, useEffect, useState } from 'react'
 
 // ** Next Import
 import Link from 'next/link'
 
 // ** MUI Imports
 import Box from '@mui/material/Box'
-import Grid from '@mui/material/Grid'
 import Card from '@mui/material/Card'
-import Tooltip from '@mui/material/Tooltip'
-import { styled } from '@mui/material/styles'
-import MenuItem from '@mui/material/MenuItem'
-import TextField from '@mui/material/TextField'
+import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
+import FormControl from '@mui/material/FormControl'
+import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
 import InputLabel from '@mui/material/InputLabel'
-import Typography from '@mui/material/Typography'
-import FormControl from '@mui/material/FormControl'
-import CardContent from '@mui/material/CardContent'
+import MenuItem from '@mui/material/MenuItem'
 import Select, { SelectChangeEvent } from '@mui/material/Select'
+import TextField from '@mui/material/TextField'
+import Tooltip from '@mui/material/Tooltip'
+import Typography from '@mui/material/Typography'
+import { styled } from '@mui/material/styles'
 import { DataGrid, GridColDef, GridRowId } from '@mui/x-data-grid'
 
 // ** Icon Imports
@@ -30,26 +30,24 @@ import DatePicker from 'react-datepicker'
 
 // ** Store & Actions Imports
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchData, deleteInvoice } from 'src/store/apps/invoice'
+import { fetchData } from 'src/store/apps/invoice'
 
 // ** Types Imports
-import { RootState, AppDispatch } from 'src/store'
 import { ThemeColor } from 'src/@core/layouts/types'
-import { InvoiceType } from 'src/types/apps/invoiceTypes'
+import { AppDispatch, RootState } from 'src/store'
 import { DateType } from 'src/types/forms/reactDatepickerTypes'
 
 // ** Utils Import
-import { getInitials } from 'src/@core/utils/get-initials'
 
 // ** Custom Components Imports
-import CustomChip from 'src/@core/components/mui/chip'
-import CustomAvatar from 'src/@core/components/mui/avatar'
-import OptionsMenu from 'src/@core/components/option-menu'
 import TableHeader from 'src/views/apps/invoice/list/TableHeader'
 
 // ** Styled Components
+import toast from 'react-hot-toast'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
-import { fetchDataFromApi } from 'src/utils/api'
+import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
+import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
+import router from 'next/router'
 
 interface InvoiceStatusObj {
   [key: string]: {
@@ -85,26 +83,6 @@ const invoiceStatusObj: InvoiceStatusObj = {
   'Past Due': { color: 'error', icon: 'mdi:information-outline' },
   Downloaded: { color: 'info', icon: 'mdi:arrow-down' }
 }
-
-// ** renders client column
-// const renderClient = async (row: any) => {
-//   if (row?.attributes?.business_contact?.length) {
-//     const client = await fetchDataFromApi(`/companies/${row.attributes.business_contact.data.id}`)
-//     console.log('client', client)
-
-//     return <CustomAvatar src={'#'} sx={{ mr: 3, width: 34, height: 34 }} />
-//   } else {
-//     return (
-//       <CustomAvatar
-//         skin='light'
-//         color={(row.avatarColor as ThemeColor) || ('primary' as ThemeColor)}
-//         sx={{ mr: 3, fontSize: '1rem', width: 34, height: 34 }}
-//       >
-//         {getInitials(row.name || 'John Doe')}
-//       </CustomAvatar>
-//     )
-//   }
-// }
 
 const defaultColumns: GridColDef[] = [
   {
@@ -184,6 +162,8 @@ const InvoiceList = () => {
   const [startDateRange, setStartDateRange] = useState<DateType>(null)
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   const [invoice, setInvoice] = useState<any>([])
+  const [deleteId, setDeleteId] = useState<string | number | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const { attributes } = invoice
 
@@ -222,6 +202,10 @@ const InvoiceList = () => {
     setEndDateRange(end)
   }
 
+  const handleEditClick = (id: string | number) => {
+    handleEdit(id)
+  }
+
   const columns: GridColDef[] = [
     ...defaultColumns,
     {
@@ -235,7 +219,7 @@ const InvoiceList = () => {
       renderCell: ({ row }: CellType) => (
         <Box sx={{ display: 'flex', alignItems: 'center' }}>
           <Tooltip title='Delete Invoice'>
-            <IconButton size='small' sx={{ mr: 0.5 }} onClick={() => dispatch(deleteInvoice(row.id))}>
+            <IconButton size='small' sx={{ mr: 0.5 }} onClick={() => handleDeleteClick(row.id)}>
               <Icon icon='mdi:delete-outline' />
             </IconButton>
           </Tooltip>
@@ -245,7 +229,7 @@ const InvoiceList = () => {
             </IconButton>
           </Tooltip>
           <Tooltip title='Edit'>
-            <IconButton size='small' component={Link} sx={{ mr: 0.5 }} href={`/apps/invoice/edit/${row.id}`}>
+            <IconButton size='small' sx={{ mr: 0.5 }} onClick={() => handleEditClick(row.id)}>
               <Icon icon='mdi:pencil-outline' />
             </IconButton>
           </Tooltip>
@@ -255,17 +239,47 @@ const InvoiceList = () => {
   ]
 
   useEffect(() => {
-    // Fetch companies data from API
-    const fetchQuotaiton = async () => {
+    const fetchInvoice = async () => {
       try {
         const response = await fetchDataFromApi('/invoice-masters?populate=*')
         setInvoice(response.data)
       } catch (error) {
-        console.error('Error fetching contact type:', error)
+        console.error('Error fetching invoice:', error)
       }
     }
-    fetchQuotaiton()
+    fetchInvoice()
   }, [])
+
+  const handleEdit = (id: string | number) => {
+    // Find the contact type by id
+    const selectedInvoice = invoice.find(item => item.id === id)
+    if (selectedInvoice) {
+      router.push(`/apps/invoice/add?id=${selectedInvoice.id}`)
+    }
+  }
+
+  const handleDeleteConfirm = async () => {
+    if (deleteId !== null) {
+      try {
+        await deleteDataFromApi(`/invoice-masters/${deleteId}`)
+        setInvoice(invoice.filter(item => item.id !== deleteId))
+        setDialogOpen(false)
+        toast.success('Invoice deleted successfully')
+      } catch (error) {
+        console.error('Error deleting Invoice:', error)
+        toast.error('Failed to delete Invoice')
+      }
+    }
+  }
+
+  const handleDeleteClick = (id: string | number) => {
+    setDeleteId(id)
+    setDialogOpen(true)
+  }
+
+  const handleDialogClose = () => {
+    setDialogOpen(false)
+  }
 
   return (
     <DatePickerWrapper>
@@ -340,6 +354,13 @@ const InvoiceList = () => {
             />
           </Card>
         </Grid>
+        <ConfirmDialog
+          open={dialogOpen}
+          onClose={handleDialogClose}
+          onConfirm={handleDeleteConfirm}
+          title='Confirm Deletion'
+          message='Are you sure you want to delete this invoice?'
+        />
       </Grid>
     </DatePickerWrapper>
   )
