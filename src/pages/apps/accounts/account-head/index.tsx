@@ -1,36 +1,32 @@
 // ** React Imports
-import { useState, MouseEvent, useCallback, useEffect } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
 import Grid from '@mui/material/Grid'
-import { styled } from '@mui/material/styles'
-import MenuItem from '@mui/material/MenuItem'
 import IconButton from '@mui/material/IconButton'
+import { styled } from '@mui/material/styles'
 
 // import Typography from '@mui/material/Typography'
-import CardHeader from '@mui/material/CardHeader'
 import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
 
 // ** Custom Components Imports
+import Tooltip from '@mui/material/Tooltip'
 import Link from 'next/link'
 import CustomChip from 'src/@core/components/mui/chip'
 
-// ** Third Party Components
-// import axios from 'axios'
-
 // ** Types Imports
+import router from 'next/router'
+import toast from 'react-hot-toast'
 import { ThemeColor } from 'src/@core/layouts/types'
-import { useDispatch } from 'react-redux'
-import { AppDispatch } from 'src/store'
-import { Menu } from '@mui/material'
-import { deleteUser } from 'src/store/apps/user'
+import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
+import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
 import TableHeader from 'src/views/apps/accounts/TableHeader'
-import { fetchDataFromApi } from 'src/utils/api'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -66,134 +62,13 @@ const LinkStyled = styled(Link)(({ theme }) => ({
   }
 }))
 
-const RowOptions = ({ id }: { id: number | string }) => {
-  // ** Hooks
-  const dispatch = useDispatch<AppDispatch>()
-
-  // ** State
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
-  const rowOptionsOpen = Boolean(anchorEl)
-
-  const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
-  const handleRowOptionsClose = () => {
-    setAnchorEl(null)
-  }
-
-  const handleDelete = () => {
-    dispatch(deleteUser(id))
-    handleRowOptionsClose()
-  }
-
-  return (
-    <>
-      <IconButton size='small' onClick={handleRowOptionsClick}>
-        <Icon icon='mdi:dots-vertical' />
-      </IconButton>
-      <Menu
-        keepMounted
-        anchorEl={anchorEl}
-        open={rowOptionsOpen}
-        onClose={handleRowOptionsClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-        PaperProps={{ style: { minWidth: '8rem' } }}
-      >
-        <MenuItem
-          component={Link}
-          sx={{ '& svg': { mr: 2 } }}
-          onClick={handleRowOptionsClose}
-          href='/apps/user/view/overview/'
-        >
-          <Icon icon='mdi:eye-outline' fontSize={20} />
-          View
-        </MenuItem>
-        <MenuItem onClick={handleRowOptionsClose} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:pencil-outline' fontSize={20} />
-          Edit
-        </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:delete-outline' fontSize={20} />
-          Delete
-        </MenuItem>
-      </Menu>
-    </>
-  )
-}
-
-const columns: GridColDef[] = [
-  {
-    sortable: true,
-    field: 'slNo',
-    headerName: '#',
-    flex: 0,
-    editable: false,
-    renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
-  },
-  {
-    flex: 0.2,
-    minWidth: 230,
-    field: 'head_title',
-    headerName: 'Header Name',
-    renderCell: ({ row }: CellType) => (
-      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.head_title}</LinkStyled>
-    )
-  },
-  {
-    flex: 0.2,
-    minWidth: 230,
-    field: 'head_type',
-    headerName: 'Header Type',
-    renderCell: ({ row }: CellType) => (
-      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.head_type === 0 ? 'Credit' : 'Debit'}</LinkStyled>
-    )
-  },
-  {
-    flex: 0.2,
-    minWidth: 230,
-    field: 'description',
-    headerName: 'Description',
-    renderCell: ({ row }: CellType) => (
-      <LinkStyled href={`/companies/${row.id}`}>{row.attributes.description}</LinkStyled>
-    )
-  },
-  {
-    flex: 0.1,
-    minWidth: 110,
-    field: 'status',
-    headerName: 'Status',
-    renderCell: ({ row }: CellType) => (
-      <CustomChip
-        skin='light'
-        size='small'
-        label={row.attributes.status ? 'Active' : 'Inactive'}
-        color={companyStatusObj[row.attributes.status.toString()]}
-        sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
-      />
-    )
-  },
-  {
-    flex: 0.1,
-    minWidth: 90,
-    sortable: false,
-    field: 'actions',
-    headerName: 'Actions',
-    renderCell: ({ row }: CellType) => <RowOptions id={row.id} />
-  }
-]
-
 const AccountHeadList = () => {
   // ** State
   const [accountHead, setAccountHead] = useState<AccountHead[]>([])
   const [value, setValue] = useState<string>('')
+
+  const [deleteId, setDeleteId] = useState<string | number | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
@@ -212,6 +87,117 @@ const AccountHeadList = () => {
     }
     fetchAccountHead()
   }, [])
+
+  const handleEdit = (id: string | number) => {
+    // Find the contact type by id
+    const selectedAccountHead = accountHead.find(item => item.id === id)
+    if (selectedAccountHead) {
+      router.push(`/apps/accounts/account-head/add?id=${selectedAccountHead.id}`)
+    }
+  }
+
+  const RowOptions = ({ id }: { id: number | string }) => {
+    const handleEditClick = (id: string | number) => {
+      handleEdit(id)
+    }
+
+    return (
+      <>
+        <Tooltip title='Edit' placement='top'>
+          <IconButton size='small' onClick={() => handleEditClick(id)}>
+            <Icon icon='mdi:pencil-outline' />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title='Delete' placement='top'>
+          <IconButton size='small' onClick={() => handleDeleteClick(id)}>
+            <Icon icon='mdi:delete-outline' />
+          </IconButton>
+        </Tooltip>
+      </>
+    )
+  }
+
+  const columns: GridColDef[] = [
+    {
+      sortable: true,
+      field: 'slNo',
+      headerName: '#',
+      flex: 0,
+      editable: false,
+      renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
+    },
+    {
+      flex: 0.2,
+      minWidth: 230,
+      field: 'head_title',
+      headerName: 'Header Name',
+      renderCell: ({ row }: CellType) => <LinkStyled href='#'>{row.attributes.head_title}</LinkStyled>
+    },
+    {
+      flex: 0.2,
+      minWidth: 230,
+      field: 'head_type',
+      headerName: 'Header Type',
+      renderCell: ({ row }: CellType) => (
+        <LinkStyled href={`/companies/${row.id}`}>{row.attributes.head_type === 0 ? 'Credit' : 'Debit'}</LinkStyled>
+      )
+    },
+    {
+      flex: 0.2,
+      minWidth: 230,
+      field: 'description',
+      headerName: 'Description',
+      renderCell: ({ row }: CellType) => (
+        <LinkStyled href={`/companies/${row.id}`}>{row.attributes.description}</LinkStyled>
+      )
+    },
+    {
+      flex: 0.1,
+      minWidth: 110,
+      field: 'status',
+      headerName: 'Status',
+      renderCell: ({ row }: CellType) => (
+        <CustomChip
+          skin='light'
+          size='small'
+          label={row.attributes.status ? 'Active' : 'Inactive'}
+          color={companyStatusObj[row.attributes.status.toString()]}
+          sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
+        />
+      )
+    },
+    {
+      flex: 0.1,
+      minWidth: 90,
+      sortable: false,
+      field: 'actions',
+      headerName: 'Actions',
+      renderCell: ({ row }: CellType) => <RowOptions id={row.id} />
+    }
+  ]
+
+  const handleDeleteConfirm = async () => {
+    if (deleteId !== null) {
+      try {
+        await deleteDataFromApi(`/account-headers/${deleteId}`)
+        setAccountHead(accountHead.filter(item => item.id !== deleteId))
+        setDialogOpen(false)
+        toast.success('Account Head deleted successfully')
+      } catch (error) {
+        console.error('Error deleting Account Head:', error)
+        toast.error('Failed to delete Account Head')
+      }
+    }
+  }
+
+  const handleDeleteClick = (id: string | number) => {
+    setDeleteId(id)
+    setDialogOpen(true)
+  }
+
+  const handleDialogClose = () => {
+    setDialogOpen(false)
+  }
 
   return (
     <Grid container spacing={6}>
@@ -232,6 +218,13 @@ const AccountHeadList = () => {
           </CardContent>
         </Card>
       </Grid>
+      <ConfirmDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        onConfirm={handleDeleteConfirm}
+        title='Confirm Deletion'
+        message='Are you sure you want to delete this Account Head?'
+      />
     </Grid>
   )
 }

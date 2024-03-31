@@ -84,7 +84,7 @@ const PreviewActions = ({ id }: Props) => {
               component={Link}
               color='secondary'
               variant='outlined'
-              href={`/apps/invoice/edit/${id}`}
+              href={`/apps/invoice/add?id=${id}`}
             >
               Edit Invoice
             </Button>

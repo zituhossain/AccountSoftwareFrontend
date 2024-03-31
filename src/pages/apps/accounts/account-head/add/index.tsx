@@ -8,21 +8,29 @@ import CardHeader from '@mui/material/CardHeader'
 import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid'
 import TextField from '@mui/material/TextField'
-import { useRouter } from 'next/navigation'
-import { FormEventHandler } from 'react'
+import { useRouter } from 'next/router'
+import { FormEventHandler, useEffect } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { AccountHeadType } from 'src/types/apps/userTypes'
-import { postDataToApiAxios } from 'src/utils/api'
+import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
 import * as yup from 'yup'
 
 const AddAccountHead = () => {
   const router = useRouter()
+  const { id } = router.query
 
   const schema = yup.object().shape({
     head_title: yup.string().required('Account Header is required'),
     head_type: yup.string().required('Account Type is required')
   })
+
+  const defaultValues: AccountHeadType = {
+    head_title: '',
+    description: '',
+    head_type: 0,
+    status: true
+  }
 
   const {
     handleSubmit,
@@ -30,17 +38,49 @@ const AddAccountHead = () => {
     reset,
     formState: { errors }
   } = useForm<AccountHeadType>({
-    resolver: yupResolver(schema)
+    resolver: yupResolver(schema),
+    defaultValues
   })
+
+  useEffect(() => {
+    const fetchData = async () => {
+      if (id) {
+        try {
+          const response = await fetchDataFromApi(`/account-headers/${id}?populate=*`)
+          const {
+            data: { attributes }
+          } = response
+
+          // Set the form values using reset
+          reset({
+            ...attributes,
+            head_type: Number(attributes.head_type),
+            status: attributes.status || false
+          })
+        } catch (error: any) {
+          console.error('Error fetching accounts header data:', error.message)
+        }
+      }
+    }
+
+    fetchData()
+  }, [id, reset])
 
   const onSubmit = async (data: AccountHeadType) => {
     console.log('firstsd', data)
     try {
       const formData = new FormData()
       formData.append('data', JSON.stringify(data))
-      await postDataToApiAxios('/account-headers', formData)
-      console.log('account header added successfully')
-      toast.success('Account header added successfully')
+
+      if (id) {
+        // Update existing contact
+        await putDataToApi(`/account-headers/${id}`, formData)
+        toast.success('Account Header updated successfully')
+      } else {
+        // Add new Account Header
+        await postDataToApiAxios('/account-headers', formData)
+        toast.success('Account Header added successfully')
+      }
       router.push('/apps/accounts/account-head')
     } catch (error: any) {
       toast.error('Error adding account header')
@@ -50,7 +90,7 @@ const AddAccountHead = () => {
 
   return (
     <Card>
-      <CardHeader title='Add Account Header' />
+      <CardHeader title={id ? 'Edit Account Header' : 'Add Account Header'} />
       <Divider sx={{ m: '0 !important' }} />
       <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
@@ -122,7 +162,7 @@ const AddAccountHead = () => {
         <Divider sx={{ m: '0 !important' }} />
         <CardActions>
           <Button size='large' type='submit' sx={{ mr: 2 }} variant='contained'>
-            Submit
+            {id ? 'Update' : 'Submit'}
           </Button>
           <Button type='reset' size='large' color='secondary' variant='outlined'>
             Reset

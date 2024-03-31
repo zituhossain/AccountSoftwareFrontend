@@ -22,6 +22,10 @@ import { deleteDataFromApi, fetchDataFromApi, postDataToApiAxios, putDataToApi }
 import toast from 'react-hot-toast'
 import { cl } from '@fullcalendar/core/internal-common'
 import { useForm } from 'react-hook-form'
+import Button from '@mui/material/Button'
+import Card from '@mui/material/Card'
+import CardContent from '@mui/material/CardContent'
+import CardActions from '@mui/material/CardActions'
 
 const InvoiceAdd = () => {
   // ** State
@@ -350,7 +354,15 @@ const InvoiceAdd = () => {
           />
         </Grid>
         <Grid item xl={3} md={4} xs={12}>
-          <AddActions handleSave={handleSave} />
+          <Card>
+            <CardContent>
+              <CardActions>
+                <Button fullWidth variant='outlined' sx={{ mb: 3.5 }} onClick={handleSave}>
+                  {isEditMode ? 'Update Invoice' : 'Save Invoice'}
+                </Button>
+              </CardActions>
+            </CardContent>
+          </Card>
         </Grid>
       </Grid>
     </DatePickerWrapper>
