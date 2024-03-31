@@ -11,6 +11,8 @@ import { styled } from '@mui/material/styles'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
+import { FormControl, FormHelperText, InputLabel, MenuItem, Select } from '@mui/material'
+import { Controller } from 'react-hook-form'
 
 const OptionsWrapper = styled(Box)<BoxProps>(() => ({
   display: 'flex',
@@ -18,7 +20,7 @@ const OptionsWrapper = styled(Box)<BoxProps>(() => ({
   justifyContent: 'space-between'
 }))
 
-const AddActions = ({ handleSave }: any) => {
+const AddActions = ({ handleSave, control }: any) => {
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
@@ -35,6 +37,23 @@ const AddActions = ({ handleSave }: any) => {
             </Button>
           </CardContent>
         </Card>
+      </Grid>
+      <Grid item xs={12}>
+        <FormControl fullWidth>
+          <InputLabel id='payment_option'>Payment Option</InputLabel>
+          <Controller
+            name='payment_option'
+            control={control}
+            render={({ field }) => (
+              <Select {...field} label='Payment Option' labelId='payment_option'>
+                <MenuItem value=''>Select Payment Option</MenuItem>
+                <MenuItem value={0}>Cash</MenuItem>
+                <MenuItem value={1}>On Account</MenuItem>
+              </Select>
+            )}
+          />
+          {/* <FormHelperText>{errors.payment_option?.message}</FormHelperText> */}
+        </FormControl>
       </Grid>
       {/* <Grid item xs={12}>
         <OptionsWrapper sx={{ mb: 1 }}>

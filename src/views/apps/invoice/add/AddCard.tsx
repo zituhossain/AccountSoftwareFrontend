@@ -151,8 +151,6 @@ const AddCard = (props: Props) => {
 
   console.log('selected:', selected)
 
-  console.log('invoiceDetailsLength:', invoiceDetails.length)
-
   // ** Hook
   const theme = useTheme()
 

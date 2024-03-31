@@ -1,5 +1,5 @@
 // ** React Imports
-import { useEffect, useState } from 'react'
+import { use, useEffect, useState } from 'react'
 
 // ** Next Imports
 
@@ -20,12 +20,15 @@ import { useRouter } from 'next/router'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import { deleteDataFromApi, fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
 import toast from 'react-hot-toast'
-import { cl } from '@fullcalendar/core/internal-common'
-import { useForm } from 'react-hook-form'
+import { cl, co } from '@fullcalendar/core/internal-common'
+import { Controller, useForm } from 'react-hook-form'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
+import { AccountHeadType } from 'src/types/apps/userTypes'
+import { set } from 'nprogress'
 
 const InvoiceAdd = () => {
   // ** State
@@ -36,6 +39,11 @@ const InvoiceAdd = () => {
   const [invoiceDetails, setInvoiceDetails] = useState<any[]>([])
   const [invoiceMasterId, setInvoiceMasterId] = useState<number>(0)
   const [totalAmount, setTotalAmount] = useState<number>(0)
+  const [accountHeaders, setAccountHeaders] = useState<AccountHeadType[]>([])
+  const [userId, setUserId] = useState<number>(0)
+  const [companyId, setCompanyId] = useState<number>(0)
+  const [accountHeaderId, setAccountHeaderId] = useState<string>('')
+  const [paymentOption, setPaymentOption] = useState<string>('')
   const [invoiceMasterData, setInvoiceMasterData] = useState<any>({
     invoice_no: '1',
     client: '',
@@ -55,11 +63,7 @@ const InvoiceAdd = () => {
     formState: { errors }
   } = useForm({})
 
-  console.log('invoiceMasterData:', invoiceMasterData)
-
-  console.log('invoiceMasterId:', invoiceMasterId)
-
-  console.log('totalAmount:', totalAmount)
+  console.log('selectedClient:========>', selectedClient?.id)
 
   const router = useRouter()
   const { id } = router.query
@@ -108,7 +112,7 @@ const InvoiceAdd = () => {
           const maxId = Math.max(...invoiceMasters.map((invoice: any) => invoice.id))
 
           console.log('maxId:', maxId)
-          setInvoiceMasterId(maxId) // TODO: Add 1 to the maxId to get the next invoice number
+          setInvoiceMasterId(maxId)
         } else {
           // If no quotations exist, set the quotation number to 1
           setInvoiceNo(1)
@@ -128,6 +132,46 @@ const InvoiceAdd = () => {
 
     fetchInvoiceData()
   }, [])
+
+  // Fetch account headers
+  useEffect(() => {
+    const fetchAccountHeaders = async () => {
+      try {
+        const accountHeadersResponse = await fetchDataFromApi('/account-headers')
+        setAccountHeaders(accountHeadersResponse.data)
+      } catch (error) {
+        console.error('Error fetching account headers:', error)
+      }
+    }
+
+    fetchAccountHeaders()
+  }, [])
+
+  // Fetch User and Company ID
+  useEffect(() => {
+    const fetchRelationCompany = async () => {
+      try {
+        const userData = JSON.parse(localStorage.getItem('userData')!)
+        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+
+        if (userResponse) {
+          setUserId(userResponse.id)
+          if (userResponse.company) setCompanyId(userResponse.company.id)
+        }
+      } catch (error) {
+        console.error('Error fetching positions:', error)
+      }
+    }
+    fetchRelationCompany()
+  }, [])
+
+  const handleAccountHeader = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setAccountHeaderId(event.target.value)
+  }
+
+  const handlePaymentOption = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPaymentOption(event.target.value)
+  }
 
   // Calculate and update total amount whenever invoice details change
   useEffect(() => {
@@ -203,6 +247,24 @@ const InvoiceAdd = () => {
         detailData.append('data', JSON.stringify({ ...detail, invoice_master: invoiceMasterId }))
         await postDataToApiAxios('/invoice-details', detailData)
       }
+
+      // Transaction Data
+      const transactionData = new FormData()
+      transactionData.append(
+        'data',
+        JSON.stringify({
+          ...transactionData,
+          invoice_id: invoiceMasterId,
+          amount: totalAmount,
+          account_headers: accountHeaderId,
+          company: companyId,
+          created_user: userId,
+          payment_option: paymentOption,
+          client: selectedClient?.id
+        })
+      )
+      const transactionResponse = await postDataToApiAxios('/transactions', transactionData)
+      console.log('transactionResponse:', transactionResponse.data)
 
       toast.success('Invoice added successfully')
       router.push(`/apps/invoice/preview/${invoiceMasterId}`)
@@ -334,6 +396,8 @@ const InvoiceAdd = () => {
     })()
   }, [])
 
+  console.log('selectedClient:', selectedClient)
+
   return (
     <DatePickerWrapper sx={{ '& .react-datepicker-wrapper': { width: 'auto' } }}>
       <Grid container spacing={6}>
@@ -361,6 +425,53 @@ const InvoiceAdd = () => {
                   {isEditMode ? 'Update Invoice' : 'Save Invoice'}
                 </Button>
               </CardActions>
+              <Grid container spacing={3}>
+                <Grid item xs={12}>
+                  <FormControl fullWidth error={!!errors.account_headers}>
+                    <InputLabel id='account_headers'>Account Head</InputLabel>
+                    <Controller
+                      name='account_headers'
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          label='Account Head'
+                          labelId='account_headers'
+                          onChange={handleAccountHeader}
+                        >
+                          <MenuItem value=''>Select Account Head</MenuItem>
+                          {accountHeaders.map(accountHeader => (
+                            <MenuItem key={accountHeader.id} value={accountHeader.id}>
+                              {accountHeader?.attributes?.head_title}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      )}
+                    />
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12}>
+                  <FormControl fullWidth>
+                    <InputLabel id='payment_option'>Payment Option</InputLabel>
+                    <Controller
+                      name='payment_option'
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          label='Payment Option'
+                          labelId='payment_option'
+                          onChange={handlePaymentOption}
+                        >
+                          <MenuItem value=''>Select Payment Option</MenuItem>
+                          <MenuItem value={0}>Cash</MenuItem>
+                          <MenuItem value={1}>On Account</MenuItem>
+                        </Select>
+                      )}
+                    />
+                  </FormControl>
+                </Grid>
+              </Grid>
             </CardContent>
           </Card>
         </Grid>
