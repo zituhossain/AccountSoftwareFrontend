@@ -73,89 +73,23 @@ const InvoicePrint = ({ invoiceMasterData, invoiceDetailsData }: any) => {
           <Grid item xs={8} sx={{ mb: { sm: 0, xs: 4 } }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Box sx={{ mb: 6, display: 'flex', alignItems: 'center' }}>
-                <svg width={40} fill='none' height={22} viewBox='0 0 268 150' xmlns='http://www.w3.org/2000/svg'>
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 195.571 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fillOpacity='0.4'
-                    fill='url(#paint0_linear_7821_79167)'
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 196.084 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(0.865206 0.501417 -0.498585 0.866841 173.147 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 94.1973 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fillOpacity='0.4'
-                    fill='url(#paint1_linear_7821_79167)'
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 94.1973 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(0.865206 0.501417 -0.498585 0.866841 71.7728 0)'
-                  />
-                  <defs>
-                    <linearGradient
-                      y1='0'
-                      x1='25.1443'
-                      x2='25.1443'
-                      y2='143.953'
-                      id='paint0_linear_7821_79167'
-                      gradientUnits='userSpaceOnUse'
-                    >
-                      <stop />
-                      <stop offset='1' stopOpacity='0' />
-                    </linearGradient>
-                    <linearGradient
-                      y1='0'
-                      x1='25.1443'
-                      x2='25.1443'
-                      y2='143.953'
-                      id='paint1_linear_7821_79167'
-                      gradientUnits='userSpaceOnUse'
-                    >
-                      <stop />
-                      <stop offset='1' stopOpacity='0' />
-                    </linearGradient>
-                  </defs>
-                </svg>
+                {/* TODO: Add company logo */}
                 <Typography variant='h6' sx={{ ml: 2, fontWeight: 700, lineHeight: 1.2 }}>
-                  {themeConfig.templateName}
+                  Top-4 Logistics
                 </Typography>
               </Box>
-              <div>
-                <Typography variant='body2' sx={{ mb: 1 }}>
-                  Office 149, 450 South Brand Brooklyn
-                </Typography>
-                <Typography variant='body2' sx={{ mb: 1 }}>
-                  San Diego County, CA 91905, USA
-                </Typography>
-                <Typography variant='body2'>+1 (123) 456 7891, +44 (876) 543 2198</Typography>
-              </div>
+              <Box sx={{ mb: 6, display: 'flex', alignItems: 'center' }}>
+                <div>
+                  <Typography variant='body2' sx={{ mb: 1 }}>
+                    9/31, F, Eastern Plaza, Hatirpul
+                  </Typography>
+                  <Typography variant='body2' sx={{ mb: 1 }}>
+                    Dhaka - 1205, Bangladesh
+                  </Typography>
+                  <Typography variant='body2'>+8801852244141</Typography>
+                  <Typography variant='body2'>top4we@gmail.com</Typography>
+                </div>
+              </Box>
             </Box>
           </Grid>
           <Grid item xs={4}>

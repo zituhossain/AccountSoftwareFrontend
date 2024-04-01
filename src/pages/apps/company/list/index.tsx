@@ -1,5 +1,5 @@
 // ** React Imports
-import { MouseEvent, useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 
 // ** MUI Imports
 import Card from '@mui/material/Card'
@@ -7,7 +7,7 @@ import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
 import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
-import MenuItem from '@mui/material/MenuItem'
+import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { styled } from '@mui/material/styles'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
@@ -23,13 +23,12 @@ import CustomChip from 'src/@core/components/mui/chip'
 // import axios from 'axios'
 
 // ** Types Imports
-import { Menu } from '@mui/material'
+import router from 'next/router'
 import toast from 'react-hot-toast'
 import { ThemeColor } from 'src/@core/layouts/types'
 import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
 import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
 import TableHeader from 'src/views/apps/company/list/TableHeader'
-import router from 'next/router'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -77,67 +76,35 @@ const CompaniesList = () => {
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
-  const RowOptions = ({ companyId }: { companyId: number | string }) => {
-    // ** Hooks
-
-    // ** State
-    const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
-    const rowOptionsOpen = Boolean(anchorEl)
-
-    const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
-      setAnchorEl(event.currentTarget)
-    }
-    const handleRowOptionsClose = () => {
-      setAnchorEl(null)
-    }
-
+  const RowOptions = ({ id }: { id: number | string }) => {
     const handleEditClick = (id: string | number) => {
       handleEdit(id)
     }
 
+    const handleView = () => {
+      router.push(`/apps/company/view/${id}`)
+    }
+
     return (
       <>
-        <IconButton size='small' onClick={handleRowOptionsClick}>
-          <Icon icon='mdi:dots-vertical' />
-        </IconButton>
-        <Menu
-          keepMounted
-          anchorEl={anchorEl}
-          open={rowOptionsOpen}
-          onClose={handleRowOptionsClose}
-          anchorOrigin={{
-            vertical: 'bottom',
-            horizontal: 'right'
-          }}
-          transformOrigin={{
-            vertical: 'top',
-            horizontal: 'right'
-          }}
-          PaperProps={{ style: { minWidth: '8rem' } }}
-        >
-          <MenuItem
-            component={Link}
-            sx={{ '& svg': { mr: 2 } }}
-            onClick={handleRowOptionsClose}
-            href={`/apps/company/view/${companyId}`}
-          >
-            <Icon icon='mdi:eye-outline' fontSize={20} />
-            View
-          </MenuItem>
-          <MenuItem onClick={() => handleEditClick(companyId)} sx={{ '& svg': { mr: 2 } }}>
-            <Icon icon='mdi:pencil-outline' fontSize={20} />
-            Edit
-          </MenuItem>
-          <MenuItem onClick={() => handleDeleteClick(companyId)} sx={{ '& svg': { mr: 2 } }}>
-            <Icon icon='mdi:delete-outline' fontSize={20} />
-            Delete
-          </MenuItem>
-        </Menu>
+        <Tooltip title='View' placement='top'>
+          <IconButton size='small' onClick={handleView}>
+            <Icon icon='mdi:eye-outline' />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title='Edit' placement='top'>
+          <IconButton size='small' onClick={() => handleEditClick(id)}>
+            <Icon icon='mdi:pencil-outline' />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title='Delete' placement='top'>
+          <IconButton size='small' onClick={() => handleDeleteClick(id)}>
+            <Icon icon='mdi:delete-outline' />
+          </IconButton>
+        </Tooltip>
       </>
     )
   }
-
   const columns: GridColDef[] = [
     {
       sortable: true,
@@ -208,7 +175,7 @@ const CompaniesList = () => {
       sortable: false,
       field: 'actions',
       headerName: 'Actions',
-      renderCell: ({ row }: CellType) => <RowOptions companyId={row.id} />
+      renderCell: ({ row }: CellType) => <RowOptions id={row.id} />
     }
   ]
 
