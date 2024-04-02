@@ -37,7 +37,6 @@ const InvoiceAdd = () => {
   const [clients, setClients] = useState<any | undefined>()
   const [invoiceNo, setInvoiceNo] = useState<number>(0)
   const [invoiceDetails, setInvoiceDetails] = useState<any[]>([])
-  const [invoiceMasterId, setInvoiceMasterId] = useState<number>(0)
   const [totalAmount, setTotalAmount] = useState<number>(0)
   const [accountHeaders, setAccountHeaders] = useState<AccountHeadType[]>([])
   const [userId, setUserId] = useState<number>(0)
@@ -74,57 +73,12 @@ const InvoiceAdd = () => {
         const userData = JSON.parse(localStorage.getItem('userData')!)
         const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
 
-        // Fetch Invoice Master data
-        const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters?populate=*`)
-
-        if (invoiceMasterResponse && invoiceMasterResponse.data && invoiceMasterResponse.data.length > 0) {
-          // Extract quotation numbers from each quotation object
-          const invoiceNumbers = invoiceMasterResponse.data.map((invoice: any) =>
-            parseInt(invoice.attributes.invoice_no, 10)
-          )
-
-          console.log('invoiceNumbers:', invoiceNumbers)
-
-          // Find the maximum quotation number
-          const maxInvoiceNumber = Math.max(...invoiceNumbers)
-
-          console.log('maxInvoiceNumber:', maxInvoiceNumber)
-
-          // Generate the next quotation number
-          const nextQuotationNumber = maxInvoiceNumber + 1
-
-          console.log('nextQuotationNumber:', nextQuotationNumber)
-
-          // Set the next quotation number
-          setInvoiceNo(nextQuotationNumber)
-
-          // Merge the changes into the existing formData state
-          setInvoiceMasterData((prevState: any) => ({
-            ...prevState,
-            invoice_no: nextQuotationNumber.toString(),
-            created_user: userData.id,
-            company: userResponse.company.id
-          }))
-
-          const invoiceMasters = invoiceMasterResponse.data // Assuming data holds the actual data
-
-          // Assuming the ID field is called "id"
-          const maxId = Math.max(...invoiceMasters.map((invoice: any) => invoice.id))
-
-          console.log('maxId:', maxId)
-          setInvoiceMasterId(maxId)
-        } else {
-          // If no quotations exist, set the quotation number to 1
-          setInvoiceNo(1)
-
-          // Merge the changes into the existing formData state with quotation number as 1
-          setInvoiceMasterData((prevState: any) => ({
-            ...prevState,
-            invoice_no: '1',
-            created_user: userData.id,
-            company: userResponse.company.id
-          }))
-        }
+        // Merge the changes into the existing formData state
+        setInvoiceMasterData((prevState: any) => ({
+          ...prevState,
+          created_user: userData.id,
+          company: userResponse.company.id
+        }))
       } catch (error) {
         console.error('Error fetching quotation data:', error)
       }
@@ -132,6 +86,43 @@ const InvoiceAdd = () => {
 
     fetchInvoiceData()
   }, [])
+
+  useEffect(() => {
+    const fetchInvoiceData = async () => {
+      try {
+        // Fetch existing invoice data if in edit mode
+        if (id) {
+          const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters/${id}`)
+          console.log('invoiceMasterResponse:##########', invoiceMasterResponse.data)
+          const existingInvoiceNo = invoiceMasterResponse?.data?.attributes?.invoice_no
+          setInvoiceNo(existingInvoiceNo)
+          setInvoiceMasterData((prevState: any) => ({
+            ...prevState,
+            invoice_no: existingInvoiceNo.toString()
+          }))
+        } else {
+          // Generate new invoice number if creating new invoice
+          const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters`)
+          const invoices = invoiceMasterResponse?.data
+          console.log('Create new invoice: ')
+          const maxInvoiceNo = Math.max(...invoices.map(invoice => parseInt(invoice.attributes.invoice_no, 10)))
+          const newInvoiceNo = maxInvoiceNo >= 0 ? maxInvoiceNo + 1 : 1
+          setInvoiceNo(newInvoiceNo)
+
+          // Merge the changes into the existing formData state
+          setInvoiceMasterData((prevState: any) => ({
+            ...prevState,
+            invoice_no: newInvoiceNo.toString()
+          }))
+        }
+      } catch (error) {
+        console.error('Error fetching invoice data:', error)
+        toast.error('Error fetching data.')
+      }
+    }
+
+    fetchInvoiceData()
+  }, [id])
 
   // Fetch account headers
   useEffect(() => {
@@ -412,7 +403,6 @@ const InvoiceAdd = () => {
             setInvoiceMasterData={setInvoiceMasterData}
             invoiceDetails={invoiceDetails}
             setInvoiceDetails={setInvoiceDetails}
-            invoiceMasterId={invoiceMasterId}
             control={control}
             errors={errors}
           />
