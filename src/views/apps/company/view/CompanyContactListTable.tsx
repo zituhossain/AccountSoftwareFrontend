@@ -1,11 +1,10 @@
 // ** React Imports
-import { MouseEvent, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // ** Next Import
 import Link from 'next/link'
 
 // ** MUI Imports
-import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import IconButton from '@mui/material/IconButton'
 import Tooltip from '@mui/material/Tooltip'
@@ -17,7 +16,11 @@ import { DataGrid, GridColDef } from '@mui/x-data-grid'
 import Icon from 'src/@core/components/icon'
 
 // ** Type Imports
+import toast from 'react-hot-toast'
 import { ThemeColor } from 'src/@core/layouts/types'
+import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
+import { deleteDataFromApi } from 'src/utils/api'
+import router from 'next/router'
 
 // ** Custom Component Imports
 
@@ -50,93 +53,133 @@ const invoiceStatusObj: InvoiceStatusObj = {
   Downloaded: { color: 'info', icon: 'mdi:arrow-down' }
 }
 
-const columns: GridColDef[] = [
-  {
-    sortable: true,
-    field: 'slNo',
-    headerName: '#',
-    flex: 0,
-    editable: false,
-    renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
-  },
-  {
-    flex: 0.25,
-    minWidth: 90,
-    field: 'name',
-    headerName: 'Name',
-    renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes.name || 0}</Typography>
-  },
-  {
-    flex: 0.25,
-    minWidth: 90,
-    field: 'phone',
-    headerName: 'Phone',
-    renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes?.phone || 0}</Typography>
-  },
-  {
-    flex: 0.25,
-    minWidth: 90,
-    field: 'position',
-    headerName: 'Position',
-    renderCell: ({ row }: CellType) => (
-      <Typography variant='body2'>{row.attributes?.contact_type?.data?.attributes?.title || 0}</Typography>
-    )
-  },
-  {
-    flex: 0.1,
-    minWidth: 130,
-    sortable: false,
-    field: 'actions',
-    headerName: 'Actions',
-    renderCell: ({ row }: CellType) => (
-      <Box sx={{ display: 'flex', alignItems: 'center' }}>
-        <Tooltip title='Delete'>
-          <IconButton size='small'>
-            <Icon icon='mdi:delete-outline' fontSize={20} />
-          </IconButton>
-        </Tooltip>
-        <Tooltip title='Edit'>
-          <IconButton size='small' component={Link} href={`#`}>
-            <Icon icon='mdi:pencil-outline' fontSize={20} />
-          </IconButton>
-        </Tooltip>
-      </Box>
-    )
-  }
-]
-
-const InvoiceListTable = ({ contactPersonData }: Props) => {
+const ContactList = ({ contactPersonData }: Props) => {
   console.log('<=======contactPersonData=======>', contactPersonData)
 
   // ** State
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 7 })
+  const [contacts, setContacts] = useState(contactPersonData)
+  const [deleteId, setDeleteId] = useState<string | number | null>(null)
+  const [dialogOpen, setDialogOpen] = useState(false)
 
-  // ** Var
-  const open = Boolean(anchorEl)
+  useEffect(() => {
+    setContacts(contactPersonData)
+  }, [contactPersonData])
 
-  const handleClick = (event: MouseEvent<HTMLButtonElement>) => {
-    setAnchorEl(event.currentTarget)
+  const handleEdit = (id: string | number) => {
+    // Find the contact type by id
+    const selectedContact = contacts.find(item => item.id === id)
+    if (selectedContact) {
+      router.push(`/apps/company/contact-person/add?id=${selectedContact.id}`)
+    }
   }
-  const handleClose = () => {
-    setAnchorEl(null)
+
+  const RowOptions = ({ id }: { id: number | string }) => {
+    return (
+      <>
+        <Tooltip title='Edit' placement='top'>
+          <IconButton size='small' onClick={() => handleEdit(id)}>
+            <Icon icon='mdi:pencil-outline' />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title='Delete' placement='top'>
+          <IconButton size='small' onClick={() => handleDeleteClick(id)}>
+            <Icon icon='mdi:delete-outline' />
+          </IconButton>
+        </Tooltip>
+      </>
+    )
+  }
+
+  const columns: GridColDef[] = [
+    {
+      sortable: true,
+      field: 'slNo',
+      headerName: '#',
+      flex: 0,
+      editable: false,
+      renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
+    },
+    {
+      flex: 0.25,
+      minWidth: 90,
+      field: 'name',
+      headerName: 'Name',
+      renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes.name || 0}</Typography>
+    },
+    {
+      flex: 0.25,
+      minWidth: 90,
+      field: 'phone',
+      headerName: 'Phone',
+      renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes?.phone || 0}</Typography>
+    },
+    {
+      flex: 0.25,
+      minWidth: 90,
+      field: 'position',
+      headerName: 'Position',
+      renderCell: ({ row }: CellType) => (
+        <Typography variant='body2'>{row.attributes?.contact_type?.data?.attributes?.title || 0}</Typography>
+      )
+    },
+    {
+      flex: 0.1,
+      minWidth: 90,
+      sortable: false,
+      field: 'actions',
+      headerName: 'Actions',
+      renderCell: ({ row }: CellType) => <RowOptions id={row.id} />
+    }
+  ]
+
+  const handleDeleteConfirm = async () => {
+    if (deleteId !== null) {
+      try {
+        await deleteDataFromApi(`/contact-people/${deleteId}`)
+        setContacts(contacts.filter(contact => contact.id !== deleteId))
+        setDialogOpen(false)
+        toast.success('Contact person deleted successfully')
+      } catch (error) {
+        console.error('Error deleting contact person:', error)
+        toast.error('Failed to delete contact person')
+      }
+    }
+  }
+
+  const handleDeleteClick = (id: string | number) => {
+    setDeleteId(id)
+    setDialogOpen(true)
+  }
+
+  const handleDialogClose = () => {
+    setDialogOpen(false)
   }
 
   return (
-    <Card>
-      {/* <CardHeader title='Invoice List' sx={{ '& .MuiCardHeader-action': { m: 0 } }} /> */}
-      <DataGrid
-        autoHeight
-        columns={columns}
-        rows={contactPersonData}
-        disableRowSelectionOnClick
-        pageSizeOptions={[7, 10, 25, 50]}
-        paginationModel={paginationModel}
-        onPaginationModelChange={setPaginationModel}
-        sx={{ '& .MuiDataGrid-columnHeaders': { borderRadius: 0 } }}
+    <>
+      <Card>
+        {/* <CardHeader title='Invoice List' sx={{ '& .MuiCardHeader-action': { m: 0 } }} /> */}
+        <DataGrid
+          autoHeight
+          columns={columns}
+          rows={contacts}
+          disableRowSelectionOnClick
+          pageSizeOptions={[7, 10, 25, 50]}
+          paginationModel={paginationModel}
+          onPaginationModelChange={setPaginationModel}
+          sx={{ '& .MuiDataGrid-columnHeaders': { borderRadius: 0 } }}
+        />
+      </Card>
+      <ConfirmDialog
+        open={dialogOpen}
+        onClose={handleDialogClose}
+        onConfirm={handleDeleteConfirm}
+        title='Confirm Deletion'
+        message='Are you sure you want to delete this contact people?'
       />
-    </Card>
+    </>
   )
 }
 
-export default InvoiceListTable
+export default ContactList
