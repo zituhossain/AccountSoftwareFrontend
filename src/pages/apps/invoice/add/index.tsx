@@ -57,6 +57,8 @@ const InvoiceAdd = () => {
     total_amount: 0
   })
 
+  console.log('accountHeaderId', accountHeaderId)
+
   const {
     control,
     formState: { errors }
@@ -199,10 +201,10 @@ const InvoiceAdd = () => {
   const isEditMode = Boolean(id)
 
   useEffect(() => {
-    if (isEditMode) {
+    if (isEditMode && id) {
       fetchInvoiceData(id)
     }
-  }, [id])
+  }, [id, isEditMode])
 
   const fetchInvoiceData = async (invoiceId: string | string[] | undefined) => {
     try {
@@ -212,6 +214,21 @@ const InvoiceAdd = () => {
         `/invoice-details?filters[invoice_master][id][$eq]=${invoiceId}`
       )
       setInvoiceDetails(invoiceDetailsResponse.data)
+      const transactionResponse = await fetchDataFromApi(
+        `/transactions?populate=*&filters[invoice_id][id][$eq]=${invoiceId}`
+      )
+      const transactionData = transactionResponse.data[0]
+      console.log('ztransactionData:', transactionData)
+
+      if (transactionData) {
+        setAccountHeaderId(transactionData?.account_headers?.data?.attributes?.head_title)
+        setPaymentOption(transactionData.payment_option)
+        setInvoiceMasterData(prevState => ({
+          ...prevState,
+          account_headers: transactionData.account_headers,
+          payment_option: transactionData.payment_option
+        }))
+      }
     } catch (error) {
       console.error('Error fetching invoice data:', error)
       toast.error('Error fetching data.')
@@ -303,6 +320,26 @@ const InvoiceAdd = () => {
       for (const detailId of deletedDetailsIds) {
         await deleteDataFromApi(`/invoice-details/${detailId}`)
       }
+
+      const transactionResponse = await fetchDataFromApi(
+        `/transactions?filters[invoice_id][id][$eq]=${invoiceMasterData.id}`
+      )
+      const transactionId = transactionResponse.data[0].id // Assuming the first result is the correct one
+
+      // Then, prepare and update the transaction data
+      const transactionData = new FormData()
+      transactionData.append(
+        'data',
+        JSON.stringify({
+          amount: totalAmount,
+          account_headers: accountHeaderId,
+          company: companyId,
+          created_user: userId,
+          payment_option: paymentOption,
+          client: selectedClient?.id
+        })
+      )
+      await putDataToApi(`/transactions/${transactionId}`, transactionData)
 
       toast.success('Invoice updated successfully')
       router.push(`/apps/invoice/preview/${invoiceMasterData.id}`)
