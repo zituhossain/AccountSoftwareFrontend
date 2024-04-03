@@ -36,8 +36,6 @@ const InvoiceAdd = () => {
   const [invoiceDetails, setInvoiceDetails] = useState<any[]>([])
   const [totalAmount, setTotalAmount] = useState<number>(0)
   const [accountHeaders, setAccountHeaders] = useState<AccountHeadType[]>([])
-  const [userId, setUserId] = useState<number>(0)
-  const [companyId, setCompanyId] = useState<number>(0)
   const [accountHeaderId, setAccountHeaderId] = useState<string>('')
   const [paymentOption, setPaymentOption] = useState<any>(0)
   const [invoiceMasterData, setInvoiceMasterData] = useState<any>({
@@ -54,19 +52,21 @@ const InvoiceAdd = () => {
     total_amount: 0
   })
 
-  console.log('accountHeaderId', accountHeaderId)
-  console.log('paymentOption', paymentOption)
-  console.log('accountHeaders', accountHeaders)
-
   const {
     control,
     formState: { errors }
   } = useForm({})
 
-  console.log('selectedClient:========>', selectedClient?.id)
-
   const router = useRouter()
   const { id } = router.query
+
+  const handleAccountHeader = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setAccountHeaderId(event.target.value)
+  }
+
+  const handlePaymentOption = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setPaymentOption(event.target.value)
+  }
 
   useEffect(() => {
     const fetchInvoiceData = async () => {
@@ -88,8 +88,9 @@ const InvoiceAdd = () => {
     fetchInvoiceData()
   }, [])
 
+  // Fetch invoice no
   useEffect(() => {
-    const fetchInvoiceData = async () => {
+    const fetchInvoicNumber = async () => {
       try {
         // Fetch existing invoice data if in edit mode
         if (id) {
@@ -122,7 +123,7 @@ const InvoiceAdd = () => {
       }
     }
 
-    fetchInvoiceData()
+    fetchInvoicNumber()
   }, [id])
 
   // Fetch account headers
@@ -138,32 +139,6 @@ const InvoiceAdd = () => {
 
     fetchAccountHeaders()
   }, [])
-
-  // Fetch User and Company ID
-  useEffect(() => {
-    const fetchRelationCompany = async () => {
-      try {
-        const userData = JSON.parse(localStorage.getItem('userData')!)
-        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
-
-        if (userResponse) {
-          setUserId(userResponse.id)
-          if (userResponse.company) setCompanyId(userResponse.company.id)
-        }
-      } catch (error) {
-        console.error('Error fetching positions:', error)
-      }
-    }
-    fetchRelationCompany()
-  }, [])
-
-  const handleAccountHeader = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setAccountHeaderId(event.target.value)
-  }
-
-  const handlePaymentOption = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setPaymentOption(event.target.value)
-  }
 
   // Calculate and update total amount whenever invoice details change
   useEffect(() => {
@@ -201,11 +176,11 @@ const InvoiceAdd = () => {
 
   useEffect(() => {
     if (isEditMode && id) {
-      fetchInvoiceData(id)
+      fetchAllInvoiceData(id)
     }
   }, [id, isEditMode])
 
-  const fetchInvoiceData = async (invoiceId: string | string[] | undefined) => {
+  const fetchAllInvoiceData = async (invoiceId: string | string[] | undefined) => {
     try {
       const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters/${invoiceId}?populate=*`)
       setInvoiceMasterData(invoiceMasterResponse.data)
@@ -217,7 +192,6 @@ const InvoiceAdd = () => {
         `/transactions?populate=*&filters[invoice_id][id][$eq]=${invoiceId}`
       )
       const transactionData = transactionResponse.data[0]
-      console.log('ztransactionData:', transactionData)
 
       if (transactionData) {
         setAccountHeaderId(transactionData?.attributes?.account_headers?.data?.id)
@@ -256,6 +230,9 @@ const InvoiceAdd = () => {
       }
 
       // Transaction Data
+      const userData = JSON.parse(localStorage.getItem('userData')!)
+      const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+
       const transactionData = new FormData()
       transactionData.append(
         'data',
@@ -264,8 +241,8 @@ const InvoiceAdd = () => {
           invoice_id: invoiceMasterId,
           amount: totalAmount,
           account_headers: accountHeaderId,
-          company: companyId,
-          created_user: userId,
+          created_user: userData.id,
+          company: userResponse.company.id,
           payment_option: paymentOption,
           client: selectedClient?.id
         })
@@ -325,15 +302,17 @@ const InvoiceAdd = () => {
       )
       const transactionId = transactionResponse.data[0].id // Assuming the first result is the correct one
 
-      // Then, prepare and update the transaction data
+      const userData = JSON.parse(localStorage.getItem('userData')!)
+      const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+
       const transactionData = new FormData()
       transactionData.append(
         'data',
         JSON.stringify({
           amount: totalAmount,
           account_headers: accountHeaderId,
-          company: companyId,
-          created_user: userId,
+          created_user: userData.id,
+          company: userResponse.company.id,
           payment_option: paymentOption,
           client: selectedClient?.id
         })
@@ -348,68 +327,6 @@ const InvoiceAdd = () => {
     }
   }
 
-  // Function to save data
-  // const handleSave = async () => {
-  //   let invoiceMasterId = 0
-  //   try {
-  //     // Begin the transaction
-
-  //     // Add invoice master
-  //     const masterData = new FormData()
-  //     masterData.append('data', JSON.stringify(invoiceMasterData))
-  //     const invoiceMasterResponse = await postDataToApiAxios('/invoice-masters', masterData)
-
-  //     invoiceMasterId = invoiceMasterResponse.data.id
-
-  //     console.log('invoiceMasterResponse:', invoiceMasterResponse.data.id)
-
-  //     if (!invoiceMasterResponse) {
-  //       toast.error('Something went wrong! Please try again.')
-
-  //       // Roll back the transaction
-
-  //       return
-  //     }
-
-  //     for (const detail of invoiceDetails) {
-  //       const detailData = new FormData()
-  //       detailData.append(
-  //         'data',
-  //         JSON.stringify({
-  //           invoice_master: invoiceMasterResponse?.data.id,
-  //           ...detail
-  //         })
-  //       )
-  //       const response = await postDataToApiAxios('/invoice-details', detailData)
-
-  //       if (!response) {
-  //         toast.error('Something went wrong! Please try again.')
-
-  //         // Roll back the transaction
-
-  //         return
-  //       }
-  //     }
-
-  //     // Commit the transaction
-  //     router.push(`/apps/invoice/preview/${invoiceMasterResponse.data.id}`)
-  //     toast.success('Invoice added successfully')
-  //   } catch (error) {
-  //     console.error('Error adding invoice details:', error)
-  //     toast.error('Something went wrong! Please try again.')
-
-  //     const invoiceDetailsResponse = await fetchDataFromApi(
-  //       `/invoice-details?fields=id&filters[invoice_master][id][$eq]=${invoiceMasterId}`
-  //     )
-  //     invoiceDetailsResponse.data.forEach(async (detail: any) => {
-  //       await deleteDataFromApi(`/invoice-details/${detail.id}`)
-  //     })
-  //     await deleteDataFromApi(`/invoice-masters/${invoiceMasterId}`)
-
-  //     // Roll back the transaction
-  //   }
-  // }
-
   const toggleAddCustomerDrawer = () => setAddCustomerOpen(!addCustomerOpen)
 
   useEffect(() => {
@@ -422,8 +339,6 @@ const InvoiceAdd = () => {
       setClients(companyResponse.data)
     })()
   }, [])
-
-  console.log('selectedClient:', selectedClient)
 
   return (
     <DatePickerWrapper sx={{ '& .react-datepicker-wrapper': { width: 'auto' } }}>
