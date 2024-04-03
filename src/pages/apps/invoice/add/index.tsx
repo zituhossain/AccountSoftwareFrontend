@@ -1,5 +1,5 @@
 // ** React Imports
-import { use, useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 
 // ** Next Imports
 
@@ -12,23 +12,20 @@ import Grid from '@mui/material/Grid'
 import { InvoiceClientType } from 'src/types/apps/invoiceTypes'
 
 // ** Demo Components Imports
-import AddActions from 'src/views/apps/invoice/add/AddActions'
 import AddCard from 'src/views/apps/invoice/add/AddCard'
 
 // ** Styled Component
-import { useRouter } from 'next/router'
-import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
-import { deleteDataFromApi, fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
-import toast from 'react-hot-toast'
-import { cl, co } from '@fullcalendar/core/internal-common'
-import { Controller, useForm } from 'react-hook-form'
+import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
-import CardContent from '@mui/material/CardContent'
 import CardActions from '@mui/material/CardActions'
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
+import CardContent from '@mui/material/CardContent'
+import { useRouter } from 'next/router'
+import { Controller, useForm } from 'react-hook-form'
+import toast from 'react-hot-toast'
+import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import { AccountHeadType } from 'src/types/apps/userTypes'
-import { set } from 'nprogress'
+import { deleteDataFromApi, fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
 
 const InvoiceAdd = () => {
   // ** State
@@ -58,6 +55,8 @@ const InvoiceAdd = () => {
   })
 
   console.log('accountHeaderId', accountHeaderId)
+  console.log('paymentOption', paymentOption)
+  console.log('accountHeaders', accountHeaders)
 
   const {
     control,
@@ -221,8 +220,8 @@ const InvoiceAdd = () => {
       console.log('ztransactionData:', transactionData)
 
       if (transactionData) {
-        setAccountHeaderId(transactionData?.account_headers?.data?.attributes?.head_title)
-        setPaymentOption(transactionData.payment_option)
+        setAccountHeaderId(transactionData?.attributes?.account_headers?.data?.id)
+        setPaymentOption(transactionData?.attributes?.payment_option)
         setInvoiceMasterData(prevState => ({
           ...prevState,
           account_headers: transactionData.account_headers,
@@ -464,6 +463,7 @@ const InvoiceAdd = () => {
                           {...field}
                           label='Account Head'
                           labelId='account_headers'
+                          value={accountHeaderId || ''}
                           onChange={handleAccountHeader}
                         >
                           <MenuItem value=''>Select Account Head</MenuItem>
@@ -488,6 +488,7 @@ const InvoiceAdd = () => {
                           {...field}
                           label='Payment Option'
                           labelId='payment_option'
+                          value={paymentOption || ''}
                           onChange={handlePaymentOption}
                         >
                           <MenuItem value=''>Select Payment Option</MenuItem>
