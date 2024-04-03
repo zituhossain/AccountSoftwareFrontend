@@ -39,7 +39,7 @@ const InvoiceAdd = () => {
   const [userId, setUserId] = useState<number>(0)
   const [companyId, setCompanyId] = useState<number>(0)
   const [accountHeaderId, setAccountHeaderId] = useState<string>('')
-  const [paymentOption, setPaymentOption] = useState<string>('')
+  const [paymentOption, setPaymentOption] = useState<any>(0)
   const [invoiceMasterData, setInvoiceMasterData] = useState<any>({
     invoice_no: '1',
     client: '',
@@ -488,7 +488,7 @@ const InvoiceAdd = () => {
                           {...field}
                           label='Payment Option'
                           labelId='payment_option'
-                          value={paymentOption || ''}
+                          value={paymentOption}
                           onChange={handlePaymentOption}
                         >
                           <MenuItem value=''>Select Payment Option</MenuItem>
