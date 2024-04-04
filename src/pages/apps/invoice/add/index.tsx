@@ -68,77 +68,104 @@ const InvoiceAdd = () => {
     setPaymentOption(event.target.value)
   }
 
+  // Initial data loading and setup
   useEffect(() => {
-    const fetchInvoiceData = async () => {
+    // Fetch user and company data once on component mount
+    const fetchInitialData = async () => {
       try {
-        const userData = JSON.parse(localStorage.getItem('userData')!)
-        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+        const userData = JSON.parse(localStorage.getItem('userData') || '{}')
+        const [userResponse, accountHeadersResponse, companyResponse] = await Promise.all([
+          fetchDataFromApi(`/users/${userData.id}?populate=company`),
+          fetchDataFromApi('/account-headers'),
+          fetchDataFromApi(`/companies?filters[id][$ne]=${userData.company?.id}`)
+        ])
 
-        // Merge the changes into the existing formData state
-        setInvoiceMasterData((prevState: any) => ({
+        setAccountHeaders(accountHeadersResponse.data)
+        setClients(companyResponse.data)
+
+        // Setting initial invoice master data
+        setInvoiceMasterData(prevState => ({
           ...prevState,
           created_user: userData.id,
           company: userResponse.company.id
         }))
       } catch (error) {
-        console.error('Error fetching quotation data:', error)
+        console.error('Initialization error:', error)
+        toast.error('Error initializing data.')
       }
     }
 
-    fetchInvoiceData()
-  }, [])
+    fetchInitialData()
+
+    // Fetch additional data if in edit mode, or fetch new invoice number if creating a new invoice
+    if (id) {
+      fetchAllInvoiceData(id)
+    } else {
+      fetchInvoiceNumber()
+    }
+  }, [id]) // Dependency on 'id' ensures re-run only if 'id' changes.
 
   // Fetch invoice no
-  useEffect(() => {
-    const fetchInvoicNumber = async () => {
-      try {
-        // Fetch existing invoice data if in edit mode
-        if (id) {
-          const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters/${id}`)
-          console.log('invoiceMasterResponse:##########', invoiceMasterResponse.data)
-          const existingInvoiceNo = invoiceMasterResponse?.data?.attributes?.invoice_no
-          setInvoiceNo(existingInvoiceNo)
-          setInvoiceMasterData((prevState: any) => ({
-            ...prevState,
-            invoice_no: existingInvoiceNo.toString()
-          }))
-        } else {
-          // Generate new invoice number if creating new invoice
-          const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters`)
-          const invoices = invoiceMasterResponse?.data
-          console.log('Create new invoice: ')
-          const maxInvoiceNo = Math.max(...invoices.map(invoice => parseInt(invoice.attributes.invoice_no, 10)))
-          const newInvoiceNo = maxInvoiceNo >= 0 ? maxInvoiceNo + 1 : 1
-          setInvoiceNo(newInvoiceNo)
+  const fetchInvoiceNumber = async () => {
+    try {
+      // Fetch existing invoice data if in edit mode
+      if (id) {
+        const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters/${id}`)
+        console.log('invoiceMasterResponse:##########', invoiceMasterResponse.data)
+        const existingInvoiceNo = invoiceMasterResponse?.data?.attributes?.invoice_no
+        setInvoiceNo(existingInvoiceNo)
+        setInvoiceMasterData((prevState: any) => ({
+          ...prevState,
+          invoice_no: existingInvoiceNo.toString()
+        }))
+      } else {
+        // Generate new invoice number if creating new invoice
+        const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters`)
+        const invoices = invoiceMasterResponse?.data
+        console.log('Create new invoice: ')
+        const maxInvoiceNo = Math.max(...invoices.map(invoice => parseInt(invoice.attributes.invoice_no, 10)))
+        const newInvoiceNo = maxInvoiceNo >= 0 ? maxInvoiceNo + 1 : 1
+        setInvoiceNo(newInvoiceNo)
 
-          // Merge the changes into the existing formData state
-          setInvoiceMasterData((prevState: any) => ({
-            ...prevState,
-            invoice_no: newInvoiceNo.toString()
-          }))
-        }
-      } catch (error) {
-        console.error('Error fetching invoice data:', error)
-        toast.error('Error fetching data.')
+        // Merge the changes into the existing formData state
+        setInvoiceMasterData((prevState: any) => ({
+          ...prevState,
+          invoice_no: newInvoiceNo.toString()
+        }))
       }
+    } catch (error) {
+      console.error('Error fetching invoice data:', error)
+      toast.error('Error fetching data.')
     }
+  }
 
-    fetchInvoicNumber()
-  }, [id])
+  const fetchAllInvoiceData = async (invoiceId: string | string[] | undefined) => {
+    try {
+      const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters/${invoiceId}?populate=*`)
+      setInvoiceMasterData(invoiceMasterResponse.data)
+      const invoiceDetailsResponse = await fetchDataFromApi(
+        `/invoice-details?filters[invoice_master][id][$eq]=${invoiceId}`
+      )
+      setInvoiceDetails(invoiceDetailsResponse.data)
+      const transactionResponse = await fetchDataFromApi(
+        `/transactions?populate=*&filters[invoice_id][id][$eq]=${invoiceId}`
+      )
+      const transactionData = transactionResponse.data[0]
 
-  // Fetch account headers
-  useEffect(() => {
-    const fetchAccountHeaders = async () => {
-      try {
-        const accountHeadersResponse = await fetchDataFromApi('/account-headers')
-        setAccountHeaders(accountHeadersResponse.data)
-      } catch (error) {
-        console.error('Error fetching account headers:', error)
+      if (transactionData) {
+        setAccountHeaderId(transactionData?.attributes?.account_headers?.data?.id)
+        setPaymentOption(transactionData?.attributes?.payment_option)
+        setInvoiceMasterData(prevState => ({
+          ...prevState,
+          account_headers: transactionData.account_headers,
+          payment_option: transactionData.payment_option
+        }))
       }
+    } catch (error) {
+      console.error('Error fetching invoice data:', error)
+      toast.error('Error fetching data.')
     }
-
-    fetchAccountHeaders()
-  }, [])
+  }
 
   // Calculate and update total amount whenever invoice details change
   useEffect(() => {
@@ -173,40 +200,6 @@ const InvoiceAdd = () => {
 
   // Determine mode based on the presence of 'id'
   const isEditMode = Boolean(id)
-
-  useEffect(() => {
-    if (isEditMode && id) {
-      fetchAllInvoiceData(id)
-    }
-  }, [id, isEditMode])
-
-  const fetchAllInvoiceData = async (invoiceId: string | string[] | undefined) => {
-    try {
-      const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters/${invoiceId}?populate=*`)
-      setInvoiceMasterData(invoiceMasterResponse.data)
-      const invoiceDetailsResponse = await fetchDataFromApi(
-        `/invoice-details?filters[invoice_master][id][$eq]=${invoiceId}`
-      )
-      setInvoiceDetails(invoiceDetailsResponse.data)
-      const transactionResponse = await fetchDataFromApi(
-        `/transactions?populate=*&filters[invoice_id][id][$eq]=${invoiceId}`
-      )
-      const transactionData = transactionResponse.data[0]
-
-      if (transactionData) {
-        setAccountHeaderId(transactionData?.attributes?.account_headers?.data?.id)
-        setPaymentOption(transactionData?.attributes?.payment_option)
-        setInvoiceMasterData(prevState => ({
-          ...prevState,
-          account_headers: transactionData.account_headers,
-          payment_option: transactionData.payment_option
-        }))
-      }
-    } catch (error) {
-      console.error('Error fetching invoice data:', error)
-      toast.error('Error fetching data.')
-    }
-  }
 
   const handleSave = async () => {
     if (isEditMode) {
