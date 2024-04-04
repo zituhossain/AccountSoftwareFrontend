@@ -1,5 +1,15 @@
 import { yupResolver } from '@hookform/resolvers/yup'
-import { FormControl, FormControlLabel, FormHelperText, InputLabel, MenuItem, Select, Switch } from '@mui/material'
+import {
+  Box,
+  FormControl,
+  FormControlLabel,
+  FormHelperText,
+  InputLabel,
+  MenuItem,
+  Select,
+  Switch,
+  Typography
+} from '@mui/material'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardActions from '@mui/material/CardActions'
@@ -25,6 +35,8 @@ const AddTransaction = () => {
   const [companyId, setCompanyId] = useState<number>(0)
   const [companies, setCompanies] = useState<CompanyType[]>([])
   const [accountHeaders, setAccountHeaders] = useState<AccountHeadType[]>([])
+  const [transactionImg, setTransactionImg] = useState<File | null>(null)
+  const [imgSrc, setImgSrc] = useState<string | null>(null)
 
   const schema = yup.object().shape({
     account_headers: yup.string().required('Account Head is required'),
@@ -43,7 +55,18 @@ const AddTransaction = () => {
     company: companyId
   }
 
-  console.log(userId, companyId, companies)
+  const handleInputImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length) {
+      const selectedFile = e.target.files[0]
+      setTransactionImg(selectedFile)
+      setImgSrc(URL.createObjectURL(selectedFile))
+    }
+  }
+
+  const handleInputImageReset = () => {
+    setTransactionImg(null)
+    setImgSrc(null)
+  }
 
   const {
     handleSubmit,
@@ -120,6 +143,10 @@ const AddTransaction = () => {
       const formData = new FormData()
       formData.append('data', JSON.stringify(data))
 
+      if (transactionImg) {
+        formData.append('files.image', transactionImg)
+      }
+
       if (id) {
         // Update existing contact
         await putDataToApi(`/transactions/${id}`, formData)
@@ -144,6 +171,39 @@ const AddTransaction = () => {
       <form onSubmit={handleSubmit(onSubmit)} onReset={reset as FormEventHandler<HTMLFormElement>}>
         <CardContent>
           <Grid container spacing={5}>
+            <Grid item xs={12} sm={6}>
+              <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                {imgSrc && (
+                  <img
+                    src={imgSrc}
+                    alt='Logo Preview'
+                    style={{ width: '100px', height: '100px', marginRight: '20px' }}
+                  />
+                )}
+                <div>
+                  <Button component='label' variant='contained' htmlFor='logo-upload-button'>
+                    Upload Image
+                    <input
+                      hidden
+                      type='file'
+                      accept='image/png, image/jpeg'
+                      onChange={handleInputImageChange}
+                      id='logo-upload-button'
+                    />
+                  </Button>
+                  <Button
+                    sx={{ marginLeft: '10px' }}
+                    color='secondary'
+                    variant='outlined'
+                    onClick={handleInputImageReset}
+                  >
+                    Reset
+                  </Button>
+                  <Typography sx={{ mt: 5, color: 'text.disabled' }}>Allowed PNG or JPEG. Max size of 800K.</Typography>
+                </div>
+              </Box>
+              {errors.image && <span>{errors.image.message}</span>}
+            </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth error={!!errors.account_headers}>
                 <InputLabel id='account_headers'>Account Head</InputLabel>

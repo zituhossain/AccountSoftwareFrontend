@@ -113,19 +113,18 @@ export type AccountHeadType = {
 
 export type TransactionType = {
   id?: number
-  attributes: {
-    account_headers?: number
-    payment_option?: number
-    client: number
-    amount: number
-    notes: string
-    status: boolean
-    company: number
-    created_user: number
-    createdAt?: string
-    updatedAt?: string
-    publishedAt?: string
-  }
+  account_headers?: number
+  payment_option?: number
+  client: number
+  amount: number
+  notes: string
+  image?: string
+  status: boolean
+  company: number
+  created_user: number
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
 }
 
 export type BusinessRelationType = {
