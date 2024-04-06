@@ -1,5 +1,6 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
+  Autocomplete,
   Box,
   FormControl,
   FormControlLabel,
@@ -34,6 +35,8 @@ const AddTransaction = () => {
   const [userId, setUserId] = useState<number>(0)
   const [companyId, setCompanyId] = useState<number>(0)
   const [companies, setCompanies] = useState<CompanyType[]>([])
+  const [invoices, setInvoices] = useState([])
+  const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
   const [accountHeaders, setAccountHeaders] = useState<AccountHeadType[]>([])
   const [transactionImg, setTransactionImg] = useState<File | null>(null)
   const [imgSrc, setImgSrc] = useState<string | null>(null)
@@ -135,6 +138,21 @@ const AddTransaction = () => {
     fetchData()
   }, [id, reset])
 
+  useEffect(() => {
+    const fetchInvoices = async () => {
+      if (selectedClientId) {
+        try {
+          const invoicesResponse = await fetchDataFromApi(`/transactions/invoicesByClient/${selectedClientId}`)
+          setInvoices(invoicesResponse) // Assuming this sets the state for the invoices to be used in the Autocomplete component
+        } catch (error) {
+          console.error('Failed to fetch invoices:', error)
+        }
+      }
+    }
+
+    fetchInvoices()
+  }, [selectedClientId]) // This effect runs whenever selectedClientId changes
+
   const onSubmit = async (data: TransactionType) => {
     console.log('firstsd', data)
     data.company = companyId
@@ -230,7 +248,15 @@ const AddTransaction = () => {
                   name='client'
                   control={control}
                   render={({ field }) => (
-                    <Select {...field} label='Client' labelId='client'>
+                    <Select
+                      {...field}
+                      label='Client'
+                      labelId='client'
+                      onChange={e => {
+                        setSelectedClientId(e.target.value)
+                        field.onChange(e)
+                      }}
+                    >
                       {companies.map(company => (
                         <MenuItem key={company.id} value={company.id}>
                           {company?.attributes?.name}
@@ -239,6 +265,21 @@ const AddTransaction = () => {
                     </Select>
                   )}
                 />
+                <FormHelperText>{errors.client?.message}</FormHelperText>
+              </FormControl>
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth error={!!errors.client}>
+                <Autocomplete
+                  disablePortal
+                  id='invoice-auto'
+                  options={invoices}
+                  getOptionLabel={option =>
+                    `${option.invoice_no} - ${option.subject} - ${new Date(option.date).toLocaleDateString()}`
+                  }
+                  renderInput={params => <TextField {...params} label='Invoice' />}
+                />
+
                 <FormHelperText>{errors.client?.message}</FormHelperText>
               </FormControl>
             </Grid>
