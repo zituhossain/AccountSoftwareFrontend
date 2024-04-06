@@ -171,7 +171,7 @@ const AccountHeadList = () => {
       headerName: 'Payment Option',
       renderCell: ({ row }: CellType) => (
         <LinkStyled href={`/companies/${row.id}`}>
-          {row.attributes.payment_option === 0 ? 'Cash' : 'On Account'}
+          {row.attributes.payment_option == 0 ? 'Cash' : row.attributes.payment_option == 1 ? 'Check' : 'MFS'}
         </LinkStyled>
       )
     },

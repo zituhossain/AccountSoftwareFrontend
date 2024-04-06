@@ -1,6 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup'
 import {
-  Autocomplete,
   Box,
   FormControl,
   FormControlLabel,
@@ -11,6 +10,7 @@ import {
   Switch,
   Typography
 } from '@mui/material'
+import Autocomplete from '@mui/material/Autocomplete'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardActions from '@mui/material/CardActions'
@@ -143,7 +143,7 @@ const AddTransaction = () => {
       if (selectedClientId) {
         try {
           const invoicesResponse = await fetchDataFromApi(`/transactions/invoicesByClient/${selectedClientId}`)
-          setInvoices(invoicesResponse) // Assuming this sets the state for the invoices to be used in the Autocomplete component
+          setInvoices(invoicesResponse)
         } catch (error) {
           console.error('Failed to fetch invoices:', error)
         }
@@ -274,15 +274,19 @@ const AddTransaction = () => {
                   disablePortal
                   id='invoice-auto'
                   options={invoices}
-                  getOptionLabel={option =>
-                    `${option.invoice_no} - ${option.subject} - ${new Date(option.date).toLocaleDateString()}`
-                  }
-                  renderInput={params => <TextField {...params} label='Invoice' />}
+                  getOptionLabel={option => option.invoice_no} // This determines what is shown in the input once an option is selected
+                  renderOption={(props, option) => (
+                    <li {...props}>
+                      {`${option.invoice_no} - ${option.subject} - ${new Date(option.date).toLocaleDateString()}`}
+                    </li>
+                  )}
+                  renderInput={params => <TextField {...params} label='Invoice No.' />}
                 />
 
                 <FormHelperText>{errors.client?.message}</FormHelperText>
               </FormControl>
             </Grid>
+
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth error={!!errors.payment_option}>
                 <InputLabel id='payment_option'>Payment Option</InputLabel>
@@ -292,7 +296,8 @@ const AddTransaction = () => {
                   render={({ field }) => (
                     <Select {...field} label='Payment Option' labelId='payment_option'>
                       <MenuItem value={0}>Cash</MenuItem>
-                      <MenuItem value={1}>On Account</MenuItem>
+                      <MenuItem value={1}>Check</MenuItem>
+                      <MenuItem value={2}>MFS</MenuItem>
                     </Select>
                   )}
                 />
