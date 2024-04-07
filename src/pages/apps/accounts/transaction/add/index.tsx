@@ -36,6 +36,10 @@ const AddTransaction = () => {
   const [companyId, setCompanyId] = useState<number>(0)
   const [companies, setCompanies] = useState<CompanyType[]>([])
   const [invoices, setInvoices] = useState([])
+  const [selectedInvoice, setSelectedInvoice] = useState(null)
+  const [totalAmount, setTotalAmount] = useState(0)
+  const [paidAmount, setPaidAmount] = useState(0)
+  const [dueAmount, setDueAmount] = useState(0)
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
   const [accountHeaders, setAccountHeaders] = useState<AccountHeadType[]>([])
   const [transactionImg, setTransactionImg] = useState<File | null>(null)
@@ -44,7 +48,8 @@ const AddTransaction = () => {
   const schema = yup.object().shape({
     account_headers: yup.string().required('Account Head is required'),
     amount: yup.number().required('Amount is required'),
-    payment_option: yup.number().required('Payment Option is required')
+    payment_option: yup.number().required('Payment Option is required'),
+    paid_amount: yup.number().required('Paid Amount is required')
   })
 
   const defaultValues: TransactionType = {
@@ -55,7 +60,9 @@ const AddTransaction = () => {
     status: true,
     notes: '',
     created_user: userId,
-    company: companyId
+    company: companyId,
+    paid_amount: 0,
+    due_amount: 0
   }
 
   const handleInputImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -139,7 +146,7 @@ const AddTransaction = () => {
   }, [id, reset])
 
   useEffect(() => {
-    const fetchInvoices = async () => {
+    const fetchInvoicesByClient = async () => {
       if (selectedClientId) {
         try {
           const invoicesResponse = await fetchDataFromApi(`/transactions/invoicesByClient/${selectedClientId}`)
@@ -150,17 +157,51 @@ const AddTransaction = () => {
       }
     }
 
-    fetchInvoices()
+    fetchInvoicesByClient()
   }, [selectedClientId]) // This effect runs whenever selectedClientId changes
+
+  useEffect(() => {
+    const fetchTotalPaidAmounts = async invoiceId => {
+      try {
+        const response = await fetchDataFromApi(`/transactions/sum-paid-amounts/${invoiceId}`)
+
+        return response.totalPaid || 0
+      } catch (error) {
+        console.error('Failed to fetch total paid amounts:', error)
+
+        return 0
+      }
+    }
+
+    if (selectedInvoice) {
+      // Assuming `selectedInvoice` now correctly includes `total_amount`
+      setTotalAmount(selectedInvoice.total_amount || 0)
+
+      fetchTotalPaidAmounts(selectedInvoice.id).then(totalPaid => {
+        setDueAmount((selectedInvoice.total_amount || 0) - totalPaid)
+      })
+    }
+  }, [selectedInvoice])
 
   const onSubmit = async (data: TransactionType) => {
     console.log('firstsd', data)
     data.company = companyId
     data.created_user = userId
+    data.total_amount = totalAmount // Ensure this matches your schema and expectation
+    data.paid_amount = paidAmount // Parse to float since your state stores this as string
+    data.due_amount = dueAmount
+
     try {
       const formData = new FormData()
-      formData.append('data', JSON.stringify(data))
-
+      formData.append(
+        'data',
+        JSON.stringify({
+          ...data,
+          account_headers: data.account_headers, // Assuming this is an ID
+          client: data.client, // Assuming this is an ID
+          invoice_id: selectedInvoice?.id // Assuming this is how you're setting the invoice ID
+        })
+      )
       if (transactionImg) {
         formData.append('files.image', transactionImg)
       }
@@ -274,7 +315,10 @@ const AddTransaction = () => {
                   disablePortal
                   id='invoice-auto'
                   options={invoices}
-                  getOptionLabel={option => option.invoice_no} // This determines what is shown in the input once an option is selected
+                  getOptionLabel={option => option.invoice_no}
+                  onChange={(event, newValue) => {
+                    setSelectedInvoice(newValue)
+                  }}
                   renderOption={(props, option) => (
                     <li {...props}>
                       {`${option.invoice_no} - ${option.subject} - ${new Date(option.date).toLocaleDateString()}`}
@@ -285,6 +329,48 @@ const AddTransaction = () => {
 
                 <FormHelperText>{errors.client?.message}</FormHelperText>
               </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label='Total Amount'
+                type='number'
+                name='total_amount'
+                value={totalAmount}
+                InputProps={{
+                  readOnly: true
+                }}
+                variant='outlined'
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label='Paid Amount'
+                type='number'
+                name='paid_amount'
+                value={paidAmount}
+                onChange={e => {
+                  const paid = parseFloat(e.target.value)
+                  setPaidAmount(e.target.value)
+                  setDueAmount(totalAmount - paid)
+                }}
+                variant='outlined'
+                fullWidth
+              />
+            </Grid>
+            <Grid item xs={12} sm={6}>
+              <TextField
+                label='Due Amount'
+                type='number'
+                name='due_amount'
+                value={dueAmount}
+                InputProps={{
+                  readOnly: true
+                }}
+                variant='outlined'
+                fullWidth
+              />
             </Grid>
 
             <Grid item xs={12} sm={6}>
@@ -304,7 +390,7 @@ const AddTransaction = () => {
                 <FormHelperText>{errors.payment_option?.message}</FormHelperText>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
+            {/* <Grid item xs={12} sm={6}>
               <Controller
                 name='amount'
                 control={control}
@@ -320,7 +406,7 @@ const AddTransaction = () => {
                   />
                 )}
               />
-            </Grid>
+            </Grid> */}
 
             <Grid item xs={12} sm={6}>
               <Controller

@@ -118,6 +118,9 @@ export type TransactionType = {
   client: number
   amount: number
   notes: string
+  total_amount: number
+  paid_amount: number
+  due_amount: number
   image?: string
   status: boolean
   company: number
