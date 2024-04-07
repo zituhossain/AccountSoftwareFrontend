@@ -83,18 +83,21 @@ const AccountHeadList = () => {
   }, [])
 
   useEffect(() => {
-    // Fetch companies data from API
-    const fetchAccountHead = async () => {
+    const fetchTransaction = async () => {
       try {
-        const response = await fetchDataFromApi('/transactions?populate=*')
-        console.log('zitu', response.data)
+        let apiUrl = '/transactions?populate=*'
+        if (value.trim() !== '') {
+          apiUrl += `&filters[invoice_id][invoice_no][$containsi]=${value}`
+        }
+
+        const response = await fetchDataFromApi(apiUrl)
         setTransactionData(response.data)
       } catch (error) {
-        console.error('Error fetching contact type:', error)
+        console.error('Error fetching transactions:', error)
       }
     }
-    fetchAccountHead()
-  }, [])
+    fetchTransaction()
+  }, [value])
 
   const handleEdit = (id: string | number) => {
     // Find the contact type by id
@@ -129,7 +132,7 @@ const AccountHeadList = () => {
     {
       sortable: true,
       field: 'slNo',
-      headerName: '#',
+      headerName: 'sl No.',
       flex: 0,
       editable: false,
       renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
@@ -151,6 +154,15 @@ const AccountHeadList = () => {
       headerName: 'Date',
       renderCell: ({ row }: CellType) => (
         <LinkStyled href={'#'}>{formatDate(row.attributes?.createdAt, 'YYYY-MM-DD')}</LinkStyled>
+      )
+    },
+    {
+      flex: 0.2,
+      minWidth: 150,
+      field: 'invoice_no',
+      headerName: 'Invoice No.',
+      renderCell: ({ row }: CellType) => (
+        <LinkStyled href={`#`}># {row.attributes?.invoice_id?.data?.attributes?.invoice_no}</LinkStyled>
       )
     },
     {
@@ -254,7 +266,7 @@ const AccountHeadList = () => {
               autoHeight
               rows={transactionData}
               columns={columns}
-              checkboxSelection
+              // checkboxSelection
               disableRowSelectionOnClick
               pageSizeOptions={[10, 25, 50]}
               sx={{ '& .MuiDataGrid-columnHeaders': { borderRadius: 0 } }}
