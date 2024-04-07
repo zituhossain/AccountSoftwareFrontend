@@ -116,7 +116,6 @@ export type TransactionType = {
   account_headers?: number
   payment_option?: number
   client: number
-  amount: number
   notes: string
   total_amount: number
   paid_amount: number

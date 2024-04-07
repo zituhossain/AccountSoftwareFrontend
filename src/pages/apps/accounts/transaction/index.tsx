@@ -46,7 +46,7 @@ interface TransactionType {
     client: number
     payment_option: number
     created_user: number
-    amount: number
+    total_amount: number
     notes: string
     status: boolean
     createdAt?: string
@@ -146,57 +146,70 @@ const AccountHeadList = () => {
     // },
     {
       flex: 0.2,
-      minWidth: 230,
+      minWidth: 150,
       field: 'date',
       headerName: 'Date',
       renderCell: ({ row }: CellType) => (
-        <LinkStyled href={`/companies/${row.id}`}>{formatDate(row.attributes?.createdAt, 'YYYY-MM-DD')}</LinkStyled>
+        <LinkStyled href={'#'}>{formatDate(row.attributes?.createdAt, 'YYYY-MM-DD')}</LinkStyled>
       )
     },
     {
       flex: 0.2,
-      minWidth: 230,
+      minWidth: 150,
       field: 'account_head',
       headerName: 'Account Head',
       renderCell: ({ row }: CellType) => (
-        <LinkStyled href={`/companies/${row.id}`}>
-          {row.attributes?.account_headers?.data?.attributes?.head_title}
-        </LinkStyled>
+        <LinkStyled href={`#`}>{row.attributes?.account_headers?.data?.attributes?.head_title}</LinkStyled>
       )
     },
     {
       flex: 0.2,
-      minWidth: 230,
+      minWidth: 150,
       field: 'payment_option',
-      headerName: 'Payment Option',
+      headerName: 'Payment By',
       renderCell: ({ row }: CellType) => (
-        <LinkStyled href={`/companies/${row.id}`}>
+        <LinkStyled href={'#'}>
           {row.attributes.payment_option == 0 ? 'Cash' : row.attributes.payment_option == 1 ? 'Check' : 'MFS'}
         </LinkStyled>
       )
     },
     {
       flex: 0.2,
-      minWidth: 230,
-      field: 'amount',
-      headerName: 'Amount',
-      renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes.amount}</LinkStyled>
+      minWidth: 150,
+      field: 'total_amount',
+      headerName: 'Total Amount',
+      renderCell: ({ row }: CellType) => <LinkStyled href={'#'}>{row.attributes.total_amount}</LinkStyled>
     },
     {
-      flex: 0.1,
-      minWidth: 110,
-      field: 'status',
-      headerName: 'Status',
-      renderCell: ({ row }: CellType) => (
-        <CustomChip
-          skin='light'
-          size='small'
-          label={row.attributes.status ? 'Active' : 'Inactive'}
-          color={companyStatusObj[row.attributes.status.toString()]}
-          sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
-        />
-      )
+      flex: 0.2,
+      minWidth: 150,
+      field: 'paid_amount',
+      headerName: 'Paid',
+      renderCell: ({ row }: CellType) => <LinkStyled href={'#'}>{row.attributes.paid_amount}</LinkStyled>
     },
+    {
+      flex: 0.2,
+      minWidth: 150,
+      field: 'due_amount',
+      headerName: 'Due',
+      renderCell: ({ row }: CellType) => <LinkStyled href={'#'}>{row.attributes.due_amount}</LinkStyled>
+    },
+
+    // {
+    //   flex: 0.1,
+    //   minWidth: 110,
+    //   field: 'status',
+    //   headerName: 'Status',
+    //   renderCell: ({ row }: CellType) => (
+    //     <CustomChip
+    //       skin='light'
+    //       size='small'
+    //       label={row.attributes.status ? 'Active' : 'Inactive'}
+    //       color={companyStatusObj[row.attributes.status.toString()]}
+    //       sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
+    //     />
+    //   )
+    // },
     {
       flex: 0.1,
       minWidth: 90,

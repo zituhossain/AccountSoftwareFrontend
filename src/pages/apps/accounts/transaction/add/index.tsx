@@ -39,6 +39,7 @@ const AddTransaction = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null)
   const [totalAmount, setTotalAmount] = useState(0)
   const [paidAmount, setPaidAmount] = useState(0)
+  const [totalPaidAmounts, setTotalPaidAmounts] = useState(0)
   const [dueAmount, setDueAmount] = useState(0)
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
   const [accountHeaders, setAccountHeaders] = useState<AccountHeadType[]>([])
@@ -47,14 +48,13 @@ const AddTransaction = () => {
 
   const schema = yup.object().shape({
     account_headers: yup.string().required('Account Head is required'),
-    amount: yup.number().required('Amount is required'),
     payment_option: yup.number().required('Payment Option is required'),
     paid_amount: yup.number().required('Paid Amount is required')
   })
 
   const defaultValues: TransactionType = {
     account_headers: 0,
-    amount: 0,
+    total_amount: 0,
     payment_option: 0,
     client: 0,
     status: true,
@@ -76,6 +76,13 @@ const AddTransaction = () => {
   const handleInputImageReset = () => {
     setTransactionImg(null)
     setImgSrc(null)
+  }
+
+  const handlePaidAmountChange = e => {
+    const newPaidAmount = parseFloat(e.target.value)
+    setPaidAmount(newPaidAmount)
+    const newDueAmount = (selectedInvoice.total_amount || 0) - (totalPaidAmounts + newPaidAmount)
+    setDueAmount(newDueAmount)
   }
 
   const {
@@ -160,25 +167,27 @@ const AddTransaction = () => {
     fetchInvoicesByClient()
   }, [selectedClientId]) // This effect runs whenever selectedClientId changes
 
-  useEffect(() => {
-    const fetchTotalPaidAmounts = async invoiceId => {
-      try {
-        const response = await fetchDataFromApi(`/transactions/sum-paid-amounts/${invoiceId}`)
+  const fetchTotalPaidAmounts = async invoiceId => {
+    try {
+      const response = await fetchDataFromApi(`/transactions/sum-paid-amounts/${invoiceId}`)
 
-        return response.totalPaid || 0
-      } catch (error) {
-        console.error('Failed to fetch total paid amounts:', error)
+      return response.totalPaid || 0
+    } catch (error) {
+      console.error('Failed to fetch total paid amounts:', error)
 
-        return 0
-      }
+      return 0
     }
+  }
 
+  useEffect(() => {
     if (selectedInvoice) {
-      // Assuming `selectedInvoice` now correctly includes `total_amount`
       setTotalAmount(selectedInvoice.total_amount || 0)
 
       fetchTotalPaidAmounts(selectedInvoice.id).then(totalPaid => {
-        setDueAmount((selectedInvoice.total_amount || 0) - totalPaid)
+        setTotalPaidAmounts(totalPaid)
+        const initialDueAmount = (selectedInvoice.total_amount || 0) - totalPaid
+        setDueAmount(initialDueAmount)
+        setPaidAmount(0)
       })
     }
   }, [selectedInvoice])
@@ -351,9 +360,7 @@ const AddTransaction = () => {
                 name='paid_amount'
                 value={paidAmount}
                 onChange={e => {
-                  const paid = parseFloat(e.target.value)
-                  setPaidAmount(e.target.value)
-                  setDueAmount(totalAmount - paid)
+                  handlePaidAmountChange(e)
                 }}
                 variant='outlined'
                 fullWidth
