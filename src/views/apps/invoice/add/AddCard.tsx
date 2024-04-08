@@ -37,6 +37,7 @@ import { DateType } from 'src/types/forms/reactDatepickerTypes'
 // ** Custom Component Imports
 import { Controller, useForm } from 'react-hook-form'
 import Repeater from 'src/@core/components/repeater'
+import Image from 'next/image'
 
 interface PickerProps {
   label?: string
@@ -269,6 +270,7 @@ const AddCard = (props: Props) => {
           <Grid item xl={6} xs={12} sx={{ mb: { xl: 0, xs: 4 } }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Box sx={{ mb: 6, display: 'flex', alignItems: 'center' }}>
+                <Image src='/images/output.png' alt='Top-4 Logistics Logo' height={100} width={100} />
                 <Typography variant='h6' sx={{ ml: 2, fontWeight: 700, lineHeight: 1.2 }}>
                   Top-4 Logistics
                 </Typography>
@@ -609,7 +611,7 @@ const AddCard = (props: Props) => {
                 variant='subtitle2'
                 sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
               >
-                Joyes Ahmed
+                Joyes Eleyas
               </Typography>
             </Box>
             <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>

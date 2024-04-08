@@ -12,6 +12,7 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import Typography from '@mui/material/Typography'
 import { styled, useTheme } from '@mui/material/styles'
+import Image from 'next/image'
 
 // ** Configs
 // import themeConfig from 'src/configs/themeConfig'
@@ -50,6 +51,7 @@ const PreviewCard = ({ data, invoiceDetailsData }: any) => {
             <Grid item sm={6} xs={12} sx={{ mb: { sm: 0, xs: 4 } }}>
               <Box sx={{ display: 'flex', flexDirection: 'column' }}>
                 <Box sx={{ mb: 6, display: 'flex', alignItems: 'center' }}>
+                  <Image src='/images/output.png' alt='Top-4 Logistics Logo' height={100} width={100} />
                   <Typography variant='h6' sx={{ ml: 2, fontWeight: 700, lineHeight: 1.2 }}>
                     Top-4 Logistics
                   </Typography>
@@ -214,7 +216,7 @@ const PreviewCard = ({ data, invoiceDetailsData }: any) => {
                   variant='subtitle2'
                   sx={{ mr: 2, color: 'text.primary', fontWeight: 600, letterSpacing: '.25px' }}
                 >
-                  Joyes Ahmed
+                  Joyes Eleyas
                 </Typography>
               </Box>
               <Box sx={{ mb: 4, display: 'flex', alignItems: 'center' }}>
