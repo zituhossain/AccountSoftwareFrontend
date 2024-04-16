@@ -330,7 +330,9 @@ const AddTransaction = () => {
                   }}
                   renderOption={(props, option) => (
                     <li {...props}>
-                      {`${option.invoice_no} - ${option.subject} - ${new Date(option.date).toLocaleDateString()}`}
+                      {`Inv No. ${option.invoice_no} - ${option.subject} - Total- ${option.total_amount} - ${new Date(
+                        option.date
+                      ).toLocaleDateString()}`}
                     </li>
                   )}
                   renderInput={params => <TextField {...params} label='Invoice No.' />}
