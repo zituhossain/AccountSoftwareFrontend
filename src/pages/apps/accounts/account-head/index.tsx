@@ -37,13 +37,22 @@ const companyStatusObj: { [key: string]: ThemeColor } = {
 interface AccountHead {
   id: number
   attributes: {
-    head_title: string
-    head_type: number
-    description: string
+    name: string
     status: boolean
-    createdAt: string
-    updatedAt: string
-    publishedAt: string
+    account: {
+      data: {
+        attributes: {
+          name: string
+        }
+      }
+    }
+    sub_account: {
+      data: {
+        attributes: {
+          name: string
+        }
+      }
+    }
   }
 }
 
@@ -78,8 +87,8 @@ const AccountHeadList = () => {
     // Fetch companies data from API
     const fetchAccountHead = async () => {
       try {
-        const response = await fetchDataFromApi('/account-headers')
-        console.log('zitu', response.data)
+        const response = await fetchDataFromApi('/individual-accounts?populate=*')
+        console.log('zitu=======>', response.data)
         setAccountHead(response.data)
       } catch (error) {
         console.error('Error fetching contact type:', error)
@@ -129,27 +138,27 @@ const AccountHeadList = () => {
     {
       flex: 0.2,
       minWidth: 230,
-      field: 'head_title',
-      headerName: 'Header Name',
-      renderCell: ({ row }: CellType) => <LinkStyled href='#'>{row.attributes.head_title}</LinkStyled>
-    },
-    {
-      flex: 0.2,
-      minWidth: 230,
-      field: 'head_type',
-      headerName: 'Header Type',
+      field: 'account',
+      headerName: 'Account',
       renderCell: ({ row }: CellType) => (
-        <LinkStyled href={`/companies/${row.id}`}>{row.attributes.head_type === 0 ? 'Credit' : 'Debit'}</LinkStyled>
+        <LinkStyled href='#'>{row.attributes?.account?.data?.attributes?.name}</LinkStyled>
       )
     },
     {
       flex: 0.2,
       minWidth: 230,
-      field: 'description',
-      headerName: 'Description',
+      field: 'sub_account',
+      headerName: 'Sub Account',
       renderCell: ({ row }: CellType) => (
-        <LinkStyled href={`/companies/${row.id}`}>{row.attributes.description}</LinkStyled>
+        <LinkStyled href={`/companies/${row.id}`}>{row.attributes?.sub_account?.data?.attributes?.name}</LinkStyled>
       )
+    },
+    {
+      flex: 0.2,
+      minWidth: 230,
+      field: 'name',
+      headerName: 'Account Head',
+      renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes?.name}</LinkStyled>
     },
     {
       flex: 0.1,
@@ -179,7 +188,7 @@ const AccountHeadList = () => {
   const handleDeleteConfirm = async () => {
     if (deleteId !== null) {
       try {
-        await deleteDataFromApi(`/account-headers/${deleteId}`)
+        await deleteDataFromApi(`/individual-accounts/${deleteId}`)
         setAccountHead(accountHead.filter(item => item.id !== deleteId))
         setDialogOpen(false)
         toast.success('Account Head deleted successfully')

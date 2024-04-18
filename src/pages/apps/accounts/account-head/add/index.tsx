@@ -9,7 +9,7 @@ import Divider from '@mui/material/Divider'
 import Grid from '@mui/material/Grid'
 import TextField from '@mui/material/TextField'
 import { useRouter } from 'next/router'
-import { FormEventHandler, useEffect } from 'react'
+import { FormEventHandler, useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { AccountHeadType } from 'src/types/apps/userTypes'
@@ -19,17 +19,19 @@ import * as yup from 'yup'
 const AddAccountHead = () => {
   const router = useRouter()
   const { id } = router.query
+  const [accounts, setAccounts] = useState<any[]>([])
+  const [subAccounts, setSubAccounts] = useState<any[]>([])
 
   const schema = yup.object().shape({
-    head_title: yup.string().required('Account Header is required'),
-    head_type: yup.string().required('Account Type is required')
+    name: yup.string().required('Account Header name is required'),
+    account: yup.string().required('Account Type is required')
   })
 
   const defaultValues: AccountHeadType = {
-    head_title: '',
+    name: '',
     description: '',
-    head_type: 0,
-    status: true
+    status: true,
+    account: ''
   }
 
   const {
@@ -46,7 +48,7 @@ const AddAccountHead = () => {
     const fetchData = async () => {
       if (id) {
         try {
-          const response = await fetchDataFromApi(`/account-headers/${id}?populate=*`)
+          const response = await fetchDataFromApi(`/individual-accounts/${id}?populate=*`)
           const {
             data: { attributes }
           } = response
@@ -66,19 +68,33 @@ const AddAccountHead = () => {
     fetchData()
   }, [id, reset])
 
+  useEffect(() => {
+    const fetchAccount = async () => {
+      try {
+        const response = await fetchDataFromApi('/accounts')
+        const responseSub = await fetchDataFromApi('/sub-accounts')
+
+        setAccounts(response.data)
+        setSubAccounts(responseSub.data)
+      } catch (error) {
+        console.error('Error fetching contact type:', error)
+      }
+    }
+    fetchAccount()
+  }, [])
+
   const onSubmit = async (data: AccountHeadType) => {
-    console.log('firstsd', data)
     try {
       const formData = new FormData()
       formData.append('data', JSON.stringify(data))
 
       if (id) {
         // Update existing contact
-        await putDataToApi(`/account-headers/${id}`, formData)
+        await putDataToApi(`/individual-accounts/${id}`, formData)
         toast.success('Account Header updated successfully')
       } else {
         // Add new Account Header
-        await postDataToApiAxios('/account-headers', formData)
+        await postDataToApiAxios('/individual-accounts', formData)
         toast.success('Account Header added successfully')
       }
       router.push('/apps/accounts/account-head')
@@ -97,7 +113,7 @@ const AddAccountHead = () => {
           <Grid container spacing={5}>
             <Grid item xs={12} sm={6}>
               <Controller
-                name='head_title'
+                name='name'
                 control={control}
                 render={({ field }) => (
                   <TextField
@@ -105,26 +121,50 @@ const AddAccountHead = () => {
                     fullWidth
                     label='Header Name'
                     placeholder='Header Name'
-                    error={!!errors.head_title}
-                    helperText={errors.head_title?.message}
+                    error={!!errors.name}
+                    helperText={errors.name?.message}
                   />
                 )}
               />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth error={!!errors.head_type}>
-                <InputLabel id='head_type'>Header Type</InputLabel>
+              <FormControl fullWidth error={!!errors.account}>
+                <InputLabel id='account'>Account Type</InputLabel>
                 <Controller
-                  name='head_type'
+                  name='account'
                   control={control}
                   render={({ field }) => (
-                    <Select {...field} label='Header Type' labelId='head_type'>
-                      <MenuItem value={0}>Credit</MenuItem>
-                      <MenuItem value={1}>Debit</MenuItem>
+                    <Select {...field} label='Header Type' labelId='account'>
+                      <MenuItem value=''>Select Account</MenuItem>
+                      {accounts.map(account => (
+                        <MenuItem key={account.id} value={account.id}>
+                          {account.attributes.name}
+                        </MenuItem>
+                      ))}
                     </Select>
                   )}
                 />
-                <FormHelperText>{errors.head_type?.message}</FormHelperText>
+                <FormHelperText>{errors.account?.message}</FormHelperText>
+              </FormControl>
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel id='sub_account'>Sub Account</InputLabel>
+                <Controller
+                  name='sub_account'
+                  control={control}
+                  render={({ field }) => (
+                    <Select {...field} label='Header Type' labelId='sub_account'>
+                      <MenuItem>Select Sub Account</MenuItem>
+                      {subAccounts.map(sub_account => (
+                        <MenuItem key={sub_account.id} value={sub_account.id}>
+                          {sub_account.attributes.name}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
               </FormControl>
             </Grid>
 
