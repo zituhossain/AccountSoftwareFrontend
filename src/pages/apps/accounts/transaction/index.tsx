@@ -92,6 +92,7 @@ const AccountHeadList = () => {
 
         const response = await fetchDataFromApi(apiUrl)
         setTransactionData(response.data)
+        console.log('response.data', response.data)
       } catch (error) {
         console.error('Error fetching transactions:', error)
       }
@@ -157,7 +158,7 @@ const AccountHeadList = () => {
       )
     },
     {
-      flex: 0.2,
+      flex: 0.1,
       minWidth: 150,
       field: 'invoice_no',
       headerName: 'Invoice No.',
@@ -166,12 +167,12 @@ const AccountHeadList = () => {
       )
     },
     {
-      flex: 0.2,
+      flex: 0.3,
       minWidth: 150,
       field: 'account_head',
       headerName: 'Account Head',
       renderCell: ({ row }: CellType) => (
-        <LinkStyled href={`#`}>{row.attributes?.account_headers?.data?.attributes?.head_title}</LinkStyled>
+        <LinkStyled href={`#`}>{row.attributes?.account_header?.data?.attributes?.name}</LinkStyled>
       )
     },
     {

@@ -100,19 +100,21 @@ export type ContactType = {
 
 export type AccountHeadType = {
   id?: number
-  name: string
-  description: string
-  account: string
-  sub_account: string
-  short_name: string
-  status: boolean
-  created_user: number
-  company: number
+  attributes: {
+    name: string
+    description: string
+    account: string
+    sub_account: string
+    short_name: string
+    status: boolean
+    created_user: number
+    company: number
+  }
 }
 
 export type TransactionType = {
   id?: number
-  account_headers?: number
+  account_header?: number
   payment_option?: number
   client: number
   notes: string

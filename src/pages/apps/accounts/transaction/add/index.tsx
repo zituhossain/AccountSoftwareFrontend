@@ -47,13 +47,13 @@ const AddTransaction = () => {
   const [imgSrc, setImgSrc] = useState<string | null>(null)
 
   const schema = yup.object().shape({
-    account_headers: yup.string().required('Account Head is required'),
+    account_header: yup.string().required('Account Head is required'),
     payment_option: yup.number().required('Payment Option is required'),
     paid_amount: yup.number().required('Paid Amount is required')
   })
 
   const defaultValues: TransactionType = {
-    account_headers: 0,
+    account_header: 0,
     total_amount: 0,
     payment_option: 0,
     client: 0,
@@ -107,7 +107,7 @@ const AddTransaction = () => {
           if (userResponse.company) setCompanyId(userResponse.company.id)
         }
 
-        const account_headers_response = await fetchDataFromApi('/account-headers')
+        const account_headers_response = await fetchDataFromApi('/individual-accounts')
         setAccountHeaders(account_headers_response.data)
 
         const company_response = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
@@ -120,7 +120,7 @@ const AddTransaction = () => {
           } = response
 
           setValue('client', attributes.client?.data?.id || 0)
-          setValue('account_headers', attributes.account_headers?.data?.id || 0)
+          setValue('account_header', attributes.account_header?.data?.id || 0)
         }
       } catch (error) {
         console.error('Error fetching positions:', error)
@@ -193,7 +193,7 @@ const AddTransaction = () => {
   }, [selectedInvoice])
 
   const onSubmit = async (data: TransactionType) => {
-    console.log('firstsd', data)
+    console.log('Shakhawat=======>', data)
     data.company = companyId
     data.created_user = userId
     data.total_amount = totalAmount // Ensure this matches your schema and expectation
@@ -201,12 +201,26 @@ const AddTransaction = () => {
     data.due_amount = dueAmount
 
     try {
+      let accountId
+
+      // Fetch debit account ID based on payment option
+      if (data.payment_option === 0) {
+        const response = await fetchDataFromApi(`/individual-accounts?filters[short_name]=ca`)
+        accountId = response.data[0].id
+      } else if (data.payment_option === 1) {
+        const response = await fetchDataFromApi(`/individual-accounts?filters[short_name]=ba`)
+        accountId = response.data[0].id
+      } else if (data.payment_option === 2) {
+        const response = await fetchDataFromApi(`/individual-accounts?filters[short_name]=ma`)
+        accountId = response.data[0].id
+      }
+
       const formData = new FormData()
       formData.append(
         'data',
         JSON.stringify({
           ...data,
-          account_headers: data.account_headers, // Assuming this is an ID
+          account_header: data.account_header, // Assuming this is an ID
           client: data.client, // Assuming this is an ID
           invoice_id: selectedInvoice?.id // Assuming this is how you're setting the invoice ID
         })
@@ -222,6 +236,23 @@ const AddTransaction = () => {
       } else {
         // Add new Transaction
         await postDataToApiAxios('/transactions', formData)
+
+        // Journal
+        const journalData = new FormData()
+        journalData.append(
+          'data',
+          JSON.stringify({
+            invoice: selectedInvoice?.id,
+            amount: paidAmount,
+            credit_account: data.account_header,
+            debit_account: accountId,
+            created_user: userId,
+            company: companyId,
+            client: data.client
+          })
+        )
+        await postDataToApiAxios('/journals', journalData)
+
         toast.success('Transaction added successfully')
       }
 
@@ -274,21 +305,21 @@ const AddTransaction = () => {
             </Grid>
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth error={!!errors.account_headers}>
-                <InputLabel id='account_headers'>Account Head</InputLabel>
+                <InputLabel id='account_header'>Account Head</InputLabel>
                 <Controller
-                  name='account_headers'
+                  name='account_header'
                   control={control}
                   render={({ field }) => (
-                    <Select {...field} label='Account Head' labelId='account_headers'>
+                    <Select {...field} label='Account Head' labelId='account_header'>
                       {accountHeaders.map(accountHeader => (
                         <MenuItem key={accountHeader.id} value={accountHeader.id}>
-                          {accountHeader?.attributes?.head_title}
+                          {accountHeader?.attributes?.name}
                         </MenuItem>
                       ))}
                     </Select>
                   )}
                 />
-                <FormHelperText>{errors.account_headers?.message}</FormHelperText>
+                <FormHelperText>{errors.account_header?.message}</FormHelperText>
               </FormControl>
             </Grid>
             <Grid item xs={12} sm={6}>
