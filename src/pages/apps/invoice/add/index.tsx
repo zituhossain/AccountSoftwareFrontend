@@ -84,7 +84,7 @@ const InvoiceAdd = () => {
         setClients(companyResponse.data)
 
         // Setting initial invoice master data
-        setInvoiceMasterData(prevState => ({
+        setInvoiceMasterData((prevState: any) => ({
           ...prevState,
           created_user: userData.id,
           company: userResponse.company.id
@@ -123,7 +123,11 @@ const InvoiceAdd = () => {
         const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters`)
         const invoices = invoiceMasterResponse?.data
         console.log('Create new invoice: ')
-        const maxInvoiceNo = Math.max(...invoices.map(invoice => parseInt(invoice.attributes.invoice_no, 10)))
+        const maxInvoiceNo = Math.max(
+          ...invoices.map((invoice: { attributes: { invoice_no: string } }) =>
+            parseInt(invoice.attributes.invoice_no, 10)
+          )
+        )
         const newInvoiceNo = maxInvoiceNo >= 0 ? maxInvoiceNo + 1 : 1
         setInvoiceNo(newInvoiceNo)
 
@@ -147,20 +151,21 @@ const InvoiceAdd = () => {
         `/invoice-details?filters[invoice_master][id][$eq]=${invoiceId}`
       )
       setInvoiceDetails(invoiceDetailsResponse.data)
-      const transactionResponse = await fetchDataFromApi(
-        `/transactions?populate=*&filters[invoice_id][id][$eq]=${invoiceId}`
-      )
-      const transactionData = transactionResponse.data[0]
 
-      if (transactionData) {
-        setAccountHeaderId(transactionData?.attributes?.account_headers?.data?.id)
-        setPaymentOption(transactionData?.attributes?.payment_option)
-        setInvoiceMasterData(prevState => ({
-          ...prevState,
-          account_headers: transactionData.account_headers,
-          payment_option: transactionData.payment_option
-        }))
-      }
+      // const transactionResponse = await fetchDataFromApi(
+      //   `/transactions?populate=*&filters[invoice_id][id][$eq]=${invoiceId}`
+      // )
+      // const transactionData = transactionResponse.data[0]
+
+      // if (transactionData) {
+      //   setAccountHeaderId(transactionData?.attributes?.account_headers?.data?.id)
+      //   setPaymentOption(transactionData?.attributes?.payment_option)
+      //   setInvoiceMasterData((prevState: any) => ({
+      //     ...prevState,
+      //     account_headers: transactionData.account_headers,
+      //     payment_option: transactionData.payment_option
+      //   }))
+      // }
     } catch (error) {
       console.error('Error fetching invoice data:', error)
       toast.error('Error fetching data.')
@@ -222,26 +227,28 @@ const InvoiceAdd = () => {
         await postDataToApiAxios('/invoice-details', detailData)
       }
 
-      // Transaction Data
+      // Journal Data
       const userData = JSON.parse(localStorage.getItem('userData')!)
       const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+      const serviceRevenueId = await fetchDataFromApi(`/individual-accounts?filters[short_name][$eq]=sr`)
+      const accountReceivableId = await fetchDataFromApi(`/individual-accounts?filters[short_name][$eq]=ar`)
 
-      const transactionData = new FormData()
-      transactionData.append(
+      const journalData = new FormData()
+      journalData.append(
         'data',
         JSON.stringify({
-          ...transactionData,
-          invoice_id: invoiceMasterId,
+          invoice: invoiceMasterId,
           amount: totalAmount,
-          account_headers: accountHeaderId,
+          credit_account: serviceRevenueId.data[0].id,
+          debit_account: accountReceivableId.data[0].id,
           created_user: userData.id,
           company: userResponse.company.id,
           payment_option: paymentOption,
           client: selectedClient?.id
         })
       )
-      const transactionResponse = await postDataToApiAxios('/transactions', transactionData)
-      console.log('transactionResponse:', transactionResponse.data)
+      const journalResponse = await postDataToApiAxios('/journals', journalData)
+      console.log('journalResponse:', journalResponse.data)
 
       toast.success('Invoice added successfully')
       router.push(`/apps/invoice/preview/${invoiceMasterId}`)
@@ -290,27 +297,21 @@ const InvoiceAdd = () => {
         await deleteDataFromApi(`/invoice-details/${detailId}`)
       }
 
-      const transactionResponse = await fetchDataFromApi(
-        `/transactions?filters[invoice_id][id][$eq]=${invoiceMasterData.id}`
-      )
-      const transactionId = transactionResponse.data[0].id // Assuming the first result is the correct one
+      const journalResponse = await fetchDataFromApi(`/journals?filters[invoice][id][$eq]=${invoiceMasterData.id}`)
+      const journalId = journalResponse.data[0].id // Assuming the first result is the correct one
 
-      const userData = JSON.parse(localStorage.getItem('userData')!)
-      const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+      // const userData = JSON.parse(localStorage.getItem('userData')!)
+      // const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
 
-      const transactionData = new FormData()
-      transactionData.append(
+      const journalData = new FormData()
+      journalData.append(
         'data',
         JSON.stringify({
           amount: totalAmount,
-          account_headers: accountHeaderId,
-          created_user: userData.id,
-          company: userResponse.company.id,
-          payment_option: paymentOption,
           client: selectedClient?.id
         })
       )
-      await putDataToApi(`/transactions/${transactionId}`, transactionData)
+      await putDataToApi(`/journals/${journalId}`, journalData)
 
       toast.success('Invoice updated successfully')
       router.push(`/apps/invoice/preview/${invoiceMasterData.id}`)
