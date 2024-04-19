@@ -103,7 +103,11 @@ export type AccountHeadType = {
   name: string
   description: string
   account: string
+  sub_account: string
+  short_name: string
   status: boolean
+  created_user: number
+  company: number
 }
 
 export type TransactionType = {

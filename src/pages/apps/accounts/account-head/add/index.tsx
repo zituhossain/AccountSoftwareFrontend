@@ -14,6 +14,7 @@ import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import { AccountHeadType } from 'src/types/apps/userTypes'
 import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
+import { getFirstLetterLowerCase } from 'src/utils/shortName'
 import * as yup from 'yup'
 
 const AddAccountHead = () => {
@@ -21,17 +22,20 @@ const AddAccountHead = () => {
   const { id } = router.query
   const [accounts, setAccounts] = useState<any[]>([])
   const [subAccounts, setSubAccounts] = useState<any[]>([])
+  const [userId, setUserId] = useState<number | null>(null)
+  const [companyId, setCompanyId] = useState<number | null>(null)
 
   const schema = yup.object().shape({
     name: yup.string().required('Account Header name is required'),
     account: yup.string().required('Account Type is required')
   })
 
-  const defaultValues: AccountHeadType = {
+  const defaultValues = {
     name: '',
     description: '',
     status: true,
-    account: ''
+    account: '',
+    short_name: ''
   }
 
   const {
@@ -73,6 +77,10 @@ const AddAccountHead = () => {
       try {
         const response = await fetchDataFromApi('/accounts')
         const responseSub = await fetchDataFromApi('/sub-accounts')
+        const userData = JSON.parse(localStorage.getItem('userData')!)
+        setUserId(userData.id)
+        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+        setCompanyId(userResponse?.company.id)
 
         setAccounts(response.data)
         setSubAccounts(responseSub.data)
@@ -85,6 +93,9 @@ const AddAccountHead = () => {
 
   const onSubmit = async (data: AccountHeadType) => {
     try {
+      data.short_name = getFirstLetterLowerCase(data.name)
+      data.created_user = userId!
+      data.company = companyId!
       const formData = new FormData()
       formData.append('data', JSON.stringify(data))
 
