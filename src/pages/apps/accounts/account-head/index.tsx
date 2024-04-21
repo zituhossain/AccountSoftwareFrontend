@@ -138,6 +138,13 @@ const AccountHeadList = () => {
     {
       flex: 0.2,
       minWidth: 230,
+      field: 'name',
+      headerName: 'Account Head',
+      renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes?.name}</LinkStyled>
+    },
+    {
+      flex: 0.2,
+      minWidth: 230,
       field: 'account',
       headerName: 'Account',
       renderCell: ({ row }: CellType) => (
@@ -152,13 +159,6 @@ const AccountHeadList = () => {
       renderCell: ({ row }: CellType) => (
         <LinkStyled href={`/companies/${row.id}`}>{row.attributes?.sub_account?.data?.attributes?.name}</LinkStyled>
       )
-    },
-    {
-      flex: 0.2,
-      minWidth: 230,
-      field: 'name',
-      headerName: 'Account Head',
-      renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes?.name}</LinkStyled>
     },
     {
       flex: 0.1,

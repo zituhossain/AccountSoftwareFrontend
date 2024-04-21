@@ -24,6 +24,9 @@ const AddAccountHead = () => {
   const [subAccounts, setSubAccounts] = useState<any[]>([])
   const [userId, setUserId] = useState<number | null>(null)
   const [companyId, setCompanyId] = useState<number | null>(null)
+  const [subAccountDisabled, setSubAccountDisabled] = useState<any>(0)
+
+  console.log('subAccountDisabled', subAccountDisabled)
 
   const schema = yup.object().shape({
     name: yup.string().required('Account Header name is required'),
@@ -145,7 +148,18 @@ const AddAccountHead = () => {
                   name='account'
                   control={control}
                   render={({ field }) => (
-                    <Select {...field} label='Header Type' labelId='account'>
+                    <Select
+                      {...field}
+                      label='Header Type'
+                      labelId='account'
+                      onChange={e => {
+                        const accountId = e.target.value
+
+                        // Enable or disable the sub_account field based on the selected account
+                        setSubAccountDisabled(accountId)
+                        field.onChange(e)
+                      }}
+                    >
                       <MenuItem value=''>Select Account</MenuItem>
                       {accounts.map(account => (
                         <MenuItem key={account.id} value={account.id}>
@@ -166,7 +180,12 @@ const AddAccountHead = () => {
                   name='sub_account'
                   control={control}
                   render={({ field }) => (
-                    <Select {...field} label='Header Type' labelId='sub_account'>
+                    <Select
+                      {...field}
+                      label='Header Type'
+                      labelId='sub_account'
+                      disabled={subAccountDisabled == 1 || subAccountDisabled == 2 ? false : true} // Set disabled prop dynamically
+                    >
                       <MenuItem>Select Sub Account</MenuItem>
                       {subAccounts.map(sub_account => (
                         <MenuItem key={sub_account.id} value={sub_account.id}>
