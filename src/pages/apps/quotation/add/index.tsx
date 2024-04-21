@@ -53,6 +53,8 @@ const QuotationAdd = () => {
   const [userId, setUserId] = useState<number>(0)
   const [companyId, setCompanyId] = useState<number>(0)
 
+  console.log('selectedClient', selectedClient)
+
   const [formData, setFormData] = useState<QuotationType>({
     quotation_no: '1',
     client: '',
@@ -171,6 +173,7 @@ const QuotationAdd = () => {
       const extendedData = {
         ...data,
         quotation_no: quotationNo.toString(),
+
         client: selectedClient ? selectedClient.id : '',
         date: data.date.toISOString().split('T')[0],
         status: false
@@ -212,7 +215,9 @@ const QuotationAdd = () => {
       const userData = JSON.parse(localStorage.getItem('userData')!)
       const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
 
-      const companyResponse = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
+      const companyResponse = await fetchDataFromApi(
+        `/b2b-relations?filters[id][$ne]=${userResponse.company.id}?&populate=*`
+      )
 
       setClients(companyResponse.data)
     })()

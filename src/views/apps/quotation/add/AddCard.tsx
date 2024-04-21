@@ -136,6 +136,8 @@ const AddCard = (props: Props) => {
     initialData
   } = props
 
+  console.log('zclients', clients)
+
   // ** States
   const [count, setCount] = useState<number>(1)
   const [selected, setSelected] = useState<string>('')
@@ -259,23 +261,23 @@ const AddCard = (props: Props) => {
               {clients !== undefined &&
                 clients.map(client => (
                   <MenuItem key={client.id} value={client.id}>
-                    {client.attributes.name}
+                    {`${client.attributes.client.data.attributes.name} (${client.attributes.relation_type.data.attributes.title})`}
                   </MenuItem>
                 ))}
             </Select>
             {selectedClient !== null && selectedClient !== undefined ? (
               <div>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.attributes.name}
+                  {selectedClient?.attributes?.client?.data?.attributes?.name}
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.attributes.address}
+                  {selectedClient?.attributes?.client?.data?.attributes?.address}
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.attributes.phone}
+                  {selectedClient?.attributes?.client?.data?.attributes?.phone}
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 1, color: 'text.primary' }}>
-                  {selectedClient.attributes.email}
+                  {selectedClient?.attributes?.client?.data?.attributes?.email}
                 </Typography>
               </div>
             ) : null}

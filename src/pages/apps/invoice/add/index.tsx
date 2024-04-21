@@ -77,7 +77,7 @@ const InvoiceAdd = () => {
         const [userResponse, accountHeadersResponse, companyResponse] = await Promise.all([
           fetchDataFromApi(`/users/${userData.id}?populate=company`),
           fetchDataFromApi('/account-headers'),
-          fetchDataFromApi(`/companies?filters[id][$ne]=${userData.company?.id}`)
+          fetchDataFromApi(`/b2b-relations?filters[id][$ne]=${userData.company?.id}?&populate=*`)
         ])
 
         setAccountHeaders(accountHeadersResponse.data)
@@ -323,16 +323,16 @@ const InvoiceAdd = () => {
 
   const toggleAddCustomerDrawer = () => setAddCustomerOpen(!addCustomerOpen)
 
-  useEffect(() => {
-    ;(async () => {
-      const userData = JSON.parse(localStorage.getItem('userData')!)
-      const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+  // useEffect(() => {
+  //   ;(async () => {
+  //     const userData = JSON.parse(localStorage.getItem('userData')!)
+  //     const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
 
-      const companyResponse = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
+  //     const companyResponse = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
 
-      setClients(companyResponse.data)
-    })()
-  }, [])
+  //     setClients(companyResponse.data)
+  //   })()
+  // }, [])
 
   return (
     <DatePickerWrapper sx={{ '& .react-datepicker-wrapper': { width: 'auto' } }}>
