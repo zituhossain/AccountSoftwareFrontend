@@ -23,7 +23,7 @@ import CustomChip from 'src/@core/components/mui/chip'
 // ** Types Imports
 import { useRouter } from 'next/navigation'
 import { ThemeColor } from 'src/@core/layouts/types'
-import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
+import { deleteDataFromApi, fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
 import TableHeader from 'src/views/apps/quotation/TableHeader'
 import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
 import toast from 'react-hot-toast'
@@ -102,6 +102,68 @@ const Quotation = () => {
     }
   }
 
+  const toggleStatus = async (id: number) => {
+    const targetQuotation = quotation.find(q => q.id === id)
+
+    if (!targetQuotation.attributes.status) {
+      // Only toggle if currently inactive
+      const updatedQuotations = quotation.map(q => {
+        if (q.id === id) {
+          return { ...q, attributes: { ...q.attributes, status: true } } // Set status to active
+        }
+
+        return q
+      })
+      setQuotation(updatedQuotations)
+
+      try {
+        await putDataToApi(`/quotations/${id}`, {
+          data: {
+            status: true
+          }
+        })
+
+        // Journal Data
+        const userData = JSON.parse(localStorage.getItem('userData')!)
+        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+        const purchaseId = await fetchDataFromApi(`/individual-accounts?filters[short_name][$eq]=p`)
+        const accountPayableId = await fetchDataFromApi(`/individual-accounts?filters[short_name][$eq]=ap`)
+
+        const fetchQuotationDetails = async (quotationId: any) => {
+          const response = await fetchDataFromApi(`/quotations/${quotationId}`)
+          const { client_rate } = response.data.attributes
+
+          return client_rate
+        }
+
+        const journalData = new FormData()
+
+        const clientRate = await fetchQuotationDetails(id)
+
+        journalData.append(
+          'data',
+          JSON.stringify({
+            quotation: id,
+            amount: clientRate,
+            credit_account: purchaseId.data[0].id,
+            debit_account: accountPayableId.data[0].id,
+            created_user: userData.id,
+            company: userResponse.company.id
+
+            // client: selectedClient?.id
+          })
+        )
+        const journalResponse = await postDataToApiAxios('/journals', journalData)
+        console.log('journalResponse:', journalResponse.data)
+        toast.success('Quotation status updated successfully')
+      } catch (error) {
+        toast.error('Failed to update quotation status')
+        console.error('Update Error:', error)
+      }
+    } else {
+      toast.error('This quotation is already active and cannot be set to inactive.')
+    }
+  }
   const RowOptions = ({ id }: { id: number | string }) => {
     // ** Hooks
     const router = useRouter()
@@ -140,16 +202,16 @@ const Quotation = () => {
     },
     {
       flex: 0.2,
-      minWidth: 230,
+      minWidth: 120,
       field: 'quotation_no',
-      headerName: 'Quotation No',
+      headerName: 'Quot No',
       renderCell: ({ row }: CellType) => (
         <LinkStyled href={`/companies/${row.id}`}>{row.attributes.quotation_no}</LinkStyled>
       )
     },
     {
       flex: 0.2,
-      minWidth: 250,
+      minWidth: 150,
       field: 'client_rate',
       headerName: 'Client Rate',
       renderCell: ({ row }: CellType) => (
@@ -193,16 +255,23 @@ const Quotation = () => {
     },
     {
       flex: 0.1,
-      minWidth: 110,
+      minWidth: 150,
       field: 'status',
       headerName: 'Status',
       renderCell: ({ row }: CellType) => (
         <CustomChip
           skin='light'
           size='small'
-          label={row.attributes.status ? 'Active' : 'Inactive'}
+          label={row.attributes.status ? 'Confirmed' : 'Not Confirmed'}
           color={companyStatusObj[row.attributes.status]}
           sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
+          onClick={() => {
+            if (!row.attributes.status) {
+              // Only allow clicking if inactive
+              toggleStatus(row.id)
+            }
+          }}
+          style={{ cursor: row.attributes.status ? 'default' : 'pointer' }}
         />
       )
     },

@@ -65,7 +65,7 @@ const QuotationAdd = () => {
     our_rate: 0,
     no_of_items: 0,
     overweight: 0,
-    status: true,
+    status: false,
     send_status: false,
     revision_count: 0,
     created_user: '',
@@ -173,7 +173,7 @@ const QuotationAdd = () => {
         quotation_no: quotationNo.toString(),
         client: selectedClient ? selectedClient.id : '',
         date: data.date.toISOString().split('T')[0],
-        status: true
+        status: false
       }
       formData.append('data', JSON.stringify(extendedData))
 
