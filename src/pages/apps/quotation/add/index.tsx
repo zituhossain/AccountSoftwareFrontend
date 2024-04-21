@@ -174,7 +174,7 @@ const QuotationAdd = () => {
         ...data,
         quotation_no: quotationNo.toString(),
 
-        client: selectedClient ? selectedClient.id : '',
+        client: selectedClient ? selectedClient?.attributes?.client?.data?.id : '',
         date: data.date.toISOString().split('T')[0],
         status: false
       }

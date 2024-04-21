@@ -130,27 +130,31 @@ const Quotation = () => {
         const accountPayableId = await fetchDataFromApi(`/individual-accounts?filters[short_name][$eq]=ap`)
 
         const fetchQuotationDetails = async (quotationId: any) => {
-          const response = await fetchDataFromApi(`/quotations/${quotationId}`)
+          const response = await fetchDataFromApi(`/quotations/${quotationId}?populate=client`)
           const { client_rate } = response.data.attributes
+          console.log('client', response.data.attributes?.client?.data?.id)
+          const client = response.data.attributes?.client?.data?.id
 
-          return client_rate
+          return {
+            clientRate: client_rate,
+            client
+          }
         }
 
         const journalData = new FormData()
 
-        const clientRate = await fetchQuotationDetails(id)
+        const quotationInfo = await fetchQuotationDetails(id)
 
         journalData.append(
           'data',
           JSON.stringify({
             quotation: id,
-            amount: clientRate,
+            amount: quotationInfo.clientRate,
             credit_account: purchaseId.data[0].id,
             debit_account: accountPayableId.data[0].id,
             created_user: userData.id,
-            company: userResponse.company.id
-
-            // client: selectedClient?.id
+            company: userResponse.company.id,
+            client: quotationInfo.client
           })
         )
         const journalResponse = await postDataToApiAxios('/journals', journalData)

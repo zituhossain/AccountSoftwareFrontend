@@ -160,11 +160,13 @@ const AddCard = (props: Props) => {
     if (initialData && initialData.client && initialData.client.data && clients) {
       const initialClientId = initialData.client.data.id
 
-      const client = clients.find(c => c.id === initialClientId)
+      const client = clients.find(c => c.attributes?.client?.data?.id === initialClientId)
 
       if (client) {
         setSelectedClient(client)
         setSelected(initialClientId)
+
+        console.log('initialClientId', initialData.client)
 
         // Update formData with the initial client ID
         setFormData((prevFormData: any) => ({ ...prevFormData, client: initialData.client }))
@@ -176,9 +178,12 @@ const AddCard = (props: Props) => {
   const handleQuotationChange = (event: SelectChangeEvent) => {
     const newSelectedId = event.target.value
     setSelected(newSelectedId)
-    const newSelectedClient = clients.find(c => c.id === newSelectedId)
+    console.log('clients', clients)
+    const newSelectedClient = clients.find(c => c.attributes?.client?.data?.id === newSelectedId)
     if (newSelectedClient) {
       setSelectedClient(newSelectedClient)
+
+      console.log('newSelectedId', newSelectedId, newSelectedClient)
 
       // Update the formData state in the parent component
       setFormData({ ...formData, client: newSelectedId })
@@ -260,7 +265,7 @@ const AddCard = (props: Props) => {
               {/* <MenuItem value={0}>Select Client</MenuItem> */}
               {clients !== undefined &&
                 clients.map(client => (
-                  <MenuItem key={client.id} value={client.id}>
+                  <MenuItem key={client.id} value={client?.attributes?.client?.data?.id}>
                     {`${client.attributes.client.data.attributes.name} (${client.attributes.relation_type.data.attributes.title})`}
                   </MenuItem>
                 ))}

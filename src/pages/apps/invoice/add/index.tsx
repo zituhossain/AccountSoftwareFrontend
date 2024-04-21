@@ -244,7 +244,7 @@ const InvoiceAdd = () => {
           created_user: userData.id,
           company: userResponse.company.id,
           payment_option: paymentOption,
-          client: selectedClient?.id
+          client: selectedClient?.attributes?.client?.data?.id
         })
       )
       const journalResponse = await postDataToApiAxios('/journals', journalData)
@@ -308,7 +308,7 @@ const InvoiceAdd = () => {
         'data',
         JSON.stringify({
           amount: totalAmount,
-          client: selectedClient?.id
+          client: selectedClient?.attributes?.client?.data?.id
         })
       )
       await putDataToApi(`/journals/${journalId}`, journalData)

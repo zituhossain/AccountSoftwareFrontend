@@ -238,19 +238,39 @@ const AddTransaction = () => {
         await postDataToApiAxios('/transactions', formData)
 
         // Journal
-        const journalData = new FormData()
-        journalData.append(
-          'data',
-          JSON.stringify({
-            invoice: selectedInvoice?.id,
-            amount: paidAmount,
-            credit_account: data.account_header,
-            debit_account: accountId,
-            created_user: userId,
-            company: companyId,
-            client: data.client
-          })
+
+        const accountHeadResponse = await fetchDataFromApi(
+          `/individual-accounts?populate=account&filters[id]=${data.account_header}`
         )
+
+        const journalData = new FormData()
+        if (accountHeadResponse.data[0].attributes.account.data.id === 5) {
+          journalData.append(
+            'data',
+            JSON.stringify({
+              invoice: selectedInvoice?.id,
+              amount: paidAmount,
+              credit_account: accountId,
+              debit_account: data.account_header,
+              created_user: userId,
+              company: companyId,
+              client: data.client
+            })
+          )
+        } else {
+          journalData.append(
+            'data',
+            JSON.stringify({
+              invoice: selectedInvoice?.id,
+              amount: paidAmount,
+              credit_account: data.account_header,
+              debit_account: accountId,
+              created_user: userId,
+              company: companyId,
+              client: data.client
+            })
+          )
+        }
         await postDataToApiAxios('/journals', journalData)
 
         toast.success('Transaction added successfully')
@@ -304,18 +324,20 @@ const AddTransaction = () => {
               {errors.image && <span>{errors.image.message}</span>}
             </Grid>
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth error={!!errors.account_headers}>
+              <FormControl fullWidth error={!!errors.account_header}>
                 <InputLabel id='account_header'>Account Head</InputLabel>
                 <Controller
                   name='account_header'
                   control={control}
                   render={({ field }) => (
                     <Select {...field} label='Account Head' labelId='account_header'>
-                      {accountHeaders.map(accountHeader => (
-                        <MenuItem key={accountHeader.id} value={accountHeader.id}>
-                          {accountHeader?.attributes?.name}
-                        </MenuItem>
-                      ))}
+                      {accountHeaders
+                        .filter(accountHeader => !['ca', 'ba', 'ma'].includes(accountHeader?.attributes?.short_name))
+                        .map(accountHeader => (
+                          <MenuItem key={accountHeader.id} value={accountHeader.id}>
+                            {accountHeader?.attributes?.name}
+                          </MenuItem>
+                        ))}
                     </Select>
                   )}
                 />

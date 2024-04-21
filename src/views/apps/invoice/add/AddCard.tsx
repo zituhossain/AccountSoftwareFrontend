@@ -158,8 +158,10 @@ const AddCard = (props: Props) => {
   // ** Handle Invoice To Change
   const handleInvoiceChange = (event: SelectChangeEvent) => {
     setSelected(event.target.value)
+    console.log('event.target.value', event.target.value)
+    console.log('clients:', clients)
     if (clients !== undefined) {
-      setSelectedClient(clients.filter(i => i.id === event.target.value)[0])
+      setSelectedClient(clients.filter(i => i?.attributes?.client?.data?.id === event.target.value)[0])
       setInvoiceMasterData({ ...invoiceMasterData, client: event.target.value })
     }
   }
@@ -185,7 +187,7 @@ const AddCard = (props: Props) => {
     ) {
       const initialClientId = invoiceMasterData?.attributes?.client.data.id
 
-      const client = clients.find(c => c.id === initialClientId)
+      const client = clients.find(c => c?.attributes?.client?.data?.id === initialClientId)
 
       if (client) {
         setSelectedClient(client)
@@ -333,7 +335,7 @@ const AddCard = (props: Props) => {
               {/* <MenuItem value={0}>Select Client</MenuItem> */}
               {clients !== undefined &&
                 clients.map(client => (
-                  <MenuItem key={client.id} value={client.id}>
+                  <MenuItem key={client.id} value={client?.attributes?.client?.data?.id}>
                     {`${client?.attributes?.client?.data?.attributes?.name} (${client?.attributes?.relation_type?.data?.attributes?.title})`}
                   </MenuItem>
                 ))}
