@@ -36,7 +36,9 @@ const AddTransaction = () => {
   const [companyId, setCompanyId] = useState<number>(0)
   const [companies, setCompanies] = useState<CompanyType[]>([])
   const [invoices, setInvoices] = useState([])
+  const [quotation, setQuotation] = useState([])
   const [selectedInvoice, setSelectedInvoice] = useState(null)
+  const [selectedQuotation, setSelectedQuotation] = useState(null)
   const [totalAmount, setTotalAmount] = useState(0)
   const [paidAmount, setPaidAmount] = useState(0)
   const [totalPaidAmounts, setTotalPaidAmounts] = useState(0)
@@ -45,6 +47,11 @@ const AddTransaction = () => {
   const [accountHeaders, setAccountHeaders] = useState<AccountHeadType[]>([])
   const [transactionImg, setTransactionImg] = useState<File | null>(null)
   const [imgSrc, setImgSrc] = useState<string | null>(null)
+  const [accountHeadId, setAccountHeadId] = useState<number | null>(null)
+  const [accountId, setAccountId] = useState<number | null>(null)
+  const [companyUser, setCompanyUser] = useState<any | null>(null)
+
+  console.log('quotation', quotation)
 
   const schema = yup.object().shape({
     account_header: yup.string().required('Account Head is required'),
@@ -81,8 +88,13 @@ const AddTransaction = () => {
   const handlePaidAmountChange = e => {
     const newPaidAmount = parseFloat(e.target.value)
     setPaidAmount(newPaidAmount)
-    const newDueAmount = (selectedInvoice.total_amount || 0) - (totalPaidAmounts + newPaidAmount)
-    setDueAmount(newDueAmount)
+    if (accountId === 1) {
+      const newDueAmount = (selectedInvoice.total_amount || 0) - (totalPaidAmounts + newPaidAmount)
+      setDueAmount(newDueAmount)
+    } else if (accountId === 2) {
+      const newDueAmount = (selectedQuotation.client_rate || 0) - (totalPaidAmounts + newPaidAmount)
+      setDueAmount(newDueAmount)
+    }
   }
 
   const {
@@ -95,6 +107,17 @@ const AddTransaction = () => {
     resolver: yupResolver(schema),
     defaultValues
   })
+
+  useEffect(() => {
+    ;(async () => {
+      if (accountHeadId) {
+        const accountHeadResponse = await fetchDataFromApi(
+          `/individual-accounts?populate=account&filters[id]=${accountHeadId}`
+        )
+        setAccountId(accountHeadResponse.data[0].attributes.account.data.id)
+      }
+    })()
+  }, [accountHeadId])
 
   useEffect(() => {
     const fetchRelationCompany = async () => {
@@ -112,6 +135,9 @@ const AddTransaction = () => {
 
         const company_response = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
         setCompanies(company_response.data)
+
+        const company_user_response = await fetchDataFromApi(`/users`)
+        setCompanyUser(company_user_response)
 
         if (id) {
           const response = await fetchDataFromApi(`/transactions/${id}?populate=*`)
@@ -154,18 +180,25 @@ const AddTransaction = () => {
 
   useEffect(() => {
     const fetchInvoicesByClient = async () => {
-      if (selectedClientId) {
+      if (selectedClientId && accountId === 1) {
         try {
           const invoicesResponse = await fetchDataFromApi(`/transactions/invoicesByClient/${selectedClientId}`)
           setInvoices(invoicesResponse)
         } catch (error) {
           console.error('Failed to fetch invoices:', error)
         }
+      } else if (selectedClientId && accountId === 2) {
+        try {
+          const quotationsResponse = await fetchDataFromApi(`/transactions/quotationsByClient/${selectedClientId}`)
+          setQuotation(quotationsResponse)
+        } catch (error) {
+          console.error('Failed to fetch quotations:', error)
+        }
       }
     }
 
     fetchInvoicesByClient()
-  }, [selectedClientId]) // This effect runs whenever selectedClientId changes
+  }, [selectedClientId, accountId]) // This effect runs whenever selectedClientId changes
 
   const fetchTotalPaidAmounts = async invoiceId => {
     try {
@@ -191,6 +224,19 @@ const AddTransaction = () => {
       })
     }
   }, [selectedInvoice])
+
+  useEffect(() => {
+    if (selectedQuotation) {
+      setTotalAmount(selectedQuotation.client_rate || 0)
+
+      fetchTotalPaidAmounts(selectedQuotation.id).then(totalPaid => {
+        setTotalPaidAmounts(totalPaid)
+        const initialDueAmount = (selectedQuotation.client_rate || 0) - totalPaid
+        setDueAmount(initialDueAmount)
+        setPaidAmount(0)
+      })
+    }
+  }, [selectedQuotation])
 
   const onSubmit = async (data: TransactionType) => {
     console.log('Shakhawat=======>', data)
@@ -221,8 +267,10 @@ const AddTransaction = () => {
         JSON.stringify({
           ...data,
           account_header: data.account_header, // Assuming this is an ID
-          client: data.client, // Assuming this is an ID
-          invoice_id: selectedInvoice?.id // Assuming this is how you're setting the invoice ID
+          client: data.client != 0 ? data.client : null, // Assuming this is an ID
+          invoice_id: selectedInvoice?.id, // Assuming this is how you're setting the invoice ID
+          quotation: selectedQuotation?.id, // Assuming this is how you're setting the quotation ID
+          employee: data.employee // Assuming this is an ID
         })
       )
       if (transactionImg) {
@@ -254,7 +302,8 @@ const AddTransaction = () => {
               debit_account: data.account_header,
               created_user: userId,
               company: companyId,
-              client: data.client
+              client: data.client != 0 ? data.client : null,
+              employee: data.employee
             })
           )
         } else {
@@ -262,12 +311,13 @@ const AddTransaction = () => {
             'data',
             JSON.stringify({
               invoice: selectedInvoice?.id,
+              quotation: selectedQuotation?.id,
               amount: paidAmount,
               credit_account: data.account_header,
               debit_account: accountId,
               created_user: userId,
               company: companyId,
-              client: data.client
+              client: data.client != 0 ? data.client : null
             })
           )
         }
@@ -330,7 +380,15 @@ const AddTransaction = () => {
                   name='account_header'
                   control={control}
                   render={({ field }) => (
-                    <Select {...field} label='Account Head' labelId='account_header'>
+                    <Select
+                      {...field}
+                      label='Account Head'
+                      labelId='account_header'
+                      onChange={e => {
+                        setAccountHeadId(e.target.value)
+                        field.onChange(e)
+                      }}
+                    >
                       {accountHeaders
                         .filter(accountHeader => !['ca', 'ba', 'ma'].includes(accountHeader?.attributes?.short_name))
                         .map(accountHeader => (
@@ -344,96 +402,257 @@ const AddTransaction = () => {
                 <FormHelperText>{errors.account_header?.message}</FormHelperText>
               </FormControl>
             </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth error={!!errors.client}>
-                <InputLabel id='client'>Client</InputLabel>
-                <Controller
-                  name='client'
-                  control={control}
-                  render={({ field }) => (
-                    <Select
-                      {...field}
-                      label='Client'
-                      labelId='client'
-                      onChange={e => {
-                        setSelectedClientId(e.target.value)
-                        field.onChange(e)
+
+            {accountId === 1 && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth error={!!errors.client}>
+                    <InputLabel id='client'>Client</InputLabel>
+                    <Controller
+                      name='client'
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          label='Client'
+                          labelId='client'
+                          onChange={e => {
+                            setSelectedClientId(e.target.value)
+                            field.onChange(e)
+                          }}
+                        >
+                          {companies.map(company => (
+                            <MenuItem key={company.id} value={company.id}>
+                              {company?.attributes?.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      )}
+                    />
+                    <FormHelperText>{errors.client?.message}</FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth error={!!errors.client}>
+                    <Autocomplete
+                      disablePortal
+                      id='invoice-auto'
+                      options={invoices}
+                      getOptionLabel={option => option.invoice_no}
+                      onChange={(event, newValue) => {
+                        setSelectedInvoice(newValue)
                       }}
-                    >
-                      {companies.map(company => (
-                        <MenuItem key={company.id} value={company.id}>
-                          {company?.attributes?.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
-                  )}
-                />
-                <FormHelperText>{errors.client?.message}</FormHelperText>
-              </FormControl>
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <FormControl fullWidth error={!!errors.client}>
-                <Autocomplete
-                  disablePortal
-                  id='invoice-auto'
-                  options={invoices}
-                  getOptionLabel={option => option.invoice_no}
-                  onChange={(event, newValue) => {
-                    setSelectedInvoice(newValue)
-                  }}
-                  renderOption={(props, option) => (
-                    <li {...props}>
-                      {`Inv No. ${option.invoice_no} - ${option.subject} - Total- ${option.total_amount} - ${new Date(
-                        option.date
-                      ).toLocaleDateString()}`}
-                    </li>
-                  )}
-                  renderInput={params => <TextField {...params} label='Invoice No.' />}
-                />
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          {`Inv No. ${option.invoice_no} - ${option.subject} - Total- ${
+                            option.total_amount
+                          } - ${new Date(option.date).toLocaleDateString()}`}
+                        </li>
+                      )}
+                      renderInput={params => <TextField {...params} label='Invoice No.' />}
+                    />
 
-                <FormHelperText>{errors.client?.message}</FormHelperText>
-              </FormControl>
-            </Grid>
+                    <FormHelperText>{errors.client?.message}</FormHelperText>
+                  </FormControl>
+                </Grid>
 
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label='Total Amount'
-                type='number'
-                name='total_amount'
-                value={totalAmount}
-                InputProps={{
-                  readOnly: true
-                }}
-                variant='outlined'
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label='Paid Amount'
-                type='number'
-                name='paid_amount'
-                value={paidAmount}
-                onChange={e => {
-                  handlePaidAmountChange(e)
-                }}
-                variant='outlined'
-                fullWidth
-              />
-            </Grid>
-            <Grid item xs={12} sm={6}>
-              <TextField
-                label='Due Amount'
-                type='number'
-                name='due_amount'
-                value={dueAmount}
-                InputProps={{
-                  readOnly: true
-                }}
-                variant='outlined'
-                fullWidth
-              />
-            </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label='Total Amount'
+                    type='number'
+                    name='total_amount'
+                    value={totalAmount}
+                    InputProps={{
+                      readOnly: true
+                    }}
+                    variant='outlined'
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label='Paid Amount'
+                    type='number'
+                    name='paid_amount'
+                    value={paidAmount}
+                    onChange={e => {
+                      handlePaidAmountChange(e)
+                    }}
+                    variant='outlined'
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label='Due Amount'
+                    type='number'
+                    name='due_amount'
+                    value={dueAmount}
+                    InputProps={{
+                      readOnly: true
+                    }}
+                    variant='outlined'
+                    fullWidth
+                  />
+                </Grid>
+              </>
+            )}
+
+            {accountId === 2 && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth error={!!errors.client}>
+                    <InputLabel id='client'>Client</InputLabel>
+                    <Controller
+                      name='client'
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          label='Client'
+                          labelId='client'
+                          onChange={e => {
+                            setSelectedClientId(e.target.value)
+                            field.onChange(e)
+                          }}
+                        >
+                          {companies.map(company => (
+                            <MenuItem key={company.id} value={company.id}>
+                              {company?.attributes?.name}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      )}
+                    />
+                    <FormHelperText>{errors.client?.message}</FormHelperText>
+                  </FormControl>
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth error={!!errors.client}>
+                    <Autocomplete
+                      disablePortal
+                      id='invoice-auto'
+                      options={quotation}
+                      getOptionLabel={option => option.quotation_no}
+                      onChange={(event, newValue) => {
+                        setSelectedQuotation(newValue)
+                      }}
+                      renderOption={(props, option) => (
+                        <li {...props}>
+                          {`Quot No. ${option.quotation_no} - ${option.subject} - Total- ${
+                            option.client_rate
+                          } - ${new Date(option.date).toLocaleDateString()}`}
+                        </li>
+                      )}
+                      renderInput={params => <TextField {...params} label='Quotation No.' />}
+                    />
+
+                    <FormHelperText>{errors.client?.message}</FormHelperText>
+                  </FormControl>
+                </Grid>
+
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label='Total Amount'
+                    type='number'
+                    name='total_amount'
+                    value={totalAmount}
+                    InputProps={{
+                      readOnly: true
+                    }}
+                    variant='outlined'
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label='Paid Amount'
+                    type='number'
+                    name='paid_amount'
+                    value={paidAmount}
+                    onChange={e => {
+                      handlePaidAmountChange(e)
+                    }}
+                    variant='outlined'
+                    fullWidth
+                  />
+                </Grid>
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label='Due Amount'
+                    type='number'
+                    name='due_amount'
+                    value={dueAmount}
+                    InputProps={{
+                      readOnly: true
+                    }}
+                    variant='outlined'
+                    fullWidth
+                  />
+                </Grid>
+              </>
+            )}
+
+            {accountId === 5 && (
+              <>
+                <Grid item xs={12} sm={6}>
+                  <FormControl fullWidth error={!!errors.employee}>
+                    <InputLabel id='employee'>Employee</InputLabel>
+                    <Controller
+                      name='employee'
+                      control={control}
+                      render={({ field }) => (
+                        <Select {...field} label='Employee' labelId='employee'>
+                          {companyUser?.map((user: any) => (
+                            <MenuItem key={user.id} value={user.id}>
+                              {user?.username}
+                            </MenuItem>
+                          ))}
+                        </Select>
+                      )}
+                    />
+                    <FormHelperText>{errors.client?.message}</FormHelperText>
+                  </FormControl>
+                </Grid>
+
+                {/* <Grid item xs={12} sm={6}>
+                  <TextField
+                    label='Total Amount'
+                    type='number'
+                    name='total_amount'
+                    value={totalAmount}
+                    variant='outlined'
+                    fullWidth
+                  />
+                </Grid> */}
+                <Grid item xs={12} sm={6}>
+                  <TextField
+                    label='Paid Amount'
+                    type='number'
+                    name='paid_amount'
+                    value={paidAmount}
+                    onChange={e => {
+                      handlePaidAmountChange(e)
+                    }}
+                    variant='outlined'
+                    fullWidth
+                  />
+                </Grid>
+                {/* <Grid item xs={12} sm={6}>
+                  <TextField
+                    label='Due Amount'
+                    type='number'
+                    name='due_amount'
+                    value={dueAmount}
+                    InputProps={{
+                      readOnly: true
+                    }}
+                    variant='outlined'
+                    fullWidth
+                  />
+                </Grid> */}
+              </>
+            )}
 
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth error={!!errors.payment_option}>
