@@ -19,15 +19,7 @@ const TableHeader = (props: TableHeaderProps) => {
   const { handleFilter, value } = props
 
   return (
-    <Box sx={{ p: 5, pb: 3, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'space-between' }}>
-      <Button
-        sx={{ mr: 4, mb: 2 }}
-        color='secondary'
-        variant='outlined'
-        startIcon={<Icon icon='mdi:export-variant' fontSize={20} />}
-      >
-        Export
-      </Button>
+    <Box sx={{ p: 5, pb: 3, display: 'flex', flexWrap: 'wrap', alignItems: 'center', justifyContent: 'flex-end' }}>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField
           size='small'
