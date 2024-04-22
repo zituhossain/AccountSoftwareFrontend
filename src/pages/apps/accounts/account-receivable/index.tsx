@@ -224,71 +224,68 @@ const AccountHeadList = () => {
   }, [])
 
   useEffect(() => {
-    // Fetch companies data from API
-    const fetchJournalData = async () => {
+    const fetchData = async () => {
       try {
         const accountHeadResponse = await fetchDataFromApi(
           '/individual-accounts?populate=*&filters[short_name][$eq]=ar'
         )
-        console.log('accountHeadResponse', accountHeadResponse.data)
         const DebitResponse = await fetchDataFromApi(
           `/journals?populate=*&filters[debit_account][id][$eq]=${accountHeadResponse.data[0].id}`
         )
-        const CreditResponse = await fetchDataFromApi(
-          `/journals?populate=*&filters[credit_account][id][$eq]=${accountHeadResponse.data[0].id}`
+
+        // const CreditResponse = await fetchDataFromApi(
+        //   `/journals?populate=*&filters[credit_account][id][$eq]=${accountHeadResponse.data[0].id}`
+        // )
+
+        const debitData = DebitResponse.data
+
+        // const creditData = CreditResponse.data
+
+        // Calculate due amount for each item in debitData
+        const filteredData = await Promise.all(
+          debitData.map(async debit => {
+            const { invoice, client, debit_account, amount } = debit.attributes
+            const dueAmount = await calculateDueAmount(invoice.data.id, client.data.id, debit_account.data.id)
+
+            return { ...debit, dueAmount: amount - dueAmount }
+          })
         )
-        setAccountReceivableDebitData(DebitResponse.data)
-        setAccountReceivableCreditData(CreditResponse.data)
+
+        // Filter out rows where dueAmount > 0
+        const filteredPositiveDueAmountData = filteredData.filter(row => row.dueAmount > 0)
+
+        // Set the filtered data state
+        setAccountReceivableDebitData(filteredPositiveDueAmountData)
       } catch (error) {
-        console.error('Error fetching contact type:', error)
+        console.error('Error fetching data:', error)
       }
     }
-    fetchJournalData()
+
+    fetchData()
   }, [])
 
   // Calculate due amount for each invoice and client combination
-  const calculateDueAmount = (debitData: any[], creditData: any[]) => {
-    const dueAmounts: { [key: string]: number } = {}
+  const calculateDueAmount = async (invoice: any, client: any, accountHead: any) => {
+    try {
+      const CreditResponse = await fetchDataFromApi(
+        `/journals?populate=*&filters[credit_account][id][$eq]=${accountHead}&filters[client][id][$eq]=${client}&filters[invoice][id][$eq]=${invoice}`
+      )
 
-    // Iterate over debit data
-    debitData.forEach(debit => {
-      const { invoice, client, amount } = debit.attributes
+      let dueAmounts = 0
 
-      // If invoice_id and client_id exist, calculate due amount
-      if (invoice && client) {
-        const key = `${invoice}_${client}`
-        dueAmounts[key] = (dueAmounts[key] || 0) + amount
+      if (CreditResponse.data.length > 0) {
+        dueAmounts = CreditResponse.data.map(obj => obj.attributes.amount).reduce((acc, curr) => acc + curr, 0)
       }
-    })
 
-    // Iterate over credit data
-    creditData.forEach(credit => {
-      const { invoice, client, amount } = credit.attributes
+      return dueAmounts
+    } catch (error) {
+      console.error('Error calculating due amount:', error)
 
-      // If invoice_id and client_id exist, subtract credit amount from due amount
-      if (invoice && client) {
-        const key = `${invoice}_${client}`
-        dueAmounts[key] = (dueAmounts[key] || 0) - amount
-      }
-    })
-
-    console.log('dueAmounts', dueAmounts)
-
-    return dueAmounts
+      return 0 // Return 0 if an error occurs
+    }
   }
 
-  // Filter out rows with due amount <= 0
-  const filteredData = accountReceivableDebitData
-    .map(debit => {
-      const { invoice, client } = debit.attributes
-      const key = `${invoice}_${client}`
-      const dueAmount = calculateDueAmount(accountReceivableDebitData, accountReceivableCreditData)[key]
-
-      return { ...debit, dueAmount: dueAmount }
-    })
-    .filter(item => item.dueAmount && item.dueAmount > 0)
-
-  console.log('filteredData', filteredData)
+  console.log('accountReceivableDebitData', accountReceivableDebitData)
 
   return (
     <Grid container spacing={6}>
@@ -302,7 +299,7 @@ const AccountHeadList = () => {
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={filteredData}
+              rows={accountReceivableDebitData}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
