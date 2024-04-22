@@ -15,13 +15,12 @@ import { InvoiceClientType } from 'src/types/apps/invoiceTypes'
 import AddCard from 'src/views/apps/invoice/add/AddCard'
 
 // ** Styled Component
-import { FormControl, InputLabel, MenuItem, Select } from '@mui/material'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
 import CardActions from '@mui/material/CardActions'
 import CardContent from '@mui/material/CardContent'
 import { useRouter } from 'next/router'
-import { Controller, useForm } from 'react-hook-form'
+import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import { AccountHeadType } from 'src/types/apps/userTypes'
@@ -215,11 +214,13 @@ const InvoiceAdd = () => {
   }
 
   const addInvoiceMasterAndDetails = async () => {
+    let invoiceMasterId = null
+
     try {
       const masterData = new FormData()
       masterData.append('data', JSON.stringify(invoiceMasterData))
       const invoiceMasterResponse = await postDataToApiAxios('/invoice-masters', masterData)
-      const invoiceMasterId = invoiceMasterResponse.data.id
+      invoiceMasterId = invoiceMasterResponse.data.id
 
       for (const detail of invoiceDetails) {
         const detailData = new FormData()
@@ -253,8 +254,15 @@ const InvoiceAdd = () => {
       toast.success('Invoice added successfully')
       router.push(`/apps/invoice/preview/${invoiceMasterId}`)
     } catch (error) {
-      console.error('Error adding invoice:', error)
-      toast.error('Something went wrong, please try again.')
+      console.error('Error adding invoice details:', error)
+      toast.error('Something went wrong! Please try again.')
+      const invoiceDetailsResponse = await fetchDataFromApi(
+        `/invoice-details?fields=id&filters[invoice_master][id][$eq]=${invoiceMasterId}`
+      )
+      invoiceDetailsResponse.data.forEach(async (detail: any) => {
+        await deleteDataFromApi(`/invoice-details/${detail.id}`)
+      })
+      await deleteDataFromApi(`/invoice-masters/${invoiceMasterId}`)
     }
   }
 
@@ -360,7 +368,7 @@ const InvoiceAdd = () => {
                   {isEditMode ? 'Update Invoice' : 'Save Invoice'}
                 </Button>
               </CardActions>
-              <Grid container spacing={3}>
+              {/* <Grid container spacing={3}>
                 <Grid item xs={12}>
                   <FormControl fullWidth error={!!errors.account_headers}>
                     <InputLabel id='account_headers'>Account Head</InputLabel>
@@ -408,7 +416,7 @@ const InvoiceAdd = () => {
                     />
                   </FormControl>
                 </Grid>
-              </Grid>
+              </Grid> */}
             </CardContent>
           </Card>
         </Grid>
