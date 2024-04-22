@@ -85,12 +85,7 @@ const AccountHeadList = () => {
   useEffect(() => {
     const fetchTransaction = async () => {
       try {
-        let apiUrl = '/transactions?populate=*'
-        if (value.trim() !== '') {
-          apiUrl += `&filters[invoice_id][invoice_no][$containsi]=${value}`
-        }
-
-        const response = await fetchDataFromApi(apiUrl)
+        const response = await fetchDataFromApi('/transactions?populate=*')
         setTransactionData(response.data)
         console.log('response.data', response.data)
       } catch (error) {
@@ -157,15 +152,16 @@ const AccountHeadList = () => {
         <LinkStyled href={'#'}>{formatDate(row.attributes?.createdAt, 'YYYY-MM-DD')}</LinkStyled>
       )
     },
-    {
-      flex: 0.1,
-      minWidth: 150,
-      field: 'invoice_no',
-      headerName: 'Invoice No.',
-      renderCell: ({ row }: CellType) => (
-        <LinkStyled href={`#`}># {row.attributes?.invoice_id?.data?.attributes?.invoice_no}</LinkStyled>
-      )
-    },
+
+    // {
+    //   flex: 0.1,
+    //   minWidth: 150,
+    //   field: 'invoice_no',
+    //   headerName: 'Invoice No.',
+    //   renderCell: ({ row }: CellType) => (
+    //     <LinkStyled href={`#`}># {row.attributes?.invoice_id?.data?.attributes?.invoice_no}</LinkStyled>
+    //   )
+    // },
     {
       flex: 0.3,
       minWidth: 150,

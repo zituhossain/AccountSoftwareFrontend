@@ -43,7 +43,7 @@ const PositionList = () => {
   const [addUserOpen, setAddUserOpen] = useState<boolean>(false)
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   const [position, setPosition] = useState<UserRoleType[]>([])
-
+  const [filteredPosition, setFilteredPosition] = useState([])
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -51,14 +51,20 @@ const PositionList = () => {
     // Fetch companies data from API
     const fetchPosition = async () => {
       try {
-        const response = await fetchDataFromApi('/organizational-positions')
+        const response = await fetchDataFromApi('/organizational-positions?populate=*')
         setPosition(response.data)
+        setFilteredPosition(response.data)
       } catch (error) {
         console.error('Error fetching position:', error)
       }
     }
     fetchPosition()
   }, [])
+
+  useEffect(() => {
+    const filtered = position.filter(pos => pos.attributes.title.toLowerCase().includes(value.toLowerCase()))
+    setFilteredPosition(filtered)
+  }, [value, position])
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
@@ -172,12 +178,12 @@ const PositionList = () => {
       <Grid container spacing={6}>
         <Grid item xs={12}>
           <Card>
-            <CardHeader title='Search Filters' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
+            <CardHeader title='Position List' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
             <Divider />
             <TableHeader value={value} handleFilter={handleFilter} toggle={toggleAddUserDrawer} />
             <DataGrid
               autoHeight
-              rows={position}
+              rows={filteredPosition}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick

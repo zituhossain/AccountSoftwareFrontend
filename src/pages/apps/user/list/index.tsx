@@ -58,8 +58,8 @@ const UserList = () => {
   const [value, setValue] = useState<string>('')
   const [addUserOpen, setAddUserOpen] = useState<boolean>(false)
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
-  const [user, setUser] = useState<UsersTypeFromStrapi[]>([])
-
+  const [users, setUsers] = useState<UsersTypeFromStrapi[]>([])
+  const [filteredUsers, setFilteredUsers] = useState([])
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -68,13 +68,31 @@ const UserList = () => {
     const fetchCompanies = async () => {
       try {
         const response = await fetchDataFromApi('/users?populate=*')
-        setUser(response)
+        setUsers(response)
       } catch (error) {
         console.error('Error fetching companies:', error)
       }
     }
     fetchCompanies()
   }, [])
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await fetchDataFromApi('/users?populate=*')
+        setUsers(response)
+        setFilteredUsers(response) // Initialize filteredUsers with all users initially
+      } catch (error) {
+        console.error('Error fetching users:', error)
+      }
+    }
+    fetchUsers()
+  }, [])
+
+  useEffect(() => {
+    const filtered = users.filter(user => user.username.toLowerCase().includes(value.toLowerCase()))
+    setFilteredUsers(filtered)
+  }, [value, users])
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
@@ -83,7 +101,7 @@ const UserList = () => {
   const toggleAddUserDrawer = () => setAddUserOpen(!addUserOpen)
 
   const handleEdit = (id: string | number) => {
-    const selectedUser = user.find(item => item.id === id)
+    const selectedUser = users.find(item => item.id === id)
     if (selectedUser) {
       router.push(`/apps/user/add?id=${selectedUser.id}`)
     }
@@ -215,7 +233,7 @@ const UserList = () => {
     if (deleteId !== null) {
       try {
         await deleteDataFromApi(`/users/${deleteId}`)
-        setUser(user.filter(item => item.id !== deleteId))
+        setUsers(users.filter(item => item.id !== deleteId))
         setDialogOpen(false)
         toast.success('User deleted successfully')
       } catch (error) {
@@ -238,12 +256,12 @@ const UserList = () => {
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card>
-          <CardHeader title='Search Filters' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
+          <CardHeader title='Search Users' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
           <Divider />
           <TableHeader value={value} handleFilter={handleFilter} />
           <DataGrid
             autoHeight
-            rows={user}
+            rows={filteredUsers}
             columns={columns}
             checkboxSelection
             disableRowSelectionOnClick
