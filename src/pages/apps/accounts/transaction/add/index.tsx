@@ -40,8 +40,8 @@ const AddTransaction = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
   const [totalAmount, setTotalAmount] = useState(0)
-  const [paidAmount, setPaidAmount] = useState(0)
-  const [totalPaidAmounts, setTotalPaidAmounts] = useState(0)
+  const [paidAmount, setPaidAmount] = useState()
+  const [totalPaidAmounts, setTotalPaidAmounts] = useState()
   const [dueAmount, setDueAmount] = useState(0)
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
   const [accountHeaders, setAccountHeaders] = useState<AccountHeadType[]>([])
@@ -85,9 +85,36 @@ const AddTransaction = () => {
     setImgSrc(null)
   }
 
+  // const handlePaidAmountChange = e => {
+  //   const newPaidAmount = parseFloat(e.target.value)
+  //   setPaidAmount(newPaidAmount)
+  //   if (accountId === 1) {
+  //     const newDueAmount = (selectedInvoice.total_amount || 0) - (totalPaidAmounts + newPaidAmount)
+  //     setDueAmount(newDueAmount)
+  //   } else if (accountId === 2) {
+  //     const newDueAmount = (selectedQuotation.client_rate || 0) - (totalPaidAmounts + newPaidAmount)
+  //     setDueAmount(newDueAmount)
+  //   }
+  // }
+
   const handlePaidAmountChange = e => {
     const newPaidAmount = parseFloat(e.target.value)
+    const maxDueAmount = selectedInvoice
+      ? (selectedInvoice.total_amount || 0) - totalPaidAmounts
+      : selectedQuotation
+      ? (selectedQuotation.client_rate || 0) - totalPaidAmounts
+      : 0
+
+    if (newPaidAmount > maxDueAmount) {
+      alert('Paid amount cannot be more than the due amount.')
+      setPaidAmount(maxDueAmount) // Set paid amount to max possible due amount
+      e.target.value = maxDueAmount // Adjust the field value if needed
+
+      return // Exit the function to avoid further processing
+    }
+
     setPaidAmount(newPaidAmount)
+
     if (accountId === 1) {
       const newDueAmount = (selectedInvoice.total_amount || 0) - (totalPaidAmounts + newPaidAmount)
       setDueAmount(newDueAmount)
