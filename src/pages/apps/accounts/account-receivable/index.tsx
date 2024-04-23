@@ -214,10 +214,6 @@ const AccountHeadList = () => {
   // ** State
   const [value, setValue] = useState<string>('')
   const [accountReceivableDebitData, setAccountReceivableDebitData] = useState<any[]>([])
-  const [accountReceivableCreditData, setAccountReceivableCreditData] = useState<any[]>([])
-
-  console.log('accountReceivableDebitData', accountReceivableDebitData)
-  console.log('accountReceivableCreditData', accountReceivableCreditData)
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
@@ -233,17 +229,11 @@ const AccountHeadList = () => {
           `/journals?populate=*&filters[debit_account][id][$eq]=${accountHeadResponse.data[0].id}`
         )
 
-        // const CreditResponse = await fetchDataFromApi(
-        //   `/journals?populate=*&filters[credit_account][id][$eq]=${accountHeadResponse.data[0].id}`
-        // )
-
         const debitData = DebitResponse.data
-
-        // const creditData = CreditResponse.data
 
         // Calculate due amount for each item in debitData
         const filteredData = await Promise.all(
-          debitData.map(async debit => {
+          debitData.map(async (debit: any) => {
             const { invoice, client, debit_account, amount } = debit.attributes
             const dueAmount = await calculateDueAmount(invoice.data.id, client.data.id, debit_account.data.id)
 

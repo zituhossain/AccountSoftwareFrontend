@@ -34,7 +34,7 @@ const TableHeader = (props: TableHeaderProps) => {
           size='small'
           value={value}
           placeholder='Search By Invoice No'
-          sx={{ mr: 4, mb: 2, maxWidth: '180px' }}
+          sx={{ mr: 4, mb: 2, maxWidth: '250px' }}
           onChange={e => handleFilter(e.target.value)}
         />
         <Button sx={{ mb: 2 }} component={Link} variant='contained' href='/apps/accounts/transaction/add'>

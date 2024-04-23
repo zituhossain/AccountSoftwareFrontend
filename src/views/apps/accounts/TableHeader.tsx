@@ -28,10 +28,10 @@ const TableHeader = (props: TableHeaderProps) => {
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'flex-end'
       }}
     >
-      <Select
+      {/* <Select
         size='small'
         displayEmpty
         defaultValue=''
@@ -43,13 +43,13 @@ const TableHeader = (props: TableHeaderProps) => {
         <MenuItem value='Delete'>Delete</MenuItem>
         <MenuItem value='Edit'>Edit</MenuItem>
         <MenuItem value='Send'>Send</MenuItem>
-      </Select>
+      </Select> */}
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField
           size='small'
           value={value}
-          placeholder='Search Invoice'
-          sx={{ mr: 4, mb: 2, maxWidth: '180px' }}
+          placeholder='Search Account Header'
+          sx={{ mr: 4, mb: 2, maxWidth: '250px' }}
           onChange={e => handleFilter(e.target.value)}
         />
         <Button sx={{ mb: 2 }} component={Link} variant='contained' href='/apps/accounts/account-head/add'>

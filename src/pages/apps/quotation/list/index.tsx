@@ -150,8 +150,8 @@ const Quotation = () => {
           JSON.stringify({
             quotation: id,
             amount: quotationInfo.clientRate,
-            credit_account: purchaseId.data[0].id,
-            debit_account: accountPayableId.data[0].id,
+            credit_account: accountPayableId.data[0].id,
+            debit_account: purchaseId.data[0].id,
             created_user: userData.id,
             company: userResponse.company.id,
             client: quotationInfo.client

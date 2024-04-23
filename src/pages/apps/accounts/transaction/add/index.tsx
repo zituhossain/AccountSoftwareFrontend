@@ -319,11 +319,15 @@ const AddTransaction = () => {
         )
 
         const journalData = new FormData()
-        if (accountHeadResponse.data[0].attributes.account.data.id === 5) {
+        if (
+          accountHeadResponse.data[0].attributes.account.data.id === 5 ||
+          accountHeadResponse.data[0].attributes.account.data.id === 2
+        ) {
           journalData.append(
             'data',
             JSON.stringify({
               invoice: selectedInvoice?.id,
+              quotation: selectedQuotation?.id,
               amount: paidAmount,
               credit_account: accountId,
               debit_account: data.account_header,
@@ -620,29 +624,30 @@ const AddTransaction = () => {
               </>
             )}
 
-            {accountId === 5 && (
-              <>
-                <Grid item xs={12} sm={6}>
-                  <FormControl fullWidth error={!!errors.employee}>
-                    <InputLabel id='employee'>Employee</InputLabel>
-                    <Controller
-                      name='employee'
-                      control={control}
-                      render={({ field }) => (
-                        <Select {...field} label='Employee' labelId='employee'>
-                          {companyUser?.map((user: any) => (
-                            <MenuItem key={user.id} value={user.id}>
-                              {user?.username}
-                            </MenuItem>
-                          ))}
-                        </Select>
-                      )}
-                    />
-                    <FormHelperText>{errors.client?.message}</FormHelperText>
-                  </FormControl>
-                </Grid>
+            {accountId === 5 ||
+              (accountId === 3 && (
+                <>
+                  <Grid item xs={12} sm={6}>
+                    <FormControl fullWidth error={!!errors.employee}>
+                      <InputLabel id='employee'>Employee</InputLabel>
+                      <Controller
+                        name='employee'
+                        control={control}
+                        render={({ field }) => (
+                          <Select {...field} label='Employee' labelId='employee'>
+                            {companyUser?.map((user: any) => (
+                              <MenuItem key={user.id} value={user.id}>
+                                {user?.username}
+                              </MenuItem>
+                            ))}
+                          </Select>
+                        )}
+                      />
+                      <FormHelperText>{errors.client?.message}</FormHelperText>
+                    </FormControl>
+                  </Grid>
 
-                {/* <Grid item xs={12} sm={6}>
+                  {/* <Grid item xs={12} sm={6}>
                   <TextField
                     label='Total Amount'
                     type='number'
@@ -652,20 +657,20 @@ const AddTransaction = () => {
                     fullWidth
                   />
                 </Grid> */}
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    label='Paid Amount'
-                    type='number'
-                    name='paid_amount'
-                    value={paidAmount}
-                    onChange={e => {
-                      handlePaidAmountChange(e)
-                    }}
-                    variant='outlined'
-                    fullWidth
-                  />
-                </Grid>
-                {/* <Grid item xs={12} sm={6}>
+                  <Grid item xs={12} sm={6}>
+                    <TextField
+                      label='Paid Amount'
+                      type='number'
+                      name='paid_amount'
+                      value={paidAmount}
+                      onChange={e => {
+                        handlePaidAmountChange(e)
+                      }}
+                      variant='outlined'
+                      fullWidth
+                    />
+                  </Grid>
+                  {/* <Grid item xs={12} sm={6}>
                   <TextField
                     label='Due Amount'
                     type='number'
@@ -678,8 +683,8 @@ const AddTransaction = () => {
                     fullWidth
                   />
                 </Grid> */}
-              </>
-            )}
+                </>
+              ))}
 
             <Grid item xs={12} sm={6}>
               <FormControl fullWidth error={!!errors.payment_option}>
