@@ -28,28 +28,15 @@ const TableHeader = (props: TableHeaderProps) => {
         display: 'flex',
         flexWrap: 'wrap',
         alignItems: 'center',
-        justifyContent: 'space-between'
+        justifyContent: 'flex-end'
       }}
     >
-      <Select
-        size='small'
-        displayEmpty
-        defaultValue=''
-        sx={{ mr: 4, mb: 2 }}
-        disabled={selectedRows && selectedRows.length === 0}
-        renderValue={selected => (selected.length === 0 ? 'Actions' : selected)}
-      >
-        <MenuItem disabled>Actions</MenuItem>
-        <MenuItem value='Delete'>Delete</MenuItem>
-        <MenuItem value='Edit'>Edit</MenuItem>
-        <MenuItem value='Send'>Send</MenuItem>
-      </Select>
       <Box sx={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center' }}>
         <TextField
           size='small'
           value={value}
-          placeholder='Search Invoice'
-          sx={{ mr: 4, mb: 2, maxWidth: '180px' }}
+          placeholder='Search Contact Type'
+          sx={{ mr: 4, mb: 2, maxWidth: '200px' }}
           onChange={e => handleFilter(e.target.value)}
         />
         <Button sx={{ mb: 2 }} component={Link} variant='contained' href='/apps/company/contact-type/add'>

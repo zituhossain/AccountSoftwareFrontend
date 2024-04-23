@@ -6,7 +6,6 @@ import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
 import Grid from '@mui/material/Grid'
-import MenuItem from '@mui/material/MenuItem'
 import Typography from '@mui/material/Typography'
 import { styled } from '@mui/material/styles'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
@@ -21,14 +20,14 @@ import CustomChip from 'src/@core/components/mui/chip'
 // ** Third Party Components
 
 // ** Types Imports
+import IconButton from '@mui/material/IconButton'
+import Tooltip from '@mui/material/Tooltip'
 import router from 'next/router'
 import toast from 'react-hot-toast'
 import { ThemeColor } from 'src/@core/layouts/types'
 import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
 import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
 import TableHeader from 'src/views/apps/company/business-relation/TableHeader'
-import Tooltip from '@mui/material/Tooltip'
-import IconButton from '@mui/material/IconButton'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -106,6 +105,7 @@ const LinkStyled = styled(Link)(({ theme }) => ({
 const BusinessRelationList = () => {
   // ** State
   const [businessRelation, setBusinessRelation] = useState<BusinessRelation[]>([])
+  const [filteredBusinessRelation, setFilteredBusinessRelation] = useState<BusinessRelation[]>([])
   const [value, setValue] = useState<string>('')
 
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
@@ -116,12 +116,19 @@ const BusinessRelationList = () => {
   }, [])
 
   useEffect(() => {
+    const filtered = businessRelation.filter(business =>
+      business?.attributes?.relation_type?.data?.attributes?.title.toLowerCase().includes(value.toLowerCase())
+    )
+    setFilteredBusinessRelation(filtered)
+  }, [value, businessRelation])
+
+  useEffect(() => {
     // Fetch companies data from API
     const fetchB2B = async () => {
       try {
         const response = await fetchDataFromApi('/b2b-relations?populate=*')
-        console.log('zitu', response.data)
         setBusinessRelation(response.data)
+        setFilteredBusinessRelation(response.data)
       } catch (error) {
         console.error('Error fetching companies:', error)
       }
@@ -247,7 +254,7 @@ const BusinessRelationList = () => {
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={businessRelation}
+              rows={filteredBusinessRelation}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick

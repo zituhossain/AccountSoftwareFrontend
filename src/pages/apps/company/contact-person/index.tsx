@@ -95,6 +95,7 @@ const LinkStyled = styled(Link)(({ theme }) => ({
 const ContactPersonList = () => {
   // ** State
   const [contact, setContact] = useState<ContactPerson[]>([])
+  const [filteredContact, setFilteredContact] = useState<ContactPerson[]>([])
   const [value, setValue] = useState<string>('')
 
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
@@ -105,12 +106,18 @@ const ContactPersonList = () => {
   }, [])
 
   useEffect(() => {
+    const filtered = contact.filter(cont => cont.attributes.name.toLowerCase().includes(value.toLowerCase()))
+    setFilteredContact(filtered)
+  }, [value, contact])
+
+  useEffect(() => {
     // Fetch companies data from API
     const fetchContact = async () => {
       try {
         const response = await fetchDataFromApi('/contact-people?populate=*')
         console.log('contact', response.data)
         setContact(response.data)
+        setFilteredContact(response.data)
       } catch (error) {
         console.error('Error fetching companies:', error)
       }
@@ -333,7 +340,7 @@ const ContactPersonList = () => {
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={contact}
+              rows={filteredContact}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick

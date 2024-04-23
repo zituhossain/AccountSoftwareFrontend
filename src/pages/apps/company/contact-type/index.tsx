@@ -64,6 +64,7 @@ const LinkStyled = styled(Link)(({ theme }) => ({
 const ContactTypeList = () => {
   // ** State
   const [contact, setContact] = useState<ContactType[]>([])
+  const [filteredContact, setFilteredContact] = useState<ContactType[]>([])
   const [value, setValue] = useState<string>('')
 
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
@@ -74,12 +75,16 @@ const ContactTypeList = () => {
   }, [])
 
   useEffect(() => {
-    // Fetch companies data from API
+    const filtered = contact.filter(type => type.attributes.title.toLowerCase().includes(value.toLowerCase()))
+    setFilteredContact(filtered)
+  }, [value, contact])
+
+  useEffect(() => {
     const fetchContact = async () => {
       try {
         const response = await fetchDataFromApi('/contact-types')
-        console.log('zitu', response.data)
         setContact(response.data)
+        setFilteredContact(response.data)
       } catch (error) {
         console.error('Error fetching contact type:', error)
       }
@@ -185,7 +190,7 @@ const ContactTypeList = () => {
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={contact}
+              rows={filteredContact}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick

@@ -71,6 +71,7 @@ const LinkStyled = styled(Link)(({ theme }) => ({
 const CompaniesList = () => {
   // ** State
   const [companies, setCompanies] = useState<CompanyType[]>([])
+  const [filteredCompanies, setFilteredCompanies] = useState<CompanyType[]>([])
   const [value, setValue] = useState<string>('')
 
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
@@ -179,6 +180,11 @@ const CompaniesList = () => {
     }
   ]
 
+  useEffect(() => {
+    const filtered = companies.filter(company => company.attributes.name.toLowerCase().includes(value.toLowerCase()))
+    setFilteredCompanies(filtered)
+  }, [value, companies])
+
   const handleFilter = useCallback((val: string) => {
     setValue(val)
   }, [])
@@ -224,6 +230,7 @@ const CompaniesList = () => {
         const companyResponse = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
 
         setCompanies(companyResponse.data)
+        setFilteredCompanies(companyResponse.data)
       } catch (error) {
         console.error('Error fetching companies:', error)
       }
@@ -240,7 +247,7 @@ const CompaniesList = () => {
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={companies}
+              rows={filteredCompanies}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
