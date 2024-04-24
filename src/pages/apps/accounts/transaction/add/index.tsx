@@ -40,8 +40,8 @@ const AddTransaction = () => {
   const [selectedInvoice, setSelectedInvoice] = useState(null)
   const [selectedQuotation, setSelectedQuotation] = useState(null)
   const [totalAmount, setTotalAmount] = useState(0)
-  const [paidAmount, setPaidAmount] = useState()
-  const [totalPaidAmounts, setTotalPaidAmounts] = useState()
+  const [paidAmount, setPaidAmount] = useState(0)
+  const [totalPaidAmounts, setTotalPaidAmounts] = useState(0)
   const [dueAmount, setDueAmount] = useState(0)
   const [selectedClientId, setSelectedClientId] = useState<number | null>(null)
   const [accountHeaders, setAccountHeaders] = useState<AccountHeadType[]>([])
@@ -227,9 +227,21 @@ const AddTransaction = () => {
     fetchInvoicesByClient()
   }, [selectedClientId, accountId]) // This effect runs whenever selectedClientId changes
 
-  const fetchTotalPaidAmounts = async invoiceId => {
+  const fetchTotalPaidAmountsInvoice = async invoiceId => {
     try {
-      const response = await fetchDataFromApi(`/transactions/sum-paid-amounts/${invoiceId}`)
+      const response = await fetchDataFromApi(`/transactions/sum-paid-amounts-invoice/${invoiceId}`)
+
+      return response.totalPaid || 0
+    } catch (error) {
+      console.error('Failed to fetch total paid amounts:', error)
+
+      return 0
+    }
+  }
+
+  const fetchTotalPaidAmountsQuotation = async quotationId => {
+    try {
+      const response = await fetchDataFromApi(`/transactions/sum-paid-amounts-quotation/${quotationId}`)
 
       return response.totalPaid || 0
     } catch (error) {
@@ -243,7 +255,7 @@ const AddTransaction = () => {
     if (selectedInvoice) {
       setTotalAmount(selectedInvoice.total_amount || 0)
 
-      fetchTotalPaidAmounts(selectedInvoice.id).then(totalPaid => {
+      fetchTotalPaidAmountsInvoice(selectedInvoice.id).then(totalPaid => {
         setTotalPaidAmounts(totalPaid)
         const initialDueAmount = (selectedInvoice.total_amount || 0) - totalPaid
         setDueAmount(initialDueAmount)
@@ -256,7 +268,7 @@ const AddTransaction = () => {
     if (selectedQuotation) {
       setTotalAmount(selectedQuotation.client_rate || 0)
 
-      fetchTotalPaidAmounts(selectedQuotation.id).then(totalPaid => {
+      fetchTotalPaidAmountsQuotation(selectedQuotation.id).then(totalPaid => {
         setTotalPaidAmounts(totalPaid)
         const initialDueAmount = (selectedQuotation.client_rate || 0) - totalPaid
         setDueAmount(initialDueAmount)
