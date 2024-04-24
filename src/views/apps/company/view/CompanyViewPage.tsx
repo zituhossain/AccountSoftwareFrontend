@@ -2,7 +2,6 @@
 import Grid from '@mui/material/Grid'
 
 // ** Types
-import { InvoiceType } from 'src/types/apps/invoiceTypes'
 
 // ** Demo Components Imports
 import CompanyViewLeft from 'src/views/apps/company/view/CompanyViewLeft'

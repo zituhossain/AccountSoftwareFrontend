@@ -31,9 +31,7 @@ const Tab = styled(MuiTab)<TabProps>(({ theme }) => ({
   }
 }))
 
-const UserViewRight = ({ contactPersonData }: Props) => {
-  console.log('contactPersonData=======> Right View', contactPersonData)
-
+const CompanyViewRight = ({ contactPersonData }: Props) => {
   return (
     <TabContext>
       <TabList
@@ -51,4 +49,4 @@ const UserViewRight = ({ contactPersonData }: Props) => {
   )
 }
 
-export default UserViewRight
+export default CompanyViewRight
