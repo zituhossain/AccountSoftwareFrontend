@@ -28,6 +28,7 @@ import TableHeader from 'src/views/apps/quotation/TableHeader'
 import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
 import toast from 'react-hot-toast'
 import router from 'next/router'
+import Box from '@mui/material/Box'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -51,6 +52,7 @@ interface Quotation {
     createdAt: string
     updatedAt: string
     publishedAt: string
+    client?: string
   }
 }
 
@@ -72,6 +74,7 @@ const LinkStyled = styled(Link)(({ theme }) => ({
 const Quotation = () => {
   // ** State
   const [quotation, setQuotation] = useState<Quotation[]>([])
+  const [filteredQuotation, setFilteredQuotation] = useState<Quotation[]>([])
   const [value, setValue] = useState<string>('')
 
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
@@ -82,11 +85,19 @@ const Quotation = () => {
   }, [])
 
   useEffect(() => {
+    const filtered = quotation.filter(quot =>
+      quot.attributes?.client?.data?.attributes?.name.toLowerCase().includes(value.toLowerCase())
+    )
+    setFilteredQuotation(filtered)
+  }, [value, quotation])
+
+  useEffect(() => {
     // Fetch companies data from API
     const fetchQuotaiton = async () => {
       try {
-        const response = await fetchDataFromApi('/quotations')
+        const response = await fetchDataFromApi('/quotations?populate=*')
         setQuotation(response.data)
+        setFilteredQuotation(response.data)
       } catch (error) {
         console.error('Error fetching contact type:', error)
       }
@@ -206,6 +217,32 @@ const Quotation = () => {
     },
     {
       flex: 0.2,
+      field: 'name',
+      minWidth: 200,
+      headerName: 'Client',
+      renderCell: ({ row }: CellType) => {
+        const { name, email } = row.attributes?.client?.data?.attributes
+
+        return (
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <Box sx={{ display: 'flex', flexDirection: 'column' }}>
+              <Typography
+                noWrap
+                variant='body2'
+                sx={{ color: 'text.primary', fontWeight: 500, lineHeight: '22px', letterSpacing: '.1px' }}
+              >
+                {name}
+              </Typography>
+              <Typography noWrap variant='caption'>
+                {email}
+              </Typography>
+            </Box>
+          </Box>
+        )
+      }
+    },
+    {
+      flex: 0.2,
       minWidth: 120,
       field: 'quotation_no',
       headerName: 'Quot No',
@@ -321,7 +358,7 @@ const Quotation = () => {
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={quotation}
+              rows={filteredQuotation}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick

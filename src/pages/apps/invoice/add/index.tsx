@@ -73,13 +73,12 @@ const InvoiceAdd = () => {
     const fetchInitialData = async () => {
       try {
         const userData = JSON.parse(localStorage.getItem('userData') || '{}')
-        const [userResponse, accountHeadersResponse, companyResponse] = await Promise.all([
+        const [userResponse, companyResponse] = await Promise.all([
           fetchDataFromApi(`/users/${userData.id}?populate=company`),
-          fetchDataFromApi('/account-headers'),
           fetchDataFromApi(`/b2b-relations?filters[id][$ne]=${userData.company?.id}?&populate=*`)
         ])
 
-        setAccountHeaders(accountHeadersResponse.data)
+        // setAccountHeaders(accountHeadersResponse.data)
         setClients(companyResponse.data)
 
         // Setting initial invoice master data

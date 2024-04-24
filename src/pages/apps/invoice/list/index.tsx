@@ -94,11 +94,12 @@ const defaultColumns: GridColDef[] = [
     renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
   },
   {
-    flex: 0.25,
+    flex: 0.2,
     field: 'name',
-    minWidth: 300,
+    minWidth: 200,
     headerName: 'Client',
     renderCell: ({ row }: CellType) => {
+      console.log('invrow', row)
       const { name, email } = row.attributes?.client?.data?.attributes
 
       return (
@@ -119,6 +120,13 @@ const defaultColumns: GridColDef[] = [
         </Box>
       )
     }
+  },
+  {
+    flex: 0.1,
+    minWidth: 90,
+    field: 'invoice_no',
+    headerName: 'Inv No.',
+    renderCell: ({ row }: CellType) => <Typography variant='body2'>{`${row?.attributes?.invoice_no || 0}`}</Typography>
   },
   {
     flex: 0.1,
@@ -162,6 +170,7 @@ const InvoiceList = () => {
   const [startDateRange, setStartDateRange] = useState<DateType>(null)
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 10 })
   const [invoice, setInvoice] = useState<any>([])
+  const [filteredInvoice, setFilteredInvoice] = useState<any>([])
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
@@ -239,10 +248,18 @@ const InvoiceList = () => {
   ]
 
   useEffect(() => {
+    const filtered = invoice.filter(inv =>
+      inv.attributes?.client?.data?.attributes?.name.toLowerCase().includes(value.toLowerCase())
+    )
+    setFilteredInvoice(filtered)
+  }, [value, invoice])
+
+  useEffect(() => {
     const fetchInvoice = async () => {
       try {
         const response = await fetchDataFromApi('/invoice-masters?populate=*')
         setInvoice(response.data)
+        setFilteredInvoice(response.data)
       } catch (error) {
         console.error('Error fetching invoice:', error)
       }
@@ -289,7 +306,7 @@ const InvoiceList = () => {
             <CardHeader title='Filters' />
             <CardContent>
               <Grid container spacing={6}>
-                <Grid item xs={12} sm={6}>
+                {/* <Grid item xs={12} sm={6}>
                   <FormControl fullWidth>
                     <InputLabel id='invoice-status-select'>Invoice Status</InputLabel>
 
@@ -310,7 +327,7 @@ const InvoiceList = () => {
                       <MenuItem value='sent'>Sent</MenuItem>
                     </Select>
                   </FormControl>
-                </Grid>
+                </Grid> */}
                 <Grid item xs={12} sm={6}>
                   <DatePicker
                     isClearable
@@ -343,7 +360,7 @@ const InvoiceList = () => {
             <DataGrid
               autoHeight
               pagination
-              rows={invoice}
+              rows={filteredInvoice}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick

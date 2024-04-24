@@ -48,7 +48,7 @@ const TableHeader = (props: TableHeaderProps) => {
         <TextField
           size='small'
           value={value}
-          placeholder='Search By Quotation No'
+          placeholder='Search By Client'
           sx={{ mr: 4, mb: 2, maxWidth: '250px' }}
           onChange={e => handleFilter(e.target.value)}
         />
