@@ -4,10 +4,8 @@ import Link from 'next/link'
 // ** MUI Imports
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
-import Select from '@mui/material/Select'
-import { GridRowId } from '@mui/x-data-grid'
-import MenuItem from '@mui/material/MenuItem'
 import TextField from '@mui/material/TextField'
+import { GridRowId } from '@mui/x-data-grid'
 
 interface TableHeaderProps {
   value: string
@@ -48,7 +46,7 @@ const TableHeader = (props: TableHeaderProps) => {
         <TextField
           size='small'
           value={value}
-          placeholder='Search Journal'
+          placeholder='Search By Client'
           sx={{ mr: 4, mb: 2, maxWidth: '2500px' }}
           onChange={e => handleFilter(e.target.value)}
         />

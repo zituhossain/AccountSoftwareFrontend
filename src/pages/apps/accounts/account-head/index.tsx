@@ -74,27 +74,35 @@ const LinkStyled = styled(Link)(({ theme }) => ({
 const AccountHeadList = () => {
   // ** State
   const [accountHead, setAccountHead] = useState<AccountHead[]>([])
+  const [filteredAccountHead, setFilteredAccountHead] = useState<AccountHead[]>([])
   const [value, setValue] = useState<string>('')
 
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
-
-  const handleFilter = useCallback((val: string) => {
-    setValue(val)
-  }, [])
 
   useEffect(() => {
     // Fetch companies data from API
     const fetchAccountHead = async () => {
       try {
         const response = await fetchDataFromApi('/individual-accounts?populate=*')
-        console.log('zitu=======>', response.data)
         setAccountHead(response.data)
+        setFilteredAccountHead(response.data)
       } catch (error) {
         console.error('Error fetching contact type:', error)
       }
     }
     fetchAccountHead()
+  }, [])
+
+  useEffect(() => {
+    const filtered = accountHead.filter(account =>
+      account.attributes?.account?.data?.attributes?.name.toLowerCase().includes(value.toLowerCase())
+    )
+    setFilteredAccountHead(filtered)
+  }, [value, accountHead])
+
+  const handleFilter = useCallback((val: string) => {
+    setValue(val)
   }, [])
 
   const handleEdit = (id: string | number) => {
@@ -217,7 +225,7 @@ const AccountHeadList = () => {
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={accountHead}
+              rows={filteredAccountHead}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick

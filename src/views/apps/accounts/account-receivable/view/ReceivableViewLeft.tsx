@@ -116,7 +116,7 @@ const ReceivableViewLeft = ({ companyData }: { companyData: any }) => {
                     fontWeight: 600,
                     mb: 4,
                     '& img': {
-                      objectFit: 'content'
+                      objectFit: 'content!important'
                     }
                   }}
                 />

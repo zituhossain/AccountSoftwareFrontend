@@ -433,7 +433,7 @@ const Quotation = () => {
                       <CustomInput
                         dates={dates}
                         setDates={setDates}
-                        label='Invoice Date'
+                        label='Quotation Date'
                         end={endDateRange as number | Date}
                         start={startDateRange as number | Date}
                       />
