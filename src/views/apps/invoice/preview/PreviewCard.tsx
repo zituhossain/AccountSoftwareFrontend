@@ -85,7 +85,7 @@ const PreviewCard = ({ data, invoiceDetailsData }: any) => {
                         <Typography variant='body2'>Date Issued:</Typography>
                       </MUITableCell>
                       <MUITableCell>
-                        <Typography variant='body2'>{formatDate(data.attributes.date, 'YYYY-MM-DD')}</Typography>
+                        <Typography variant='body2'>{formatDate(data.attributes.date, 'DD-MM-YYYY')}</Typography>
                       </MUITableCell>
                     </TableRow>
                   </TableBody>

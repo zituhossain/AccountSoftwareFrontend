@@ -149,19 +149,9 @@ const AccountHeadList = () => {
       field: 'date',
       headerName: 'Date',
       renderCell: ({ row }: CellType) => (
-        <LinkStyled href={'#'}>{formatDate(row.attributes?.createdAt, 'YYYY-MM-DD')}</LinkStyled>
+        <LinkStyled href={'#'}>{formatDate(row.attributes?.createdAt, 'DD-MM-YYYY')}</LinkStyled>
       )
     },
-
-    // {
-    //   flex: 0.1,
-    //   minWidth: 150,
-    //   field: 'invoice_no',
-    //   headerName: 'Invoice No.',
-    //   renderCell: ({ row }: CellType) => (
-    //     <LinkStyled href={`#`}># {row.attributes?.invoice_id?.data?.attributes?.invoice_no}</LinkStyled>
-    //   )
-    // },
     {
       flex: 0.3,
       minWidth: 150,

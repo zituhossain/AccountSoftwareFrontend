@@ -145,7 +145,7 @@ const columns: GridColDef[] = [
     field: 'date',
     headerName: 'Date',
     renderCell: ({ row }: CellType) => (
-      <LinkStyled href={`/companies/${row.id}`}>{formatDate(row.attributes.createdAt)}</LinkStyled>
+      <LinkStyled href='#'>{formatDate(row.attributes.createdAt, 'DD-MM-YYYY')}</LinkStyled>
     )
   },
 
@@ -155,7 +155,7 @@ const columns: GridColDef[] = [
     field: 'client',
     headerName: 'Client',
     renderCell: ({ row }: CellType) => (
-      <LinkStyled href={`/companies/${row.id}`}>{row.attributes?.client?.data?.attributes?.name}</LinkStyled>
+      <LinkStyled href='#'>{row.attributes?.client?.data?.attributes?.name}</LinkStyled>
     )
   },
   {
@@ -164,7 +164,7 @@ const columns: GridColDef[] = [
     field: 'debit_account',
     headerName: 'Account Head',
     renderCell: ({ row }: CellType) => (
-      <LinkStyled href={`/companies/${row.id}`}>{row.attributes?.credit_account?.data?.attributes?.name}</LinkStyled>
+      <LinkStyled href='#'>{row.attributes?.credit_account?.data?.attributes?.name}</LinkStyled>
     )
   },
   {
@@ -172,14 +172,14 @@ const columns: GridColDef[] = [
     minWidth: 200,
     field: 'amount',
     headerName: 'Amount',
-    renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes.amount}</LinkStyled>
+    renderCell: ({ row }: CellType) => <LinkStyled href='#'>{row.attributes.amount}</LinkStyled>
   },
   {
     flex: 0.1,
     minWidth: 200,
     field: 'due_amount',
     headerName: 'Due Amount',
-    renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.dueAmount}</LinkStyled>
+    renderCell: ({ row }: CellType) => <LinkStyled href='#'>{row.dueAmount}</LinkStyled>
   },
 
   // {

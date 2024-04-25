@@ -143,7 +143,9 @@ const JournalList = () => {
       minWidth: 230,
       field: 'createdAt',
       headerName: 'Date',
-      renderCell: ({ row }: CellType) => <LinkStyled href='#'>{formatDate(row.attributes?.createdAt)}</LinkStyled>
+      renderCell: ({ row }: CellType) => (
+        <LinkStyled href='#'>{formatDate(row.attributes?.createdAt, 'DD-MM-YYYY')}</LinkStyled>
+      )
     },
     {
       flex: 0.2,
@@ -151,7 +153,7 @@ const JournalList = () => {
       field: 'debit_account',
       headerName: 'Debit Account',
       renderCell: ({ row }: CellType) => (
-        <LinkStyled href={`/companies/${row.id}`}>{row.attributes?.debit_account?.data?.attributes?.name}</LinkStyled>
+        <LinkStyled href='#'>{row.attributes?.debit_account?.data?.attributes?.name}</LinkStyled>
       )
     },
     {
@@ -160,7 +162,7 @@ const JournalList = () => {
       field: 'credit_account',
       headerName: 'Credit Account',
       renderCell: ({ row }: CellType) => (
-        <LinkStyled href={`/companies/${row.id}`}>{row.attributes?.credit_account?.data?.attributes?.name}</LinkStyled>
+        <LinkStyled href='#'>{row.attributes?.credit_account?.data?.attributes?.name}</LinkStyled>
       )
     },
     {
@@ -168,7 +170,7 @@ const JournalList = () => {
       minWidth: 230,
       field: 'amount',
       headerName: 'Amount',
-      renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes?.amount}</LinkStyled>
+      renderCell: ({ row }: CellType) => <LinkStyled href='#'>{row.attributes?.amount}</LinkStyled>
     },
     {
       flex: 0.1,

@@ -19,23 +19,11 @@ import Icon from 'src/@core/components/icon'
 // ** Custom Components Imports
 import Link from 'next/link'
 
-// ** Third Party Components
-// import axios from 'axios'
-
 // ** Types Imports
 import router from 'next/router'
-import { useDispatch } from 'react-redux'
-import { ThemeColor } from 'src/@core/layouts/types'
-import { AppDispatch } from 'src/store'
 import { fetchDataFromApi } from 'src/utils/api'
 import { formatDate } from 'src/utils/dateUtils'
 import TableHeader from 'src/views/apps/accounts/account-receivable/TableHeader'
-
-// ** Vars
-const companyStatusObj: { [key: string]: ThemeColor } = {
-  true: 'success',
-  false: 'secondary'
-}
 
 interface AccountHeadType {
   id: number
@@ -67,9 +55,6 @@ const LinkStyled = styled(Link)(({ theme }) => ({
 }))
 
 const RowOptions = ({ id }: { id: number | string }) => {
-  // ** Hooks
-  const dispatch = useDispatch<AppDispatch>()
-
   const handleView = () => {
     router.push(`/apps/accounts/account-receivable/view/${id}`)
   }
@@ -109,7 +94,9 @@ const columns: GridColDef[] = [
     minWidth: 200,
     field: 'date',
     headerName: 'Date',
-    renderCell: ({ row }: CellType) => <LinkStyled href='#'>{formatDate(row.attributes.createdAt)}</LinkStyled>
+    renderCell: ({ row }: CellType) => (
+      <LinkStyled href='#'>{formatDate(row.attributes.createdAt, 'DD-MM-YYYY')}</LinkStyled>
+    )
   },
 
   {
