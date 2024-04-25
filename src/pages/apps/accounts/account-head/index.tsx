@@ -88,7 +88,6 @@ const AccountHeadList = () => {
     const fetchAccountHead = async () => {
       try {
         const response = await fetchDataFromApi('/individual-accounts?populate=*')
-        console.log('zitu=======>', response.data)
         setAccountHead(response.data)
       } catch (error) {
         console.error('Error fetching contact type:', error)
