@@ -67,7 +67,7 @@ const InvoiceList = ({ invoiceData }: Props) => {
       headerName: 'Date',
       renderCell: ({ row }: CellType) => (
         <Typography variant='body2'>
-          {formatDate(row.attributes.invoice_master.data.attributes.date, 'YYYY-MM-DD')}
+          {formatDate(row.attributes.invoice_master.data.attributes.date, 'DD-MM-YYYY')}
         </Typography>
       )
     },

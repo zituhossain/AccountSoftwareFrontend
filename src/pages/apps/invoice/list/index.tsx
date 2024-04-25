@@ -9,12 +9,9 @@ import Box from '@mui/material/Box'
 import Card from '@mui/material/Card'
 import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
-import FormControl from '@mui/material/FormControl'
 import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem from '@mui/material/MenuItem'
-import Select, { SelectChangeEvent } from '@mui/material/Select'
+import { SelectChangeEvent } from '@mui/material/Select'
 import TextField from '@mui/material/TextField'
 import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
@@ -38,16 +35,17 @@ import { AppDispatch, RootState } from 'src/store'
 import { DateType } from 'src/types/forms/reactDatepickerTypes'
 
 // ** Utils Import
+import { formatDate } from 'src/utils/dateUtils'
 
 // ** Custom Components Imports
 import TableHeader from 'src/views/apps/invoice/list/TableHeader'
 
 // ** Styled Components
+import router from 'next/router'
 import toast from 'react-hot-toast'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
 import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
-import router from 'next/router'
 
 interface InvoiceStatusObj {
   [key: string]: {
@@ -88,10 +86,26 @@ const defaultColumns: GridColDef[] = [
   {
     sortable: true,
     field: 'slNo',
-    headerName: '#',
+    headerName: '#sl',
     flex: 0,
     editable: false,
     renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
+  },
+  {
+    flex: 0.15,
+    minWidth: 125,
+    field: 'date',
+    headerName: 'Issued Date',
+    renderCell: ({ row }: CellType) => (
+      <Typography variant='body2'>{formatDate(row?.attributes?.date, 'DD-MM-YYYY')}</Typography>
+    )
+  },
+  {
+    flex: 0.1,
+    minWidth: 90,
+    field: 'invoice_no',
+    headerName: 'Inv No.',
+    renderCell: ({ row }: CellType) => <Typography variant='body2'>{`${row?.attributes?.invoice_no || 0}`}</Typography>
   },
   {
     flex: 0.2,
@@ -121,13 +135,7 @@ const defaultColumns: GridColDef[] = [
       )
     }
   },
-  {
-    flex: 0.1,
-    minWidth: 90,
-    field: 'invoice_no',
-    headerName: 'Inv No.',
-    renderCell: ({ row }: CellType) => <Typography variant='body2'>{`${row?.attributes?.invoice_no || 0}`}</Typography>
-  },
+
   {
     flex: 0.1,
     minWidth: 90,
@@ -136,20 +144,13 @@ const defaultColumns: GridColDef[] = [
     renderCell: ({ row }: CellType) => (
       <Typography variant='body2'>{`${row?.attributes?.total_amount || 0}`}</Typography>
     )
-  },
-  {
-    flex: 0.15,
-    minWidth: 125,
-    field: 'issuedDate',
-    headerName: 'Issued Date',
-    renderCell: ({ row }: CellType) => <Typography variant='body2'>{row?.attributes?.date}</Typography>
   }
 ]
 
 /* eslint-disable */
 const CustomInput = forwardRef((props: CustomInputProps, ref) => {
-  const startDate = props.start !== null ? format(props.start, 'MM/dd/yyyy') : ''
-  const endDate = props.end !== null ? ` - ${format(props.end, 'MM/dd/yyyy')}` : null
+  const startDate = props.start !== null ? format(props.start, 'dd/MM/yyyy') : ''
+  const endDate = props.end !== null ? ` - ${format(props.end, 'dd/MM/yyyy')}` : null
 
   const value = `${startDate}${endDate !== null ? endDate : ''}`
   props.start === null && props.dates.length && props.setDates ? props.setDates([]) : null
@@ -194,27 +195,6 @@ const InvoiceList = () => {
     )
   }, [dispatch, statusValue, value, dates])
 
-  const handleFilter = (val: string) => {
-    setValue(val)
-  }
-
-  const handleStatusValue = (e: SelectChangeEvent) => {
-    setStatusValue(e.target.value)
-  }
-
-  const handleOnChangeRange = (dates: any) => {
-    const [start, end] = dates
-    if (start !== null && end !== null) {
-      setDates(dates)
-    }
-    setStartDateRange(start)
-    setEndDateRange(end)
-  }
-
-  const handleEditClick = (id: string | number) => {
-    handleEdit(id)
-  }
-
   const columns: GridColDef[] = [
     ...defaultColumns,
     {
@@ -247,8 +227,49 @@ const InvoiceList = () => {
     }
   ]
 
+  const handleFilter = (val: string) => {
+    setValue(val)
+  }
+
+  const handleStatusValue = (e: SelectChangeEvent) => {
+    setStatusValue(e.target.value)
+  }
+
+  // const handleOnChangeRange = (dates: any) => {
+  //   const [start, end] = dates
+  //   if (start !== null && end !== null) {
+  //     setDates(dates)
+  //   }
+  //   setStartDateRange(start)
+  //   setEndDateRange(end)
+  // }
+
+  const handleOnChangeRange = (dates: any) => {
+    const [start, end] = dates
+
+    // Adjust the end date by adding one day to it
+    const adjustedEndDate = end ? new Date(end.getTime() + 24 * 60 * 60 * 1000) : null
+
+    // Filter invoices based on the selected date range
+    const filteredInvoices = invoice.filter(inv =>
+      inv.attributes?.date && start && adjustedEndDate
+        ? new Date(inv.attributes.date) >= start && new Date(inv.attributes.date) <= adjustedEndDate
+        : true
+    )
+
+    // Update the state with the filtered invoices and the selected date range
+    setFilteredInvoice(filteredInvoices)
+    setDates(dates)
+    setStartDateRange(start)
+    setEndDateRange(end)
+  }
+
+  const handleEditClick = (id: string | number) => {
+    handleEdit(id)
+  }
+
   useEffect(() => {
-    const filtered = invoice.filter(inv =>
+    const filtered = invoice.filter((inv: any) =>
       inv.attributes?.client?.data?.attributes?.name.toLowerCase().includes(value.toLowerCase())
     )
     setFilteredInvoice(filtered)
@@ -303,7 +324,7 @@ const InvoiceList = () => {
       <Grid container spacing={6}>
         <Grid item xs={12}>
           <Card>
-            <CardHeader title='Filters' />
+            <CardHeader title='Filters By Date' />
             <CardContent>
               <Grid container spacing={6}>
                 {/* <Grid item xs={12} sm={6}>

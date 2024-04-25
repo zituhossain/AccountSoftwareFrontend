@@ -19,9 +19,6 @@ import Icon from 'src/@core/components/icon'
 // ** Custom Components Imports
 import Link from 'next/link'
 
-// ** Third Party Components
-// import axios from 'axios'
-
 // ** Types Imports
 import router from 'next/router'
 import toast from 'react-hot-toast'
