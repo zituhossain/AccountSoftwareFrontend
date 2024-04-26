@@ -23,7 +23,7 @@ import Link from 'next/link'
 // import axios from 'axios'
 
 // ** Types Imports
-import { Menu } from '@mui/material'
+import { Menu, Tooltip } from '@mui/material'
 import { useDispatch } from 'react-redux'
 import { ThemeColor } from 'src/@core/layouts/types'
 import { AppDispatch } from 'src/store'
@@ -31,6 +31,8 @@ import { deleteUser } from 'src/store/apps/user'
 import { fetchDataFromApi } from 'src/utils/api'
 import { formatDate } from 'src/utils/dateUtils'
 import TableHeader from 'src/views/apps/accounts/account-payable/TableHeader'
+import { useRouter } from 'next/router'
+import PayablePayment from './payment/PayablePayment'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -67,150 +69,15 @@ const LinkStyled = styled(Link)(({ theme }) => ({
   }
 }))
 
-const RowOptions = ({ id }: { id: number | string }) => {
-  // ** Hooks
-  const dispatch = useDispatch<AppDispatch>()
-
-  // ** State
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null)
-
-  const rowOptionsOpen = Boolean(anchorEl)
-
-  const handleRowOptionsClick = (event: MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget)
-  }
-  const handleRowOptionsClose = () => {
-    setAnchorEl(null)
-  }
-
-  const handleDelete = () => {
-    dispatch(deleteUser(id))
-    handleRowOptionsClose()
-  }
-
-  return (
-    <>
-      <IconButton size='small' onClick={handleRowOptionsClick}>
-        <Icon icon='mdi:dots-vertical' />
-      </IconButton>
-      <Menu
-        keepMounted
-        anchorEl={anchorEl}
-        open={rowOptionsOpen}
-        onClose={handleRowOptionsClose}
-        anchorOrigin={{
-          vertical: 'bottom',
-          horizontal: 'right'
-        }}
-        transformOrigin={{
-          vertical: 'top',
-          horizontal: 'right'
-        }}
-        PaperProps={{ style: { minWidth: '8rem' } }}
-      >
-        <MenuItem
-          component={Link}
-          sx={{ '& svg': { mr: 2 } }}
-          onClick={handleRowOptionsClose}
-          href='/apps/user/view/overview/'
-        >
-          <Icon icon='mdi:eye-outline' fontSize={20} />
-          View
-        </MenuItem>
-        <MenuItem onClick={handleRowOptionsClose} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:pencil-outline' fontSize={20} />
-          Edit
-        </MenuItem>
-        <MenuItem onClick={handleDelete} sx={{ '& svg': { mr: 2 } }}>
-          <Icon icon='mdi:delete-outline' fontSize={20} />
-          Delete
-        </MenuItem>
-      </Menu>
-    </>
-  )
-}
-
-const columns: GridColDef[] = [
-  {
-    sortable: true,
-    field: 'slNo',
-    headerName: '#',
-    flex: 0,
-    editable: false,
-    renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
-  },
-  {
-    flex: 0.1,
-    minWidth: 230,
-    field: 'date',
-    headerName: 'Date',
-    renderCell: ({ row }: CellType) => (
-      <LinkStyled href='#'>{formatDate(row.attributes.createdAt, 'DD-MM-YYYY')}</LinkStyled>
-    )
-  },
-
-  {
-    flex: 0.2,
-    minWidth: 230,
-    field: 'client',
-    headerName: 'Client',
-    renderCell: ({ row }: CellType) => (
-      <LinkStyled href='#'>{row.attributes?.client?.data?.attributes?.name}</LinkStyled>
-    )
-  },
-  {
-    flex: 0.2,
-    minWidth: 230,
-    field: 'debit_account',
-    headerName: 'Account Head',
-    renderCell: ({ row }: CellType) => (
-      <LinkStyled href='#'>{row.attributes?.credit_account?.data?.attributes?.name}</LinkStyled>
-    )
-  },
-  {
-    flex: 0.1,
-    minWidth: 200,
-    field: 'amount',
-    headerName: 'Amount',
-    renderCell: ({ row }: CellType) => <LinkStyled href='#'>{row.attributes.amount}</LinkStyled>
-  },
-  {
-    flex: 0.1,
-    minWidth: 200,
-    field: 'due_amount',
-    headerName: 'Due Amount',
-    renderCell: ({ row }: CellType) => <LinkStyled href='#'>{row.dueAmount}</LinkStyled>
-  },
-
-  // {
-  //   flex: 0.1,
-  //   minWidth: 110,
-  //   field: 'status',
-  //   headerName: 'Status',
-  //   renderCell: ({ row }: CellType) => (
-  //     <CustomChip
-  //       skin='light'
-  //       size='small'
-  //       label={row.attributes.status ? 'Active' : 'Inactive'}
-  //       color={companyStatusObj[row.attributes.status]}
-  //       sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
-  //     />
-  //   )
-  // },
-  {
-    flex: 0.1,
-    minWidth: 90,
-    sortable: false,
-    field: 'actions',
-    headerName: 'Actions',
-    renderCell: ({ row }: CellType) => <RowOptions id={row.id} />
-  }
-]
-
 const AccountPayableList = () => {
+  const router = useRouter()
+
   // ** State
   const [value, setValue] = useState<string>('')
   const [accountReceivableDebitData, setAccountReceivableDebitData] = useState<any[]>([])
+  const [dialogOpen, setDialogOpen] = useState(false)
+  const [paymentId, setPaymentId] = useState<string | number>('')
+  const [dueAmountById, setDueAmountById] = useState<number>(0)
 
   const handleFilter = useCallback((val: string) => {
     setValue(val)
@@ -272,7 +139,113 @@ const AccountPayableList = () => {
     }
   }
 
-  console.log('accountReceivableDebitData', accountReceivableDebitData)
+  const RowOptions = ({ id, dueAmount }: { id: number | string; dueAmount: number }) => {
+    const handleView = () => {
+      router.push(`/apps/accounts/account-payable/view/${id}`)
+    }
+
+    return (
+      <>
+        <Tooltip title='Payable Payment' placement='top'>
+          <IconButton size='small' onClick={() => handlePaymentClick(id, dueAmount)}>
+            <Icon icon='mdi:cash-multiple' />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title='View' placement='top'>
+          <IconButton size='small' onClick={handleView}>
+            <Icon icon='mdi:eye-outline' />
+          </IconButton>
+        </Tooltip>
+      </>
+    )
+  }
+
+  const columns: GridColDef[] = [
+    {
+      sortable: true,
+      field: 'slNo',
+      headerName: '#',
+      flex: 0,
+      editable: false,
+      renderCell: params => params.api.getAllRowIds().indexOf(params.id) + 1
+    },
+    {
+      flex: 0.1,
+      minWidth: 230,
+      field: 'date',
+      headerName: 'Date',
+      renderCell: ({ row }: CellType) => (
+        <LinkStyled href='#'>{formatDate(row.attributes.createdAt, 'DD-MM-YYYY')}</LinkStyled>
+      )
+    },
+
+    {
+      flex: 0.2,
+      minWidth: 230,
+      field: 'client',
+      headerName: 'Client',
+      renderCell: ({ row }: CellType) => (
+        <LinkStyled href='#'>{row.attributes?.client?.data?.attributes?.name}</LinkStyled>
+      )
+    },
+    {
+      flex: 0.2,
+      minWidth: 230,
+      field: 'debit_account',
+      headerName: 'Account Head',
+      renderCell: ({ row }: CellType) => (
+        <LinkStyled href='#'>{row.attributes?.credit_account?.data?.attributes?.name}</LinkStyled>
+      )
+    },
+    {
+      flex: 0.1,
+      minWidth: 200,
+      field: 'amount',
+      headerName: 'Amount',
+      renderCell: ({ row }: CellType) => <LinkStyled href='#'>{row.attributes.amount}</LinkStyled>
+    },
+    {
+      flex: 0.1,
+      minWidth: 200,
+      field: 'due_amount',
+      headerName: 'Due Amount',
+      renderCell: ({ row }: CellType) => <LinkStyled href='#'>{row.dueAmount}</LinkStyled>
+    },
+
+    // {
+    //   flex: 0.1,
+    //   minWidth: 110,
+    //   field: 'status',
+    //   headerName: 'Status',
+    //   renderCell: ({ row }: CellType) => (
+    //     <CustomChip
+    //       skin='light'
+    //       size='small'
+    //       label={row.attributes.status ? 'Active' : 'Inactive'}
+    //       color={companyStatusObj[row.attributes.status]}
+    //       sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
+    //     />
+    //   )
+    // },
+    {
+      flex: 0.1,
+      minWidth: 90,
+      sortable: false,
+      field: 'actions',
+      headerName: 'Actions',
+      renderCell: ({ row }: CellType) => <RowOptions id={row.id} dueAmount={row.dueAmount} />
+    }
+  ]
+
+  const handlePaymentClick = (id: string | number, dueAmount: number) => {
+    setPaymentId(id)
+    setDueAmountById(dueAmount)
+    setDialogOpen(true)
+  }
+
+  const handleDialogClose = () => {
+    setDialogOpen(false)
+  }
 
   return (
     <Grid container spacing={6}>
@@ -296,6 +269,15 @@ const AccountPayableList = () => {
           </CardContent>
         </Card>
       </Grid>
+      {dialogOpen && (
+        <PayablePayment
+          dueAmountById={dueAmountById}
+          open={dialogOpen}
+          onClose={handleDialogClose}
+          paymentId={paymentId}
+          title='Receive Payment'
+        />
+      )}
     </Grid>
   )
 }

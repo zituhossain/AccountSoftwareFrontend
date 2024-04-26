@@ -21,7 +21,6 @@ import Link from 'next/link'
 
 // ** Types Imports
 import router from 'next/router'
-import toast from 'react-hot-toast'
 import { useDispatch } from 'react-redux'
 import { ThemeColor } from 'src/@core/layouts/types'
 import { AppDispatch } from 'src/store'
@@ -29,7 +28,6 @@ import { fetchDataFromApi } from 'src/utils/api'
 import { formatDate } from 'src/utils/dateUtils'
 import TableHeader from 'src/views/apps/accounts/account-receivable/TableHeader'
 import ReceivePayment from './payment/receivePayment'
-import { cloneData } from 'react-chartjs-2/dist/utils'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -66,7 +64,7 @@ const LinkStyled = styled(Link)(({ theme }) => ({
   }
 }))
 
-const AccountHeadList = () => {
+const AccountReceivableList = () => {
   // ** State
   const [value, setValue] = useState<string>('')
   const [accountReceivableDebitData, setAccountReceivableDebitData] = useState<any[]>([])
@@ -112,8 +110,6 @@ const AccountHeadList = () => {
 
     fetchData()
   }, [])
-
-  console.log('accountReceivableDebitData:', accountReceivableDebitData)
 
   // Calculate due amount for each invoice and client combination
   const calculateDueAmount = async (invoice: any, client: any, accountHead: any) => {
@@ -290,4 +286,4 @@ const AccountHeadList = () => {
   )
 }
 
-export default AccountHeadList
+export default AccountReceivableList
