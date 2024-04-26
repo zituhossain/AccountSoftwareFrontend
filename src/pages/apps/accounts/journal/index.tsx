@@ -212,7 +212,6 @@ const JournalList = () => {
       minWidth: 220,
       headerName: 'Client',
       renderCell: ({ row }: CellType) => {
-        console.log('invrow', row)
         const { name, email } = row.attributes?.client?.data?.attributes
 
         return (

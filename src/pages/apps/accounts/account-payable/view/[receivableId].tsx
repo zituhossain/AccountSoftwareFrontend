@@ -1,34 +1,30 @@
 import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import ReceivableViewPage from 'src/views/apps/accounts/account-receivable/view/ReceivableViewPage'
 import { fetchDataFromApi } from 'src/utils/api'
+import PayableViewPage from 'src/views/apps/accounts/account-payable/view/PayableViewPage'
 
 const ReceivableDetails = () => {
   const router = useRouter()
   const { receivableId } = router.query
   const [companyData, setCompanyData] = useState(null)
-  const [invoiceData, setInvoiceData] = useState([])
+  const [quotationData, setQuotationData] = useState([])
   const [transactionData, setTransactionData] = useState([])
 
   useEffect(() => {
     const fetchDetails = async () => {
       try {
         if (receivableId) {
-          const response = await fetchDataFromApi(`/journals/${receivableId}?populate=client,invoice,client.logo`)
+          const response = await fetchDataFromApi(`/journals/${receivableId}?populate=client,quotation,client.logo`)
           setCompanyData(response.data.attributes.client.data)
 
-          console.log('zitu=======>', response.data.attributes.client.data)
-
-          // Invoice Response
-          const invoiceId = response.data.attributes.invoice.data.id
-          const invoiceDetailsResponse = await fetchDataFromApi(
-            `/invoice-details?populate=*&filters[invoice_master][id][$eq]=${invoiceId}`
-          )
-          setInvoiceData(invoiceDetailsResponse.data)
+          // Quotation Response
+          const quotationId = response.data.attributes.quotation.data.id
+          const QuotationDetailsResponse = await fetchDataFromApi(`/quotations/${quotationId}`)
+          setQuotationData(QuotationDetailsResponse.data)
 
           // Transaction Response
           const transactionResponse = await fetchDataFromApi(
-            `/transactions?populate=*&filters[invoice_id][id][$eq]=${invoiceId}`
+            `/transactions?populate=*&filters[quotation][id][$eq]=${quotationId}`
           )
           setTransactionData(transactionResponse.data)
         }
@@ -42,7 +38,7 @@ const ReceivableDetails = () => {
   return (
     <div>
       {companyData ? (
-        <ReceivableViewPage companyData={companyData} invoiceData={invoiceData} transactionData={transactionData} />
+        <PayableViewPage companyData={companyData} quotationData={quotationData} transactionData={transactionData} />
       ) : (
         <p>Loading...</p>
       )}
