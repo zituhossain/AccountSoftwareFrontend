@@ -32,18 +32,17 @@ interface CellType {
 const QuotationList = ({ quotationData }: Props) => {
   // ** State
   const [paginationModel, setPaginationModel] = useState({ page: 0, pageSize: 7 })
+  const [invoiceDetails, setInvoiceDetails] = useState([])
 
-  // const [invoiceDetails, setInvoiceDetails] = useState([])
+  useEffect(() => {
+    const invoices = quotationData.map((quotation: any, index: number) => ({
+      ...quotation,
+      slNo: index + 1
+    }))
+    setInvoiceDetails(invoices)
+  }, [quotationData])
 
-  // useEffect(() => {
-  //   const invoices = quotationData.map((quotation: any, index: number) => ({
-  //     ...quotation,
-  //     slNo: index + 1
-  //   }))
-  //   setInvoiceDetails(invoices)
-  // }, [quotationData])
-
-  console.log('quotationData Table', quotationData)
+  console.log('quotationData', quotationData)
 
   const columns: GridColDef[] = [
     // {
@@ -67,44 +66,38 @@ const QuotationList = ({ quotationData }: Props) => {
       field: 'date',
       headerName: 'Date',
       renderCell: ({ row }: CellType) => (
-        <Typography variant='body2'>
-          {formatDate(row.attributes.invoice_master.data.attributes.date, 'DD-MM-YYYY')}
-        </Typography>
+        <Typography variant='body2'>{formatDate(row.attributes.date, 'DD-MM-YYYY')}</Typography>
       )
+    },
+    {
+      flex: 0.25,
+      minWidth: 50,
+      field: 'client_rate',
+      headerName: 'Client Rate',
+      renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes?.client_rate || null}</Typography>
+    },
+    {
+      flex: 0.25,
+      minWidth: 50,
+      field: 'our_rate',
+      headerName: 'Our Rate',
+      renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes?.our_rate || null}</Typography>
+    },
+    {
+      flex: 0.25,
+      minWidth: 50,
+      field: 'no_of_items',
+      headerName: 'Items',
+      renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes?.no_of_items || null}</Typography>
+    },
+    {
+      flex: 0.25,
+      minWidth: 50,
+      field: 'overweight',
+      headerName: 'Overweight',
+      renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes?.overweight || 0}</Typography>
     }
 
-    // {
-    //   flex: 0.25,
-    //   minWidth: 50,
-    //   field: 'driver_name',
-    //   headerName: 'Driver Name',
-    //   renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes?.driver_name || null}</Typography>
-    // },
-    // {
-    //   flex: 0.25,
-    //   minWidth: 50,
-    //   field: 'vehicle_number',
-    //   headerName: 'Vehicle No.',
-    //   renderCell: ({ row }: CellType) => (
-    //     <Typography variant='body2'>{row.attributes?.vehicle_number || null}</Typography>
-    //   )
-    // },
-    // {
-    //   flex: 0.25,
-    //   minWidth: 50,
-    //   field: 'container_number',
-    //   headerName: 'Container No.',
-    //   renderCell: ({ row }: CellType) => (
-    //     <Typography variant='body2'>{row.attributes?.container_number || null}</Typography>
-    //   )
-    // },
-    // {
-    //   flex: 0.25,
-    //   minWidth: 50,
-    //   field: 'rate',
-    //   headerName: 'Rate',
-    //   renderCell: ({ row }: CellType) => <Typography variant='body2'>{row.attributes?.rate || 0}</Typography>
-    // },
     // {
     //   flex: 0.25,
     //   minWidth: 50,
@@ -121,7 +114,7 @@ const QuotationList = ({ quotationData }: Props) => {
         <DataGrid
           autoHeight
           columns={columns}
-          rows={quotationData}
+          rows={invoiceDetails}
           disableRowSelectionOnClick
           pageSizeOptions={[7, 10, 25, 50]}
           paginationModel={paginationModel}

@@ -20,7 +20,9 @@ const ReceivableDetails = () => {
           // Quotation Response
           const quotationId = response.data.attributes.quotation.data.id
           const QuotationDetailsResponse = await fetchDataFromApi(`/quotations/${quotationId}`)
-          setQuotationData(QuotationDetailsResponse.data)
+          setQuotationData([QuotationDetailsResponse.data])
+
+          console.log('QuotationDetailsResponse', [QuotationDetailsResponse.data])
 
           // Transaction Response
           const transactionResponse = await fetchDataFromApi(
