@@ -116,7 +116,7 @@ const PayableViewLeft = ({ companyData }: { companyData: any }) => {
                     fontWeight: 600,
                     mb: 4,
                     '& img': {
-                      objectFit: 'content!important'
+                      objectFit: 'none!important'
                     }
                   }}
                 />
