@@ -95,6 +95,20 @@ const navigation = (): VerticalNavItemsType => {
           path: '/apps/invoice/list'
         }
       ]
+    },
+    {
+      title: 'Reports',
+      icon: 'mdi:file-document-outline',
+      children: [
+        {
+          title: 'Balance Sheet',
+          path: '/apps/reports/balance-sheet'
+        },
+        {
+          title: 'Income Statement',
+          path: '/apps/reports/income-statement'
+        }
+      ]
     }
 
     // {
