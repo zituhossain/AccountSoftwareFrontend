@@ -17,7 +17,7 @@ import Icon from 'src/@core/components/icon'
 import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Types Imports
-import { UserRoleType } from 'src/types/apps/userTypes'
+import { UserRoleType } from 'src/types/apps/allTypes'
 
 // ** Custom Table Components Imports
 import Tooltip from '@mui/material/Tooltip'

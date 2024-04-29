@@ -56,20 +56,18 @@ export type UserPositionType = {
 
 export type CompanyType = {
   id?: number
-  attributes: {
-    name: string
-    address: string
-    email: string
-    code: string
-    phone: string
-    legal_information: string
-    website: string
-    logo?: string
-    status: boolean
-    createdAt?: string
-    updatedAt?: string
-    publishedAt?: string
-  }
+  name: string
+  address: string
+  email: string
+  code: string
+  phone: string
+  legal_information: string
+  website: string
+  logo?: string
+  status: boolean
+  createdAt?: string
+  updatedAt?: string
+  publishedAt?: string
 }
 
 export type ContactPersonType = {

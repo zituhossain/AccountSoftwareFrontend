@@ -21,7 +21,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import Icon from 'src/@core/components/icon'
 import authConfig from 'src/configs/auth'
 import { AppDispatch, RootState } from 'src/store'
-import { UserPositionType } from 'src/types/apps/userTypes'
+import { UserPositionType } from 'src/types/apps/allTypes'
 import { fetchDataFromApi, postDataToApi, storedToken } from 'src/utils/api'
 import * as yup from 'yup'
 

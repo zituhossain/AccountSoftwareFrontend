@@ -16,7 +16,7 @@ import LinearProgress from '@mui/material/LinearProgress'
 import axios from 'axios'
 
 // ** Type Imports
-import { ProjectListDataType } from 'src/types/apps/userTypes'
+import { ProjectListDataType } from 'src/types/apps/allTypes'
 
 interface CellType {
   row: ProjectListDataType

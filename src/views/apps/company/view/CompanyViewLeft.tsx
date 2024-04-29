@@ -22,7 +22,7 @@ import UserSuspendDialog from 'src/views/apps/user/view/UserSuspendDialog'
 
 // ** Types
 import { ThemeColor } from 'src/@core/layouts/types'
-import { UsersType } from 'src/types/apps/userTypes'
+import { UsersType } from 'src/types/apps/allTypes'
 
 // ** Utils Import
 import router from 'next/router'
@@ -78,8 +78,6 @@ const Sub = styled('sub')({
 })
 
 const CompanyViewLeft = ({ companyData }: { companyData: any }) => {
-  console.log('companyData===', companyData)
-
   // ** States
   const [suspendDialogOpen, setSuspendDialogOpen] = useState<boolean>(false)
   const [subscriptionDialogOpen, setSubscriptionDialogOpen] = useState<boolean>(false)
@@ -105,7 +103,15 @@ const CompanyViewLeft = ({ companyData }: { companyData: any }) => {
                   src={imageUrl}
                   variant='rounded'
                   alt={name}
-                  sx={{ width: 250, height: 250, fontWeight: 600, mb: 4 }}
+                  sx={{
+                    width: 250,
+                    height: 250,
+                    fontWeight: 600,
+                    mb: 4,
+                    '& img': {
+                      objectFit: 'none!important'
+                    }
+                  }}
                 />
               ) : (
                 <CustomAvatar

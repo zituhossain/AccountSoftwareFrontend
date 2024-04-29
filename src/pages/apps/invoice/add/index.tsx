@@ -23,7 +23,7 @@ import { useRouter } from 'next/router'
 import { useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
-import { AccountHeadType } from 'src/types/apps/userTypes'
+import { AccountHeadType } from 'src/types/apps/allTypes'
 import { deleteDataFromApi, fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
 
 const InvoiceAdd = () => {

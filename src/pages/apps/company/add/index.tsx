@@ -1,5 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup'
-import { FormControlLabel, Switch } from '@mui/material'
+import { FormControlLabel, InputAdornment, Switch } from '@mui/material'
 import Box from '@mui/material/Box'
 import Button from '@mui/material/Button'
 import Card from '@mui/material/Card'
@@ -14,7 +14,7 @@ import { useRouter } from 'next/router'
 import { FormEventHandler, useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { CompanyType } from 'src/types/apps/userTypes'
+import { CompanyType } from 'src/types/apps/allTypes'
 import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
 import { STRAPI_URL } from 'src/utils/urls'
 import * as yup from 'yup'
@@ -97,8 +97,11 @@ const AddCompany = () => {
   }, [id, reset])
 
   const onSubmit = async (data: CompanyType) => {
+    const phone = data.phone.startsWith('88') ? `+${data.phone}` : `+88${data.phone}`
+
     const formData = new FormData()
-    formData.append('data', JSON.stringify(data))
+    formData.append('data', JSON.stringify({ ...data, phone }))
+
     if (logo) {
       formData.append('files.logo', logo)
     }
@@ -203,7 +206,10 @@ const AddCompany = () => {
                     {...field}
                     fullWidth
                     label='Phone No.'
-                    placeholder='+1-123-456-8790'
+                    placeholder='01734567898'
+                    InputProps={{
+                      startAdornment: <InputAdornment position='start'>+88</InputAdornment>
+                    }}
                     error={!!errors.phone}
                     helperText={errors.phone?.message}
                   />

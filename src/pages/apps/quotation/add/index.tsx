@@ -18,7 +18,7 @@ import AddCard from 'src/views/apps/quotation/add/AddCard'
 import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
-import { CompanyType, QuotationType } from 'src/types/apps/userTypes'
+import { CompanyType, QuotationType } from 'src/types/apps/allTypes'
 import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
 
 import { yupResolver } from '@hookform/resolvers/yup'

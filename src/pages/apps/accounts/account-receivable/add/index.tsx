@@ -13,7 +13,7 @@ import { useRouter } from 'next/navigation'
 import * as yup from 'yup'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { AccountHeadType } from 'src/types/apps/userTypes'
+import { AccountHeadType } from 'src/types/apps/allTypes'
 import { API_URL } from 'src/utils/urls'
 import { FormEventHandler } from 'react'
 

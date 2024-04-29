@@ -15,7 +15,7 @@ import { useRouter } from 'next/router'
 import { FormEventHandler, useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
-import { B2BRelationType, BusinessRelationType, CompanyType } from 'src/types/apps/userTypes'
+import { B2BRelationType, BusinessRelationType, CompanyType } from 'src/types/apps/allTypes'
 import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
 import * as yup from 'yup'
 

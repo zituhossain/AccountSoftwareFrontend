@@ -22,7 +22,7 @@ import UserSuspendDialog from 'src/views/apps/user/view/UserSuspendDialog'
 
 // ** Types
 import { ThemeColor } from 'src/@core/layouts/types'
-import { UsersType } from 'src/types/apps/userTypes'
+import { UsersType } from 'src/types/apps/allTypes'
 
 // ** Utils Import
 import router from 'next/router'

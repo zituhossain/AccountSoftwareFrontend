@@ -13,7 +13,7 @@ import { FormEventHandler, useEffect, useState } from 'react'
 import { Controller, useForm } from 'react-hook-form'
 import toast from 'react-hot-toast'
 import authConfig from 'src/configs/auth'
-import { UserPositionType } from 'src/types/apps/userTypes'
+import { UserPositionType } from 'src/types/apps/allTypes'
 import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
 import * as yup from 'yup'
 

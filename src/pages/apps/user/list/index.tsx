@@ -15,7 +15,7 @@ import Icon from 'src/@core/components/icon'
 
 // ** Custom Components Imports
 import CustomChip from 'src/@core/components/mui/chip'
-import { UsersTypeFromStrapi } from 'src/types/apps/userTypes'
+import { UsersTypeFromStrapi } from 'src/types/apps/allTypes'
 
 // ** Custom Table Components Imports
 import router, { useRouter } from 'next/router'
