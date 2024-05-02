@@ -1,123 +1,100 @@
-import { useEffect, useState } from 'react'
-
-// MUI Imports
-import Card from '@mui/material/Card'
-import Grid from '@mui/material/Grid'
-import { styled } from '@mui/material/styles'
-import TableHeader from 'src/views/apps/accounts/TableHeader'
-import { DataGrid } from '@mui/x-data-grid'
-
-// ** Custom Components Imports
-
-// ** Vars
-const staticIncomeStatementData = [
-  {
-    id: 'Service Revenue',
-    details: 'Service Revenue',
-    amountTk: 13620
-  },
-  {
-    id: 'Add: Service provided but unbilled',
-    details: 'Add: Service provided but unbilled',
-    amountTk: 0
-  },
-  {
-    id: 'Supplies Expense',
-    details: 'Supplies Expense',
-    amountTk: 1050
-  },
-  {
-    id: 'Less: Supplies on hand at March 31, 2022',
-    details: 'Less: Supplies on hand at March 31, 2022',
-    amountTk: -750
-  },
-  {
-    id: 'Insurance Expense (150×3)',
-    details: 'Insurance Expense (150×3)',
-    amountTk: 300
-  },
-  {
-    id: 'Depreciation Expense',
-    details: 'Depreciation Expense',
-    amountTk: 0
-  },
-  {
-    id: 'Salaries Expense',
-    details: 'Salaries Expense',
-    amountTk: 0
-  },
-  {
-    id: 'Travel Expense',
-    details: 'Travel Expense',
-    amountTk: 2200
-  },
-  {
-    id: 'Rent Expense',
-    details: 'Rent Expense',
-    amountTk: 1200
-  },
-  {
-    id: 'Interest Expense',
-    details: 'Interest Expense',
-    amountTk: 0
-  },
-  {
-    id: 'Miscellaneous Expense',
-    details: 'Miscellaneous Expense',
-    amountTk: 300
-  },
-  {
-    id: 'Net Income',
-    details: 'Net Income',
-    amountTk: 7920
-  }
-]
-
-const LinkStyled = styled('a')(({ theme }) => ({
-  fontWeight: 600,
-  fontSize: '1rem',
-  cursor: 'pointer',
-  textDecoration: 'none',
-  color: theme.palette.text.secondary,
-  '&:hover': {
-    color: theme.palette.primary.main
-  }
-}))
+import React, { useEffect, useState } from 'react'
+import { Card, Grid, Typography } from '@mui/material'
+import { DataGrid, GridColDef } from '@mui/x-data-grid'
+import TableHeader from 'src/views/apps/accounts/TableHeader' // Verify this path is correct
+import { fetchDataFromApi } from 'src/utils/api' // Ensure this utility handles API calls properly
 
 const IncomeStatement = () => {
-  // ** State
-  const [value, setValue] = useState('')
-
-  const handleFilter = (val: string) => {
-    setValue(val)
-  }
+  const [data, setData] = useState([])
 
   useEffect(() => {
-    // You can add any additional side effects here
+    const fetchData = async () => {
+      try {
+        const revenuesResponse = await fetchDataFromApi('/revenues?populate=*')
+        const expensesResponse = await fetchDataFromApi('/expenses?populate=*')
+
+        const revenues = revenuesResponse.data.map((item, index) => ({
+          id: `revenue_${index}`,
+          details: item.attributes.title,
+          amount1: null,
+          amount2: item.attributes.amount,
+          isHeading: false
+        }))
+
+        const expenses = expensesResponse.data.map((item, index) => ({
+          id: `expense_${index}`,
+          details: item.attributes.title,
+          amount1: item.attributes.amount,
+          amount2: null,
+          isHeading: false
+        }))
+
+        const totalRevenue = revenues.reduce((acc, cur) => acc + (cur.amount2 || 0), 0)
+        const totalExpenses = expenses.reduce((acc, cur) => acc + (cur.amount1 || 0), 0)
+        const netIncome = totalRevenue - totalExpenses
+
+        setData([
+          { id: 'revenue_heading', details: 'Revenues:', amount1: null, amount2: null, isHeading: true },
+          ...revenues,
+          { id: 'expense_heading', details: 'Expenses:', amount1: null, amount2: null, isHeading: true },
+          ...expenses,
+          { id: 'totalRevenue', details: 'Total Revenues', amount1: null, amount2: null, total: totalRevenue },
+          { id: 'totalExpenses', details: 'Total Expenses', amount1: null, amount2: null, total: `(${totalExpenses})` },
+          { id: 'Net Income', details: 'Net Income', amount1: null, amount2: null, total: netIncome }
+        ])
+      } catch (error) {
+        console.error('Error fetching data:', error)
+
+        // Handle errors appropriately (e.g., show error message to user)
+      }
+    }
+
+    fetchData()
   }, [])
 
-  const columns = [
-    { field: 'id', headerName: 'Details', width: 200 },
-    { field: 'details', headerName: 'Amount (Tk.)', width: 150 },
-    { field: 'amountTk', headerName: 'Amount (Tk.)', type: 'number', width: 150 }
+  const columns: GridColDef[] = [
+    { field: 'details', headerName: 'Details', width: 250 },
+    { field: 'amount1', headerName: 'Expense (Tk.)', width: 130, type: 'number', align: 'right', headerAlign: 'right' },
+    { field: 'amount2', headerName: 'Revenue (Tk.)', width: 130, type: 'number', align: 'right', headerAlign: 'right' },
+    { field: 'total', headerName: 'Total (Tk.)', width: 130, type: 'number', align: 'right', headerAlign: 'right' }
   ]
 
-  const rows = staticIncomeStatementData.map(item => ({
-    ...item
-  }))
+  const renderDetailsCell = params => {
+    if (params.row.isHeading) {
+      return (
+        <Typography variant='h6' style={{ fontWeight: 'bold' }}>
+          {params.value}
+        </Typography>
+      )
+    }
+
+    return params.value
+  }
 
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card>
-          <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
+          <Typography variant='h6' component='div' sx={{ p: 2 }}>
+            Income Statement
+          </Typography>
+          <TableHeader selectedRows={[]} />
           <DataGrid
             autoHeight
-            rows={rows}
-            columns={columns}
-            disableRowSelectionOnClick
-            pageSizeOptions={[10, 25, 50]}
-            sx={{ '& .MuiDataGrid-columnHeaders': { borderRadius: 0 } }}
+            rows={data}
+            columns={columns.map(column => ({
+              ...column,
+              renderCell: renderDetailsCell
+            }))}
+            disableSelectionOnClick
+            pageSize={10}
+            sx={{
+              '& .MuiDataGrid-columnHeaders': { borderRadius: 0 },
+              '& .MuiDataGrid-row': {
+                '&:nth-of-type(even)': { backgroundColor: 'rgba(235, 235, 235, .7)' },
+                '&:nth-of-type(odd)': { backgroundColor: 'rgba(250, 250, 250, .7)' }
+              }
+            }}
           />
         </Card>
       </Grid>
