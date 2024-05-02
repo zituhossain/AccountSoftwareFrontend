@@ -109,6 +109,16 @@ const navigation = (): VerticalNavItemsType => {
           path: '/apps/reports/income-statement'
         }
       ]
+    },
+    {
+      title: 'Meeting',
+      icon: 'mdi:account-outline',
+      children: [
+        {
+          title: 'List',
+          path: '/apps/meeting'
+        }
+      ]
     }
 
     // {

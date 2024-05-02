@@ -7,7 +7,6 @@ import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
 import Grid from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
-import Tooltip from '@mui/material/Tooltip'
 import Typography from '@mui/material/Typography'
 import { styled } from '@mui/material/styles'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
@@ -17,18 +16,18 @@ import Icon from 'src/@core/components/icon'
 
 // ** Custom Components Imports
 import Link from 'next/link'
-import CustomChip from 'src/@core/components/mui/chip'
 
 // ** Third Party Components
-// import axios from 'axios'
+import { formatDate } from 'src/utils/dateUtils'
 
 // ** Types Imports
+import Tooltip from '@mui/material/Tooltip'
 import router from 'next/router'
 import toast from 'react-hot-toast'
 import { ThemeColor } from 'src/@core/layouts/types'
 import ConfirmDialog from 'src/pages/reuseableComponent/deleteDialouge'
 import { deleteDataFromApi, fetchDataFromApi } from 'src/utils/api'
-import TableHeader from 'src/views/apps/company/list/TableHeader'
+import TableHeader from 'src/views/apps/meeting/list/TableHeader'
 
 // ** Vars
 const companyStatusObj: { [key: string]: ThemeColor } = {
@@ -36,25 +35,22 @@ const companyStatusObj: { [key: string]: ThemeColor } = {
   false: 'secondary'
 }
 
-interface CompanyType {
+interface Meeting {
   id: number
   attributes: {
-    name: string
-    address: string
-    email: string
-    code: string
-    phone: string
-    status: boolean
+    title: string
+    meeting_link: string
+    description: string
+    created_user: number
+    date: string
     createdAt: string
     updatedAt: string
     publishedAt: string
-    avatar: string
-    avatarColor?: ThemeColor
   }
 }
 
 interface CellType {
-  row: CompanyType
+  row: Meeting
 }
 
 const LinkStyled = styled(Link)(({ theme }) => ({
@@ -68,20 +64,51 @@ const LinkStyled = styled(Link)(({ theme }) => ({
   }
 }))
 
-const CompaniesList = () => {
+const MeetingList = () => {
   // ** State
-  const [companies, setCompanies] = useState<CompanyType[]>([])
-  const [filteredCompanies, setFilteredCompanies] = useState<CompanyType[]>([])
+  const [contact, setContact] = useState<Meeting[]>([])
+  const [filteredContact, setFilteredContact] = useState<Meeting[]>([])
   const [value, setValue] = useState<string>('')
 
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
+  const handleFilter = useCallback((val: string) => {
+    setValue(val)
+  }, [])
+
+  useEffect(() => {
+    const filtered = contact.filter(cont => cont.attributes.title.toLowerCase().includes(value.toLowerCase()))
+    setFilteredContact(filtered)
+  }, [value, contact])
+
+  useEffect(() => {
+    // Fetch companies data from API
+    const fetchContact = async () => {
+      try {
+        const response = await fetchDataFromApi('/meetings?populate=*')
+        console.log('contact', response.data)
+        setContact(response.data)
+        setFilteredContact(response.data)
+      } catch (error) {
+        console.error('Error fetching companies:', error)
+      }
+    }
+    fetchContact()
+  }, [])
+
+  const handleEdit = (id: string | number) => {
+    // Find the contact type by id
+    const selectedContact = contact.find(item => item.id === id)
+    if (selectedContact) {
+      router.push(`/apps/meeting/add?id=${selectedContact.id}`)
+    }
+  }
+
   const RowOptions = ({ id }: { id: number | string }) => {
     const handleEditClick = (id: string | number) => {
       handleEdit(id)
     }
-
     const handleView = () => {
       router.push(`/apps/company/view/${id}`)
     }
@@ -106,6 +133,7 @@ const CompaniesList = () => {
       </>
     )
   }
+
   const columns: GridColDef[] = [
     {
       sortable: true,
@@ -117,59 +145,32 @@ const CompaniesList = () => {
     },
     {
       flex: 0.2,
+      minWidth: 150,
+      field: 'date',
+      headerName: 'Date & Time',
+      renderCell: ({ row }: CellType) => (
+        <LinkStyled href={'#'}>{formatDate(row.attributes?.date, 'DD-MM-YYYY hh:mm a')}</LinkStyled>
+      )
+    },
+    {
+      flex: 0.2,
       minWidth: 230,
-      field: 'name',
-      headerName: 'Company Name',
-      renderCell: ({ row }: CellType) => <LinkStyled href={`#`}>{row.attributes.name}</LinkStyled>
+      field: 'title',
+      headerName: 'Meeting Title',
+      renderCell: ({ row }: CellType) => <LinkStyled href={`/companies/${row.id}`}>{row.attributes.title}</LinkStyled>
     },
     {
       flex: 0.2,
       minWidth: 250,
-      field: 'email',
-      headerName: 'Email',
+      field: 'meeting_link',
+      headerName: 'Meeting Link',
       renderCell: ({ row }: CellType) => (
         <Typography noWrap variant='body2'>
-          {row.attributes.email}
+          {row.attributes.meeting_link}
         </Typography>
       )
     },
-    {
-      flex: 0.15,
-      field: 'code',
-      minWidth: 150,
-      headerName: 'Code',
-      renderCell: ({ row }: CellType) => (
-        <Typography noWrap variant='body2'>
-          {row.attributes.code}
-        </Typography>
-      )
-    },
-    {
-      flex: 0.15,
-      minWidth: 120,
-      headerName: 'Phone',
-      field: 'phone',
-      renderCell: ({ row }: CellType) => (
-        <Typography variant='subtitle1' noWrap>
-          {row.attributes.phone}
-        </Typography>
-      )
-    },
-    {
-      flex: 0.1,
-      minWidth: 110,
-      field: 'status',
-      headerName: 'Status',
-      renderCell: ({ row }: CellType) => (
-        <CustomChip
-          skin='light'
-          size='small'
-          label={row.attributes.status ? 'Active' : 'Inactive'}
-          color={companyStatusObj[row.attributes.status.toString()]}
-          sx={{ textTransform: 'capitalize', '& .MuiChip-label': { lineHeight: '18px' } }}
-        />
-      )
-    },
+
     {
       flex: 0.1,
       minWidth: 90,
@@ -180,33 +181,16 @@ const CompaniesList = () => {
     }
   ]
 
-  useEffect(() => {
-    const filtered = companies.filter(company => company.attributes.name.toLowerCase().includes(value.toLowerCase()))
-    setFilteredCompanies(filtered)
-  }, [value, companies])
-
-  const handleFilter = useCallback((val: string) => {
-    setValue(val)
-  }, [])
-
-  const handleEdit = (id: string | number) => {
-    const selectedCompany = companies.find(item => item.id === id)
-    console.log('selectedCompany', selectedCompany)
-    if (selectedCompany) {
-      router.push(`/apps/company/add?id=${selectedCompany.id}`)
-    }
-  }
-
   const handleDeleteConfirm = async () => {
     if (deleteId !== null) {
       try {
-        await deleteDataFromApi(`/companies/${deleteId}`)
-        setCompanies(companies.filter(item => item.id !== deleteId))
+        await deleteDataFromApi(`/meetings/${deleteId}`)
+        setContact(contact.filter(item => item.id !== deleteId))
         setDialogOpen(false)
-        toast.success('Company deleted successfully')
+        toast.success('Meeting deleted successfully')
       } catch (error) {
-        console.error('Error deleting Company:', error)
-        toast.error('Failed to delete Company')
+        console.error('Error deleting Meeting:', error)
+        toast.error('Failed to delete Meeting')
       }
     }
   }
@@ -220,34 +204,16 @@ const CompaniesList = () => {
     setDialogOpen(false)
   }
 
-  useEffect(() => {
-    // Fetch companies data from API
-    const fetchCompanies = async () => {
-      try {
-        const userData = JSON.parse(localStorage.getItem('userData')!)
-        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
-
-        const companyResponse = await fetchDataFromApi(`/companies?filters[id][$ne]=${userResponse.company.id}`)
-
-        setCompanies(companyResponse.data)
-        setFilteredCompanies(companyResponse.data)
-      } catch (error) {
-        console.error('Error fetching companies:', error)
-      }
-    }
-    fetchCompanies()
-  }, [])
-
   return (
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card>
-          <CardHeader title='Companies List' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
+          <CardHeader title='Meeting List' sx={{ pb: 4, '& .MuiCardHeader-title': { letterSpacing: '.15px' } }} />
           <CardContent>
             <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
             <DataGrid
               autoHeight
-              rows={filteredCompanies}
+              rows={filteredContact}
               columns={columns}
               checkboxSelection
               disableRowSelectionOnClick
@@ -262,10 +228,10 @@ const CompaniesList = () => {
         onClose={handleDialogClose}
         onConfirm={handleDeleteConfirm}
         title='Confirm Deletion'
-        message='Are you sure you want to delete this company?'
+        message='Are you sure you want to delete this meeting?'
       />
     </Grid>
   )
 }
 
-export default CompaniesList
+export default MeetingList
