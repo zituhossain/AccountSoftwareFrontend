@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
 import { Card, Grid, Typography } from '@mui/material'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import TableHeader from 'src/views/apps/accounts/TableHeader' // Verify this path is correct
+import TableHeader from 'src/views/apps/reports/income-statement/TableHeader' // Verify this path is correct
 import { fetchDataFromApi } from 'src/utils/api' // Ensure this utility handles API calls properly
 
 const IncomeStatement = () => {
@@ -36,9 +36,9 @@ const IncomeStatement = () => {
         setData([
           { id: 'revenue_heading', details: 'Revenues:', amount1: null, amount2: null, isHeading: true },
           ...revenues,
+          { id: 'totalRevenue', details: 'Total Revenues', amount1: null, amount2: null, total: totalRevenue },
           { id: 'expense_heading', details: 'Expenses:', amount1: null, amount2: null, isHeading: true },
           ...expenses,
-          { id: 'totalRevenue', details: 'Total Revenues', amount1: null, amount2: null, total: totalRevenue },
           { id: 'totalExpenses', details: 'Total Expenses', amount1: null, amount2: null, total: `(${totalExpenses})` },
           { id: 'Net Income', details: 'Net Income', amount1: null, amount2: null, total: netIncome }
         ])
@@ -53,10 +53,10 @@ const IncomeStatement = () => {
   }, [])
 
   const columns: GridColDef[] = [
-    { field: 'details', headerName: 'Details', width: 250 },
-    { field: 'amount1', headerName: 'Expense (Tk.)', width: 130, type: 'number', align: 'right', headerAlign: 'right' },
-    { field: 'amount2', headerName: 'Revenue (Tk.)', width: 130, type: 'number', align: 'right', headerAlign: 'right' },
-    { field: 'total', headerName: 'Total (Tk.)', width: 130, type: 'number', align: 'right', headerAlign: 'right' }
+    { field: 'details', headerName: 'Details', flex: 1 },
+    { field: 'amount1', headerName: 'Expense (Tk.)', flex: 1, type: 'number', align: 'right', headerAlign: 'right' },
+    { field: 'amount2', headerName: 'Revenue (Tk.)', flex: 1, type: 'number', align: 'right', headerAlign: 'right' },
+    { field: 'total', headerName: 'Total (Tk.)', flex: 1, type: 'number', align: 'right', headerAlign: 'right' }
   ]
 
   const renderDetailsCell = params => {
@@ -75,7 +75,7 @@ const IncomeStatement = () => {
     <Grid container spacing={6}>
       <Grid item xs={12}>
         <Card>
-          <Typography variant='h6' component='div' sx={{ p: 2 }}>
+          <Typography variant='h6' component='div' sx={{ p: 2, textAlign: 'center' }}>
             Income Statement
           </Typography>
           <TableHeader selectedRows={[]} />
