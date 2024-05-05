@@ -44,6 +44,7 @@ const companyStatusObj: { [key: string]: ThemeColor } = {
 interface JournalListProps {
   id: number
   attributes: {
+    client: any
     date: string
     debit_account: {
       data: {
@@ -212,7 +213,7 @@ const JournalList = () => {
       minWidth: 220,
       headerName: 'Client',
       renderCell: ({ row }: CellType) => {
-        const { name, email } = row.attributes?.client?.data?.attributes
+        // const { name, email } = row.attributes?.client?.data?.attributes
 
         return (
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
@@ -222,10 +223,10 @@ const JournalList = () => {
                 variant='body2'
                 sx={{ color: 'text.primary', fontWeight: 500, lineHeight: '22px', letterSpacing: '.1px' }}
               >
-                {name}
+                {row.attributes?.client?.data?.attributes?.name}
               </Typography>
               <Typography noWrap variant='caption'>
-                {email}
+                {row.attributes?.client?.data?.attributes?.email}
               </Typography>
             </Box>
           </Box>

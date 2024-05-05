@@ -1,7 +1,21 @@
 import React, { forwardRef, useEffect, useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { Button, Card, CardActions, CardContent, CardHeader, Divider, Grid, TextField, Typography } from '@mui/material'
+import {
+  Button,
+  Card,
+  CardActions,
+  CardContent,
+  CardHeader,
+  Divider,
+  Grid,
+  TextField,
+  Typography,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
+} from '@mui/material'
 import DatePicker from 'react-datepicker'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
@@ -15,7 +29,8 @@ import { formatISO } from 'date-fns'
 const schema = yup.object().shape({
   title: yup.string().required('Meeting title is required'),
   date: yup.date().required('Meeting date is required').nullable(),
-  description: yup.string()
+  description: yup.string(),
+  meeting_users: yup.array().min(1, 'At least one user is required')
 })
 
 const CustomDatePickerInput = forwardRef((props, ref) => {
@@ -38,11 +53,24 @@ const AddMeeting = () => {
       title: '',
       date: new Date(),
       meeting_link: '',
-      description: ''
+      description: '',
+      meeting_users: []
     }
   })
 
   const [userId, setUserId] = useState<number>(0)
+  const [users, setUsers] = useState([])
+
+  useEffect(() => {
+    const fetchUsers = async () => {
+      const response = await fetchDataFromApi('/users?populate=*')
+      console.log('zuuuuu', response)
+
+      setUsers(response)
+    }
+
+    fetchUsers()
+  }, [])
 
   useEffect(() => {
     const fetchMeeting = async () => {
@@ -124,9 +152,9 @@ const AddMeeting = () => {
 
             <Grid item xs={12} sm={6}>
               <DatePickerWrapper>
-                <Typography variant='subtitle1' gutterBottom>
+                {/* <Typography variant='subtitle1' gutterBottom>
                   Meeting Time
-                </Typography>
+                </Typography> */}
                 <Controller
                   name='date'
                   control={control}
@@ -160,6 +188,36 @@ const AddMeeting = () => {
                   />
                 )}
               />
+            </Grid>
+
+            <Grid item xs={12} sm={6}>
+              <FormControl fullWidth>
+                <InputLabel id='demo-multiple-name-label'>Meeting Users</InputLabel>
+                <Controller
+                  name='meeting_users'
+                  control={control}
+                  render={({ field }) => (
+                    <Select
+                      {...field}
+                      multiple
+                      labelId='demo-multiple-name-label'
+                      label='Meeting Users'
+                      renderValue={selected =>
+                        users
+                          .filter(user => selected.includes(user.id))
+                          .map(user => user.username)
+                          .join(', ')
+                      }
+                    >
+                      {users.map(user => (
+                        <MenuItem key={user.id} value={user.id}>
+                          {user.username}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  )}
+                />
+              </FormControl>
             </Grid>
 
             <Grid item xs={12}>

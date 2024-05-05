@@ -84,17 +84,17 @@ const MeetingList = () => {
 
   useEffect(() => {
     // Fetch companies data from API
-    const fetchContact = async () => {
+    const fetchMeeting = async () => {
       try {
         const response = await fetchDataFromApi('/meetings?populate=*')
         console.log('contact', response.data)
         setContact(response.data)
         setFilteredContact(response.data)
       } catch (error) {
-        console.error('Error fetching companies:', error)
+        console.error('Error fetching meetings:', error)
       }
     }
-    fetchContact()
+    fetchMeeting()
   }, [])
 
   const handleEdit = (id: string | number) => {
@@ -110,7 +110,7 @@ const MeetingList = () => {
       handleEdit(id)
     }
     const handleView = () => {
-      router.push(`/apps/company/view/${id}`)
+      router.push(`/apps/meeting/view/${id}`)
     }
 
     return (
