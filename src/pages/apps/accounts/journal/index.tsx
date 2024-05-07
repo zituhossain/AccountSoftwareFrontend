@@ -140,12 +140,12 @@ const JournalList = () => {
     setValue(val)
   }, [])
 
-  useEffect(() => {
-    const filtered = journals.filter(journal =>
-      journal.attributes?.client?.data?.attributes?.name.toLowerCase().includes(value.toLowerCase())
-    )
-    setFilteredJournals(filtered)
-  }, [value, journals])
+  // useEffect(() => {
+  //   const filtered = journals.filter(journal =>
+  //     journal.attributes?.client?.data?.attributes?.name.toLowerCase().includes(value.toLowerCase())
+  //   )
+  //   setFilteredJournals(filtered)
+  // }, [value, journals])
 
   useEffect(() => {
     // Fetch companies data from API
@@ -350,7 +350,7 @@ const JournalList = () => {
               <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
               <DataGrid
                 autoHeight
-                rows={journals}
+                rows={filteredJournals}
                 columns={columns}
                 checkboxSelection
                 disableRowSelectionOnClick

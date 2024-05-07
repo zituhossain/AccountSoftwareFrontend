@@ -111,6 +111,7 @@ export type AccountHeadType = {
 }
 
 export type TransactionType = {
+  employee: any
   id?: number
   account_header?: number
   payment_option?: number
