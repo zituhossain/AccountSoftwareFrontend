@@ -10,21 +10,33 @@ const IncomeStatement = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const revenuesResponse = await fetchDataFromApi('/revenues?populate=*')
-        const expensesResponse = await fetchDataFromApi('/expenses?populate=*')
+        const revenueHeadResponse = await fetchDataFromApi(
+          `/individual-accounts?populate=*&filters[short_name][$eq]=ar`
+        )
 
-        const revenues = revenuesResponse.data.map((item, index) => ({
+        const expenseHeadResponse = await fetchDataFromApi(
+          `/individual-accounts?populate=id&filters[account][id][$eq]=5`
+        )
+
+        const revenueHeadIds = revenueHeadResponse.data.map((item: { id: any }) => item.id).join(',')
+        const expenseHeadIds = expenseHeadResponse.data.map((item: { id: any }) => item.id).join(',')
+
+        const revenuesResponse = await fetchDataFromApi(`/journals/revenue/${revenueHeadIds}`)
+
+        const expensesResponse = await fetchDataFromApi(`/journals/expense/${expenseHeadIds}`)
+
+        const revenues = revenuesResponse.map((item, index) => ({
           id: `revenue_${index}`,
-          details: item.attributes.title,
+          details: 'Service Revenue',
           amount1: null,
-          amount2: item.attributes.amount,
+          amount2: item.amount,
           isHeading: false
         }))
 
-        const expenses = expensesResponse.data.map((item, index) => ({
+        const expenses = expensesResponse.map((item, index) => ({
           id: `expense_${index}`,
-          details: item.attributes.title,
-          amount1: item.attributes.amount,
+          details: item.name,
+          amount1: item.amount,
           amount2: null,
           isHeading: false
         }))

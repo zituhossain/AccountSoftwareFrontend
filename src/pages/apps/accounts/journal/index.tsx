@@ -114,6 +114,8 @@ const JournalList = () => {
   const [deleteId, setDeleteId] = useState<string | number | null>(null)
   const [dialogOpen, setDialogOpen] = useState(false)
 
+  console.log('filteredJournals', filteredJournals)
+
   const handleOnChangeRange = (dates: any) => {
     const [start, end] = dates
 
@@ -348,7 +350,7 @@ const JournalList = () => {
               <TableHeader value={value} handleFilter={handleFilter} selectedRows={[]} />
               <DataGrid
                 autoHeight
-                rows={filteredJournals}
+                rows={journals}
                 columns={columns}
                 checkboxSelection
                 disableRowSelectionOnClick
