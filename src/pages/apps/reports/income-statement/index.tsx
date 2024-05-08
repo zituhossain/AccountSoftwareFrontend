@@ -1,14 +1,32 @@
-import React, { useEffect, useState } from 'react'
 import { Card, Grid, Typography } from '@mui/material'
+import CardContent from '@mui/material/CardContent'
+import CardHeader from '@mui/material/CardHeader'
+import TextField from '@mui/material/TextField'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
-import TableHeader from 'src/views/apps/reports/income-statement/TableHeader' // Verify this path is correct
-import { fetchDataFromApi } from 'src/utils/api' // Ensure this utility handles API calls properly
+import format from 'date-fns/format'
+import { forwardRef, useEffect, useState } from 'react'
+import DatePicker from 'react-datepicker'
+import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
+import { fetchDataFromApi } from 'src/utils/api'
+
+const CustomInput = forwardRef(({ start, end, label, ...props }, ref) => {
+  const displayStart = start ? format(start, 'dd/MM/yyyy') : ''
+  const displayEnd = end ? ` - ${format(end, 'dd/MM/yyyy')}` : ''
+  const value = `${displayStart}${displayEnd}`
+
+  return <TextField ref={ref} fullWidth label={label || 'Date'} value={value} {...props} />
+})
 
 const IncomeStatement = () => {
   const [data, setData] = useState([])
+  const [startDate, setStartDate] = useState(new Date('2024-01-01'))
+  const [endDate, setEndDate] = useState(new Date())
 
   useEffect(() => {
     const fetchData = async () => {
+      const startDateISO = startDate.toISOString().split('T')[0]
+      const endDateISO = endDate.toISOString().split('T')[0]
+
       try {
         const revenueHeadResponse = await fetchDataFromApi(
           `/individual-accounts?populate=*&filters[short_name][$eq]=ar`
@@ -21,9 +39,17 @@ const IncomeStatement = () => {
         const revenueHeadIds = revenueHeadResponse.data.map((item: { id: any }) => item.id).join(',')
         const expenseHeadIds = expenseHeadResponse.data.map((item: { id: any }) => item.id).join(',')
 
-        const revenuesResponse = await fetchDataFromApi(`/journals/revenue/${revenueHeadIds}`)
+        const revenuesResponse = await fetchDataFromApi(
+          `/journals/revenue/${revenueHeadIds}?startDate=${startDateISO}&endDate=${endDateISO}`
+        )
 
-        const expensesResponse = await fetchDataFromApi(`/journals/expense/${expenseHeadIds}`)
+        const expensesResponse = await fetchDataFromApi(
+          `/journals/expense/${expenseHeadIds}?startDate=${startDateISO}&endDate=${endDateISO}`
+        )
+
+        // const revenuesResponse = await fetchDataFromApi(`/journals/revenue/${revenueHeadIds}`)
+
+        // const expensesResponse = await fetchDataFromApi(`/journals/expense/${expenseHeadIds}`)
 
         const revenues = revenuesResponse.map((item, index) => ({
           id: `revenue_${index}`,
@@ -56,13 +82,11 @@ const IncomeStatement = () => {
         ])
       } catch (error) {
         console.error('Error fetching data:', error)
-
-        // Handle errors appropriately (e.g., show error message to user)
       }
     }
 
     fetchData()
-  }, [])
+  }, [startDate, endDate])
 
   const columns: GridColDef[] = [
     { field: 'details', headerName: 'Details', flex: 1 },
@@ -84,33 +108,58 @@ const IncomeStatement = () => {
   }
 
   return (
-    <Grid container spacing={6}>
-      <Grid item xs={12}>
-        <Card>
-          <Typography variant='h6' component='div' sx={{ p: 2, textAlign: 'center' }}>
-            Income Statement
-          </Typography>
-          <TableHeader selectedRows={[]} />
-          <DataGrid
-            autoHeight
-            rows={data}
-            columns={columns.map(column => ({
-              ...column,
-              renderCell: renderDetailsCell
-            }))}
-            disableSelectionOnClick
-            pageSize={10}
-            sx={{
-              '& .MuiDataGrid-columnHeaders': { borderRadius: 0 },
-              '& .MuiDataGrid-row': {
-                '&:nth-of-type(even)': { backgroundColor: 'rgba(235, 235, 235, .7)' },
-                '&:nth-of-type(odd)': { backgroundColor: 'rgba(250, 250, 250, .7)' }
-              }
-            }}
-          />
-        </Card>
+    <DatePickerWrapper>
+      <Grid container spacing={6}>
+        <Grid item xs={12}>
+          <Card>
+            <CardContent>
+              <Typography variant='h6' component='div' sx={{ mb: 2 }}>
+                Select Start Date:
+              </Typography>
+              <DatePicker
+                selected={startDate}
+                onChange={date => setStartDate(date)}
+                dateFormat='dd/MM/yyyy'
+                customInput={<CustomInput label='Start Date' />}
+              />
+              <Typography variant='h6' component='div' sx={{ mb: 2, mt: 2 }}>
+                Select End Date:
+              </Typography>
+              <DatePicker
+                selected={endDate}
+                onChange={date => setEndDate(date)}
+                dateFormat='dd/MM/yyyy'
+                customInput={<CustomInput label='End Date' />}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
+        <Grid item xs={12}>
+          <Card>
+            <CardHeader title='Income Statement' />
+            <CardContent>
+              <DataGrid
+                autoHeight
+                rows={data}
+                columns={columns.map(column => ({
+                  ...column,
+                  renderCell: renderDetailsCell
+                }))}
+                disableSelectionOnClick
+                pageSize={10}
+                sx={{
+                  '& .MuiDataGrid-columnHeaders': { borderRadius: 0 },
+                  '& .MuiDataGrid-row': {
+                    '&:nth-of-type(even)': { backgroundColor: 'rgba(235, 235, 235, .7)' },
+                    '&:nth-of-type(odd)': { backgroundColor: 'rgba(250, 250, 250, .7)' }
+                  }
+                }}
+              />
+            </CardContent>
+          </Card>
+        </Grid>
       </Grid>
-    </Grid>
+    </DatePickerWrapper>
   )
 }
 
