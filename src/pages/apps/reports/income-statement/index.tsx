@@ -1,13 +1,14 @@
-import { Card, Grid, Typography } from '@mui/material'
+import { Button, Card, Grid, Typography } from '@mui/material'
 import CardContent from '@mui/material/CardContent'
 import CardHeader from '@mui/material/CardHeader'
 import TextField from '@mui/material/TextField'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
 import format from 'date-fns/format'
-import { forwardRef, useEffect, useState } from 'react'
+import { forwardRef, useEffect, useState, useRef } from 'react'
 import DatePicker from 'react-datepicker'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import { fetchDataFromApi } from 'src/utils/api'
+import { ReactToPrint } from 'react-to-print'
 
 const CustomInput = forwardRef(({ start, end, label, ...props }, ref) => {
   const displayStart = start ? format(start, 'dd/MM/yyyy') : ''
@@ -21,6 +22,7 @@ const IncomeStatement = () => {
   const [data, setData] = useState([])
   const [startDate, setStartDate] = useState(new Date('2024-01-01'))
   const [endDate, setEndDate] = useState(new Date())
+  const componentRef = useRef()
 
   useEffect(() => {
     const fetchData = async () => {
@@ -108,58 +110,65 @@ const IncomeStatement = () => {
   }
 
   return (
-    <DatePickerWrapper>
-      <Grid container spacing={6}>
-        <Grid item xs={12}>
-          <Card>
-            <CardContent>
-              <Typography variant='h6' component='div' sx={{ mb: 2 }}>
-                Select Start Date:
+    <div>
+      <DatePickerWrapper>
+        <Grid container spacing={6} ref={componentRef}>
+          <Grid item xs={12}>
+            <Card>
+              <CardContent>
+                <Typography variant='h6' component='div' sx={{ mb: 2 }}>
+                  Select Start Date:
+                </Typography>
+                <DatePicker
+                  selected={startDate}
+                  onChange={date => setStartDate(date)}
+                  dateFormat='dd/MM/yyyy'
+                  customInput={<CustomInput label='Start Date' />}
+                />
+                <Typography variant='h6' component='div' sx={{ mb: 2, mt: 2 }}>
+                  Select End Date:
+                </Typography>
+                <DatePicker
+                  selected={endDate}
+                  onChange={date => setEndDate(date)}
+                  dateFormat='dd/MM/yyyy'
+                  customInput={<CustomInput label='End Date' />}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12}>
+            <Card>
+              <Typography variant='h6' component='div' sx={{ pt: 4, textAlign: 'center' }}>
+                Income Statement
               </Typography>
-              <DatePicker
-                selected={startDate}
-                onChange={date => setStartDate(date)}
-                dateFormat='dd/MM/yyyy'
-                customInput={<CustomInput label='Start Date' />}
-              />
-              <Typography variant='h6' component='div' sx={{ mb: 2, mt: 2 }}>
-                Select End Date:
-              </Typography>
-              <DatePicker
-                selected={endDate}
-                onChange={date => setEndDate(date)}
-                dateFormat='dd/MM/yyyy'
-                customInput={<CustomInput label='End Date' />}
-              />
-            </CardContent>
-          </Card>
+
+              <CardContent>
+                <DataGrid
+                  autoHeight
+                  rows={data}
+                  columns={columns.map(column => ({
+                    ...column,
+                    renderCell: renderDetailsCell
+                  }))}
+                  disableSelectionOnClick
+                  pageSize={10}
+                  sx={{
+                    '& .MuiDataGrid-columnHeaders': { borderRadius: 0 },
+                    '& .MuiDataGrid-row': {
+                      '&:nth-of-type(even)': { backgroundColor: 'rgba(235, 235, 235, .7)' },
+                      '&:nth-of-type(odd)': { backgroundColor: 'rgba(250, 250, 250, .7)' }
+                    }
+                  }}
+                />
+              </CardContent>
+            </Card>
+          </Grid>
+          <Grid item xs={12}></Grid>
         </Grid>
-        <Grid item xs={12}>
-          <Card>
-            <CardHeader title='Income Statement' />
-            <CardContent>
-              <DataGrid
-                autoHeight
-                rows={data}
-                columns={columns.map(column => ({
-                  ...column,
-                  renderCell: renderDetailsCell
-                }))}
-                disableSelectionOnClick
-                pageSize={10}
-                sx={{
-                  '& .MuiDataGrid-columnHeaders': { borderRadius: 0 },
-                  '& .MuiDataGrid-row': {
-                    '&:nth-of-type(even)': { backgroundColor: 'rgba(235, 235, 235, .7)' },
-                    '&:nth-of-type(odd)': { backgroundColor: 'rgba(250, 250, 250, .7)' }
-                  }
-                }}
-              />
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-    </DatePickerWrapper>
+      </DatePickerWrapper>
+      <ReactToPrint trigger={() => <Button variant='contained'>Print</Button>} content={() => componentRef.current} />
+    </div>
   )
 }
 
