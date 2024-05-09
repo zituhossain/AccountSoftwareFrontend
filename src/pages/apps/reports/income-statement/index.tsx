@@ -23,6 +23,7 @@ const IncomeStatement = () => {
   const [startDate, setStartDate] = useState(new Date('2024-01-01'))
   const [endDate, setEndDate] = useState(new Date())
   const componentRef = useRef()
+  const [company, setCompany] = useState('')
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,6 +31,12 @@ const IncomeStatement = () => {
       const endDateISO = endDate.toISOString().split('T')[0]
 
       try {
+        const userData = JSON.parse(localStorage.getItem('userData')!)
+        const userResponse = await fetchDataFromApi(`/users/${userData.id}?populate=company`)
+
+        const company = userResponse.company
+        setCompany(company.name)
+
         const revenueHeadResponse = await fetchDataFromApi(
           `/individual-accounts?populate=*&filters[short_name][$eq]=ar`
         )
@@ -141,6 +148,8 @@ const IncomeStatement = () => {
             <Card>
               <Typography variant='h6' component='div' sx={{ pt: 4, textAlign: 'center' }}>
                 Income Statement
+                <Typography>{company}</Typography>
+                <Typography>{`${format(startDate, 'd MMMM, yyyy')} To ${format(endDate, 'd MMMM, yyyy')}`}</Typography>
               </Typography>
 
               <CardContent>

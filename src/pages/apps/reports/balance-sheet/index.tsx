@@ -74,9 +74,8 @@ const BalanceSheet = () => {
           },
           { id: 'equity_heading', details: `Ownwer's Equity:`, amount1: null, amount2: null, isHeading: true },
           ...expenses,
-          { id: 'totalExpenses', details: 'Total Expenses', amount1: null, amount2: null, total: `${totalExpenses}` },
           {
-            id: 'Net Income',
+            id: 'totalLiabilitiesEquity',
             details: `Total Liabilities & Owner's Equity`,
             amount1: null,
             amount2: null,
