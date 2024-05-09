@@ -1,14 +1,13 @@
-import { Button, Card, Grid, Typography } from '@mui/material'
+import { forwardRef, useEffect, useRef, useState } from 'react'
+import { ReactToPrint } from 'react-to-print'
 import CardContent from '@mui/material/CardContent'
-import CardHeader from '@mui/material/CardHeader'
 import TextField from '@mui/material/TextField'
 import { DataGrid, GridColDef } from '@mui/x-data-grid'
+import { Button, Card, Grid, Typography } from '@mui/material'
 import format from 'date-fns/format'
-import { forwardRef, useEffect, useState, useRef } from 'react'
 import DatePicker from 'react-datepicker'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import { fetchDataFromApi } from 'src/utils/api'
-import { ReactToPrint } from 'react-to-print'
 
 const CustomInput = forwardRef(({ start, end, label, ...props }, ref) => {
   const displayStart = start ? format(start, 'dd/MM/yyyy') : ''
@@ -99,9 +98,9 @@ const IncomeStatement = () => {
 
   const columns: GridColDef[] = [
     { field: 'details', headerName: 'Details', flex: 1 },
-    { field: 'amount1', headerName: 'Expense (Tk.)', flex: 1, type: 'number', align: 'right', headerAlign: 'right' },
-    { field: 'amount2', headerName: 'Revenue (Tk.)', flex: 1, type: 'number', align: 'right', headerAlign: 'right' },
-    { field: 'total', headerName: 'Total (Tk.)', flex: 1, type: 'number', align: 'right', headerAlign: 'right' }
+    { field: 'amount1', headerName: 'Expense (Tk.)', flex: 1, type: 'number', align: 'left', headerAlign: 'left' },
+    { field: 'amount2', headerName: 'Revenue (Tk.)', flex: 1, type: 'number', align: 'left', headerAlign: 'left' },
+    { field: 'total', headerName: 'Total (Tk.)', flex: 1, type: 'number', align: 'left', headerAlign: 'left' }
   ]
 
   const renderDetailsCell = params => {
@@ -119,7 +118,7 @@ const IncomeStatement = () => {
   return (
     <div>
       <DatePickerWrapper>
-        <Grid container spacing={6} ref={componentRef}>
+        <Grid container spacing={6}>
           <Grid item xs={12}>
             <Card>
               <CardContent>
@@ -144,7 +143,7 @@ const IncomeStatement = () => {
               </CardContent>
             </Card>
           </Grid>
-          <Grid item xs={12}>
+          <Grid item xs={12} ref={componentRef}>
             <Card>
               <Typography variant='h6' component='div' sx={{ pt: 4, textAlign: 'center' }}>
                 Income Statement

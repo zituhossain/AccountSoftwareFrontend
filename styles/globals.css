@@ -22,3 +22,9 @@ code:not([class*='language-']):after {
 code[class*='language-'] {
   padding: 0;
 }
+
+@media print {
+  .total-column {
+    width: 100px; /* Adjust the width as needed */
+  }
+}
