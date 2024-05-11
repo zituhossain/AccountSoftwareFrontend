@@ -8,6 +8,7 @@ import format from 'date-fns/format'
 import DatePicker from 'react-datepicker'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import { fetchDataFromApi } from 'src/utils/api'
+import aggregateAmountsCurrentAsset from 'src/utils/aggregateAmount'
 
 const CustomInput = forwardRef(({ start, end, label, ...props }, ref) => {
   const displayStart = start ? format(start, 'dd/MM/yyyy') : ''
@@ -35,51 +36,137 @@ const BalanceSheet = () => {
         const company = userResponse.company
         setCompany(company.name)
 
-        const revenueHeadResponse = await fetchDataFromApi(
-          `/individual-accounts?populate=*&filters[short_name][$eq]=ar`
+        const fixedAssetHeadResponse = await fetchDataFromApi(
+          `/individual-accounts?populate=id&filters[account][id][$eq]=1&filters[sub_account][id][$eq]=2`
         )
 
-        const expenseHeadResponse = await fetchDataFromApi(
-          `/individual-accounts?populate=id&filters[account][id][$eq]=5`
+        const currentAssetHeadResponse = await fetchDataFromApi(
+          `/individual-accounts?populate=id&filters[account][id][$eq]=1&filters[sub_account][id][$eq]=1`
         )
 
-        const revenueHeadIds = revenueHeadResponse.data.map((item: { id: any }) => item.id).join(',')
-        const expenseHeadIds = expenseHeadResponse.data.map((item: { id: any }) => item.id).join(',')
-
-        const revenuesResponse = await fetchDataFromApi(
-          `/journals/revenue/${revenueHeadIds}?startDate=${startDateISO}&endDate=${endDateISO}`
+        const fixedLiabilitiesHeadResponse = await fetchDataFromApi(
+          `/individual-accounts?populate=id&filters[account][id][$eq]=2&filters[sub_account][id][$eq]=2`
         )
 
-        const expensesResponse = await fetchDataFromApi(
-          `/journals/expense/${expenseHeadIds}?startDate=${startDateISO}&endDate=${endDateISO}`
+        const currentLiabilitiesHeadResponse = await fetchDataFromApi(
+          `/individual-accounts?populate=id&filters[account][id][$eq]=2&filters[sub_account][id][$eq]=1`
         )
 
-        const revenues = revenuesResponse.map((item, index) => ({
-          id: `revenue_${index}`,
-          details: 'Service Revenue',
-          amount1: null,
-          amount2: item.amount,
-          isHeading: false
-        }))
+        const equityHeadResponse = await fetchDataFromApi(
+          `/individual-accounts?populate=id&filters[account][id][$eq]=3`
+        )
 
-        const expenses = expensesResponse.map((item, index) => ({
-          id: `expense_${index}`,
+        const fixedAssetHeadIds = fixedAssetHeadResponse.data.map((item: { id: any }) => item.id).join(',')
+        const currentAssetHeadIds = currentAssetHeadResponse.data.map((item: { id: any }) => item.id).join(',')
+        const fixedLiabilitiesHeadIds = fixedLiabilitiesHeadResponse.data.map((item: { id: any }) => item.id).join(',')
+        const currentLiabilitiesHeadIds = currentLiabilitiesHeadResponse.data
+          .map((item: { id: any }) => item.id)
+          .join(',')
+        const equityHeadIds = equityHeadResponse.data.map((item: { id: any }) => item.id).join(',')
+
+        console.log('currentLiabilitiesHeadIds:', currentLiabilitiesHeadIds)
+
+        const fixedAssetResponse = await fetchDataFromApi(
+          `/journals/fixedAsset/${
+            fixedAssetHeadIds ? fixedAssetHeadIds : 0
+          }?startDate=${startDateISO}&endDate=${endDateISO}`
+        )
+
+        const currentAssetResponse = await fetchDataFromApi(
+          `/journals/currentAsset/${
+            currentAssetHeadIds ? currentAssetHeadIds : 0
+          }?startDate=${startDateISO}&endDate=${endDateISO}`
+        )
+
+        const fixedLiabilitiesResponse = await fetchDataFromApi(
+          `/journals/fixedLiabilities/${
+            fixedLiabilitiesHeadIds ? fixedLiabilitiesHeadIds : 0
+          }?startDate=${startDateISO}&endDate=${endDateISO}`
+        )
+
+        const currentLiabilitiesResponse = await fetchDataFromApi(
+          `/journals/currentLiabilities/${
+            currentLiabilitiesHeadIds ? currentLiabilitiesHeadIds : 0
+          }?startDate=${startDateISO}&endDate=${endDateISO}`
+        )
+        const equityResponse = await fetchDataFromApi(
+          `/journals/equity/${equityHeadIds ? equityHeadIds : 0}?startDate=${startDateISO}&endDate=${endDateISO}`
+        )
+
+        console.log('currentLiabilitiesResponse:', currentLiabilitiesResponse)
+
+        const fixedAsset = fixedAssetResponse.map((item, index) => ({
+          id: `asset_${index}`,
           details: item.name,
           amount1: item.amount,
           amount2: null,
           isHeading: false
         }))
 
-        const totalRevenue = revenues.reduce((acc, cur) => acc + (cur.amount2 || 0), 0)
-        const totalExpenses = expenses.reduce((acc, cur) => acc + (cur.amount1 || 0), 0)
-        const netIncome = totalRevenue - totalExpenses
+        const currentAsset = currentAssetResponse.map((item, index) => ({
+          id: `asset_${index}`,
+          details: item.name,
+          amount1: item.amount,
+          amount2: null,
+          isHeading: false
+        }))
+
+        // Aggregate amounts for each unique detail in currentAsset
+        const filterCurrentAsset = aggregateAmountsCurrentAsset(currentAsset, 'details')
+
+        // Find the index of 'Accounts Receivable' and 'Cash Account' entries in the array
+        const accountsReceivableIndex = filterCurrentAsset.findIndex(item => item.details === 'Accounts Receivable')
+        const cashAccountIndex = filterCurrentAsset.findIndex(item => item.details === 'Cash Account')
+
+        // If both 'Accounts Receivable' and 'Cash Account' entries exist, adjust the amount for 'Accounts Receivable'
+        if (accountsReceivableIndex !== -1 && cashAccountIndex !== -1) {
+          const accountsReceivableAmount = filterCurrentAsset[accountsReceivableIndex].amount1
+          const cashAccountAmount = filterCurrentAsset[cashAccountIndex].amount1
+          filterCurrentAsset[accountsReceivableIndex].amount1 = accountsReceivableAmount - cashAccountAmount
+        }
+
+        console.log('filterCurrentAsset:', filterCurrentAsset)
+
+        const fixedLiabilities = fixedLiabilitiesResponse.map((item, index) => ({
+          id: `liabilities_${index}`,
+          details: item.name,
+          amount1: null,
+          amount2: item.amount,
+          isHeading: false
+        }))
+
+        const currentLiabilities = currentLiabilitiesResponse.map((item, index) => ({
+          id: `liabilities_${index}`,
+          details: item.name,
+          amount1: null,
+          amount2: item.amount,
+          isHeading: false
+        }))
+
+        const equity = equityResponse.map((item, index) => ({
+          id: `liabilities_${index}`,
+          details: item.name,
+          amount1: null,
+          amount2: item.amount,
+          isHeading: false
+        }))
+
+        const totalFixedAsset = fixedAsset.reduce((acc, cur) => acc + (cur.amount1 || 0), 0)
+        const totalCurrentAsset = currentAsset.reduce((acc, cur) => acc + (cur.amount1 || 0), 0)
+        const totalAsset = totalFixedAsset + totalCurrentAsset
+
+        const totalFixedLiabilities = fixedLiabilities.reduce((acc, cur) => acc + (cur.amount2 || 0), 0)
+        const totalCurrentLiabilities = currentLiabilities.reduce((acc, cur) => acc + (cur.amount2 || 0), 0)
+        const totalEquity = equity.reduce((acc, cur) => acc + (cur.amount2 || 0), 0)
+        const totalLiabilitiesEquity = totalFixedLiabilities + totalCurrentLiabilities + totalEquity
 
         setData([
           { id: 'asset_heading', details: 'Assets:', amount1: null, amount2: null, isHeading: true },
-          { id: 'current_asset_heading', details: 'Current Assets', amount1: null, amount2: null },
-          { id: 'fixed_asset_heading', details: 'Fixed Assets', amount1: null, amount2: null },
-          ...revenues,
-          { id: 'totalAssets', details: 'Total Assets', amount1: null, amount2: null, total: totalRevenue },
+          { id: 'current_asset_heading', details: 'Current Assets:', amount1: null, amount2: null },
+          ...filterCurrentAsset,
+          { id: 'fixed_asset_heading', details: 'Fixed Assets:', amount1: null, amount2: null },
+          ...fixedAsset,
+          { id: 'totalAssets', details: 'Total Assets', amount1: null, amount2: null, total: totalAsset },
           {
             id: 'liabilities_equity_heading',
             details: `Liabilities & Ownwer's Equity:`,
@@ -89,24 +176,26 @@ const BalanceSheet = () => {
           },
           {
             id: 'current_liabilities_heading',
-            details: `Current Liabilities`,
+            details: `Current Liabilities:`,
             amount1: null,
             amount2: null
           },
+          ...currentLiabilities,
           {
             id: 'fixed_liabilities_heading',
-            details: `Fixed Liabilities`,
+            details: `Fixed Liabilities:`,
             amount1: null,
             amount2: null
           },
-          { id: 'equity_heading', details: `Ownwer's Equity`, amount1: null, amount2: null },
-          ...expenses,
+          ...fixedLiabilities,
+          { id: 'equity_heading', details: `Ownwer's Equity:`, amount1: null, amount2: null },
+          ...equity,
           {
             id: 'totalLiabilitiesEquity',
             details: `Total Liabilities & Owner's Equity`,
             amount1: null,
             amount2: null,
-            total: netIncome
+            total: totalLiabilitiesEquity
           }
         ])
       } catch (error) {
