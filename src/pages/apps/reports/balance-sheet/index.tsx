@@ -9,6 +9,7 @@ import DatePicker from 'react-datepicker'
 import DatePickerWrapper from 'src/@core/styles/libs/react-datepicker'
 import { fetchDataFromApi } from 'src/utils/api'
 import aggregateAmountsCurrentAsset from 'src/utils/aggregateAmount'
+import aggregateAmountsCurrentLiabilities from 'src/utils/aggregateAmount2'
 
 const CustomInput = forwardRef(({ start, end, label, ...props }, ref) => {
   const displayStart = start ? format(start, 'dd/MM/yyyy') : ''
@@ -125,8 +126,6 @@ const BalanceSheet = () => {
           filterCurrentAsset[accountsReceivableIndex].amount1 = accountsReceivableAmount - cashAccountAmount
         }
 
-        console.log('filterCurrentAsset:', filterCurrentAsset)
-
         const fixedLiabilities = fixedLiabilitiesResponse.map((item, index) => ({
           id: `liabilities_${index}`,
           details: item.name,
@@ -143,6 +142,10 @@ const BalanceSheet = () => {
           isHeading: false
         }))
 
+        const filterCurrentLiabilities = aggregateAmountsCurrentLiabilities(currentLiabilities, 'details')
+
+        console.log('filterCurrentLiabilities:', filterCurrentLiabilities)
+
         const equity = equityResponse.map((item, index) => ({
           id: `liabilities_${index}`,
           details: item.name,
@@ -152,7 +155,7 @@ const BalanceSheet = () => {
         }))
 
         const totalFixedAsset = fixedAsset.reduce((acc, cur) => acc + (cur.amount1 || 0), 0)
-        const totalCurrentAsset = currentAsset.reduce((acc, cur) => acc + (cur.amount1 || 0), 0)
+        const totalCurrentAsset = filterCurrentAsset.reduce((acc, cur) => acc + (cur.amount1 || 0), 0)
         const totalAsset = totalFixedAsset + totalCurrentAsset
 
         const totalFixedLiabilities = fixedLiabilities.reduce((acc, cur) => acc + (cur.amount2 || 0), 0)
@@ -180,7 +183,7 @@ const BalanceSheet = () => {
             amount1: null,
             amount2: null
           },
-          ...currentLiabilities,
+          ...filterCurrentLiabilities,
           {
             id: 'fixed_liabilities_heading',
             details: `Fixed Liabilities:`,

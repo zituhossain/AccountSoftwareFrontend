@@ -3,7 +3,7 @@ const aggregateAmountsCurrentLiabilities = (data, key) => {
   data.forEach(item => {
     const { id, details, amount1, amount2, isHeading } = item // Destructure item properties
     const detail = item[key]
-    const amount = amount1 // Assuming you want to aggregate amount1
+    const amount = amount2 // Assuming you want to aggregate amount1
     if (map.has(detail)) {
       const existingData = map.get(detail)
 
@@ -11,8 +11,8 @@ const aggregateAmountsCurrentLiabilities = (data, key) => {
       map.set(detail, {
         id: existingData.id,
         details: existingData.details,
-        amount1: existingData.amount1 + amount,
-        amount2: existingData.amount2,
+        amount1: existingData.amount1,
+        amount2: existingData.amount2 + amount,
         isHeading: existingData.isHeading
       })
     } else {
