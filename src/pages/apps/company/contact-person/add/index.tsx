@@ -34,7 +34,8 @@ const AddContact = () => {
   const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
     email: yup.string().email('Invalid email format'),
-    phone: yup.string().required('Phone is required')
+    phone: yup.string().required('Phone is required'),
+    company: yup.number().positive('Company is required').required('Position is required')
   })
 
   const defaultValues: ContactPersonType = {
@@ -53,6 +54,7 @@ const AddContact = () => {
     control,
     reset,
     setValue,
+    setError,
     formState: { errors }
   } = useForm<ContactPersonType>({
     resolver: yupResolver(schema),
@@ -113,13 +115,13 @@ const AddContact = () => {
           // Set the form values using reset
           reset({
             ...attributes,
-            status: attributes.status || false, // Ensure a boolean value for the switch
-            image: attributes.image?.data?.id // Set image ID if available, or null
+            status: attributes.status || false,
+            image: attributes.image?.data?.id
           })
 
           // If there's an existing image, set it for preview
           if (attributes.image?.data?.attributes?.url) {
-            setImgSrc(`${STRAPI_URL}${attributes?.image?.data?.attributes?.url}`) // Prepend API_URL if needed
+            setImgSrc(`${STRAPI_URL}${attributes?.image?.data?.attributes?.url}`)
           }
         } catch (error: any) {
           console.error('Error fetching contact data:', error.message)
@@ -151,8 +153,16 @@ const AddContact = () => {
       }
       router.push('/apps/company/contact-person')
     } catch (error: any) {
-      console.error('Error adding contact data:', error.message)
-      toast.error('Something went wrong! Please try again.')
+      console.error('Error submitting form:', error)
+      if (error.response && error.response.data && error.response.data.error) {
+        if (error.response.data.error.message === 'This attribute must be unique') {
+          setError('email', { type: 'manual', message: 'Email already taken' })
+        } else {
+          toast.error(error.response.data.error.message)
+        }
+      } else {
+        toast.error('Something went wrong. Please try again.')
+      }
     }
   }
 

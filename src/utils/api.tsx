@@ -88,7 +88,7 @@ export const putDataToApi = async (endpoint: string, formData: FormData) => {
     console.log('Update successful:', response.data)
 
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating data:', error)
     throw error
   }
@@ -104,7 +104,7 @@ export const deleteDataFromApi = async (endpoint: string) => {
     console.log('Data deleted successfully:', response.data)
 
     return response.data
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error updating data:', error)
     throw error // Rethrow the error for handling by the calling function
   }

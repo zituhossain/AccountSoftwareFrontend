@@ -123,7 +123,7 @@ const AddB2bRelation = () => {
       }
       router.push('/apps/company/business-relation')
     } catch (error) {
-      toast.error('Something went wrong! Please try again.')
+      toast.error('Select Company and Type both.')
     }
   }
 

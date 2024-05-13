@@ -25,7 +25,8 @@ const AddCompany = () => {
 
   const schema = yup.object().shape({
     name: yup.string().required('Name is required'),
-    email: yup.string().email('Invalid email format').required('Email is required')
+    email: yup.string().email('Invalid email format').required('Email is required'),
+    phone: yup.string().required('Phone is required')
   })
 
   const defaultValues: CompanyType = {
@@ -43,7 +44,8 @@ const AddCompany = () => {
     handleSubmit,
     control,
     reset,
-    formState: { errors }
+    formState: { errors },
+    setError
   } = useForm<CompanyType>({
     resolver: yupResolver(schema),
     defaultValues
@@ -118,8 +120,16 @@ const AddCompany = () => {
       }
       router.push('/apps/company/list')
     } catch (error: any) {
-      console.error('Error saving company:', error.message)
-      toast.error('Something went wrong! Please try again.')
+      console.error('Error submitting form:', error)
+      if (error.response && error.response.data && error.response.data.error) {
+        if (error.response.data.error.message === 'This attribute must be unique') {
+          setError('email', { type: 'manual', message: 'Email already taken' })
+        } else {
+          toast.error(error.response.data.error.message)
+        }
+      } else {
+        toast.error('Something went wrong. Please try again.')
+      }
     }
   }
 

@@ -30,9 +30,9 @@ interface UserData {
 
 const schema = yup.object().shape({
   username: yup.string().min(3, 'Username must be at least 3 characters').required('Username is required'),
-  email: yup.string().email('Invalid email').required('Email is required'),
-  password: yup.string().min(8, 'Password must be at least 8 characters').required('Password is required'),
-  confirmed: yup.boolean().required('Confirmation is required')
+  email: yup.string().email('Invalid email'),
+  password: yup.string().min(6, 'Password must be at least 6 characters').required('Password is required'),
+  organizational_position: yup.number().positive('Position is required').required('Position is required')
 })
 
 const AddUser = () => {
@@ -49,6 +49,7 @@ const AddUser = () => {
     control,
     setValue,
     handleSubmit,
+    setError,
     formState: { errors }
   } = useForm<UserData>({
     mode: 'onChange',
@@ -128,8 +129,17 @@ const AddUser = () => {
         toast.success('User added successfully')
       }
       router.push('/apps/user/list')
-    } catch (error) {
-      toast.error('Something went wrong! Please try again.')
+    } catch (error: any) {
+      console.error('Error submitting form:', error)
+      if (error.response && error.response.data && error.response.data.error) {
+        if (error.response.data.error.message === 'Email already taken') {
+          setError('email', { type: 'manual', message: 'Email already taken' })
+        } else {
+          toast.error(error.response.data.error.message)
+        }
+      } else {
+        toast.error('Something went wrong. Please try again.')
+      }
     }
   }
 
@@ -194,31 +204,28 @@ const AddUser = () => {
             </Grid>
 
             <Grid item xs={12} sm={6}>
-              <FormControl fullWidth>
+              <FormControl fullWidth error={!!errors.organizational_position}>
                 <InputLabel id='form-layouts-separator-select-label'>Organizational Position</InputLabel>
                 <Controller
                   name='organizational_position'
                   control={control}
-                  render={({ field }) => (
-                    <>
-                      <Select
-                        {...field}
-                        label='Organizational Position'
-                        labelId='form-layouts-separator-select-label'
-                        error={!!errors.organizational_position}
-                        value={field.value}
-                      >
-                        <MenuItem value={0}>Select Position</MenuItem>
-                        {position.map(pos => (
-                          <MenuItem key={pos.id} value={pos.id}>
-                            {pos.attributes?.title}
-                          </MenuItem>
-                        ))}
-                      </Select>
-                      {errors.organizational_position && (
-                        <FormHelperText error>{errors.organizational_position.message}</FormHelperText>
-                      )}
-                    </>
+                  render={({ field, fieldState: { error } }) => (
+                    <Select
+                      {...field}
+                      label='Organizational Position'
+                      labelId='form-layouts-separator-select-label'
+                      error={!!error}
+                      displayEmpty
+                    >
+                      <MenuItem value={0} disabled>
+                        Select Position
+                      </MenuItem>
+                      {position.map(pos => (
+                        <MenuItem key={pos.id} value={pos.id}>
+                          {pos.attributes?.title}
+                        </MenuItem>
+                      ))}
+                    </Select>
                   )}
                 />
               </FormControl>
