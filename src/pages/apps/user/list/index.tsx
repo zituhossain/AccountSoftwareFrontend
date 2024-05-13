@@ -110,7 +110,7 @@ const UserList = () => {
   const RowOptions = ({ id }: { id: number | string }) => {
     const router = useRouter()
     const handleView = () => {
-      router.push(`/apps/user/view/overview`)
+      router.push(`/apps/user/view/${id}`)
     }
 
     const handleEditClick = (id: string | number) => {
@@ -183,20 +183,6 @@ const UserList = () => {
         return (
           <Typography noWrap sx={{ color: 'text.secondary', textTransform: 'capitalize' }}>
             {row.organizational_position?.title}
-          </Typography>
-        )
-      }
-    },
-
-    {
-      flex: 0.15,
-      minWidth: 120,
-      headerName: 'Phone',
-      field: 'phone',
-      renderCell: ({ row }: CellType) => {
-        return (
-          <Typography variant='subtitle1' noWrap sx={{ textTransform: 'capitalize' }}>
-            {row.phone}
           </Typography>
         )
       }

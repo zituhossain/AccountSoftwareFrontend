@@ -1,15 +1,14 @@
-import { yupResolver } from '@hookform/resolvers/yup'
-import { Button, Card, CardContent, Grid, Typography } from '@mui/material'
-import TextField from '@mui/material/TextField'
-import CardActions from '@mui/material/CardActions'
-import { Box } from '@mui/system'
-import { useRouter } from 'next/router'
 import { useEffect, useState } from 'react'
-import { Controller, useForm } from 'react-hook-form'
+import { useForm, Controller } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import * as yup from 'yup'
+import { useRouter } from 'next/router'
 import toast from 'react-hot-toast'
+import { Button, Card, CardContent, TextField, Grid, Avatar, Typography } from '@mui/material'
+import { Box } from '@mui/system'
+import CardActions from '@mui/material/CardActions'
 import { fetchDataFromApi, postDataToApiAxios, putDataToApi } from 'src/utils/api'
 import { STRAPI_URL } from 'src/utils/urls'
-import * as yup from 'yup'
 
 // Validation Schema
 const schema = yup
@@ -150,10 +149,6 @@ const UserView = () => {
                     {...field}
                     fullWidth
                     label='Phone No.'
-                    variant='outlined'
-                    InputLabelProps={{
-                      shrink: true // This ensures the label shrinks when the TextField is populated or focused
-                    }}
                     error={!!errors.phone}
                     helperText={errors.phone?.message}
                   />
@@ -171,10 +166,6 @@ const UserView = () => {
                     multiline
                     minRows={3}
                     label='Address'
-                    variant='outlined'
-                    InputLabelProps={{
-                      shrink: true
-                    }}
                     error={!!errors.address}
                     helperText={errors.address?.message}
                   />
