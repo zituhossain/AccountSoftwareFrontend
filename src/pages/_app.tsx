@@ -122,12 +122,15 @@ const App = (props: ExtendedAppProps) => {
     <Provider store={store}>
       <CacheProvider value={emotionCache}>
         <Head>
-          <title>{`${themeConfig.templateName} - Material Design React Admin Template`}</title>
+          <title>{`${themeConfig.templateName} - Transportation Service`}</title>
           <meta
             name='description'
-            content={`${themeConfig.templateName} – Material Design React Admin Dashboard Template – is the most developer friendly & highly customizable Admin Dashboard Template based on MUI v5.`}
+            content={`${themeConfig.templateName} – Top-Notch Transportation Services at Your Fingertips – Book top-notch transportation services with ease. Our fleet is ready to provide you with a smooth and hassle-free travel experience`}
           />
-          <meta name='keywords' content='Material Design, MUI, Admin Template, React Admin Template' />
+          <meta
+            name='keywords'
+            content='Transportation services,Reliable transportation,Corporate travel,Safe transportation,Efficient travel solutions,Professional drivers,Transportation booking'
+          />
           <meta name='viewport' content='initial-scale=1, width=device-width' />
         </Head>
 

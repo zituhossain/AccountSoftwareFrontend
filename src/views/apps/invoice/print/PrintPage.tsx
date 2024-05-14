@@ -15,15 +15,11 @@ import TableCell, { TableCellBaseProps } from '@mui/material/TableCell'
 import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import Typography from '@mui/material/Typography'
-import { styled, useTheme } from '@mui/material/styles'
-
-// ** Types
-
-// ** Third Party Components
-import axios from 'axios'
+import { styled } from '@mui/material/styles'
+import Image from 'next/image'
+import { formatDate } from 'src/utils/dateUtils'
 
 // ** Configs
-import themeConfig from 'src/configs/themeConfig'
 import { CardContent, TableContainer } from '@mui/material'
 
 const CalcWrapper = styled(Box)<BoxProps>(({ theme }) => ({
@@ -44,9 +40,6 @@ const InvoicePrint = ({ invoiceMasterData, invoiceDetailsData }: any) => {
   // ** State
   const [error, setError] = useState<boolean>(false)
   const [data, setData] = useState<null | any>(null)
-
-  // ** Hooks
-  const theme = useTheme()
 
   useEffect(() => {
     setTimeout(() => {
@@ -73,7 +66,8 @@ const InvoicePrint = ({ invoiceMasterData, invoiceDetailsData }: any) => {
           <Grid item xs={8} sx={{ mb: { sm: 0, xs: 4 } }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Box sx={{ mb: 6, display: 'flex', alignItems: 'center' }}>
-                {/* TODO: Add company logo */}
+                <Image src='/images/output.png' alt='Top-4 Logistics Logo' height={100} width={100} />
+
                 <Typography variant='h6' sx={{ ml: 2, fontWeight: 700, lineHeight: 1.2 }}>
                   Top-4 Logistics
                 </Typography>
@@ -102,7 +96,7 @@ const InvoicePrint = ({ invoiceMasterData, invoiceDetailsData }: any) => {
                   Date Issued:
                 </Typography>
                 <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                  {data.attributes.date}
+                  {formatDate(data.attributes.date, 'DD-MM-YYYY')}
                 </Typography>
               </Box>
             </Box>

@@ -16,15 +16,11 @@ import TableHead from '@mui/material/TableHead'
 import TableRow from '@mui/material/TableRow'
 import Typography from '@mui/material/Typography'
 import { styled, useTheme } from '@mui/material/styles'
-
-// ** Types
-
-// ** Third Party Components
-import axios from 'axios'
+import Image from 'next/image'
+import { formatDate } from 'src/utils/dateUtils'
 
 // ** Configs
-import themeConfig from 'src/configs/themeConfig'
-import { CardContent } from '@mui/material'
+import { CardContent, TableContainer } from '@mui/material'
 
 const CalcWrapper = styled(Box)<BoxProps>(({ theme }) => ({
   display: 'flex',
@@ -40,7 +36,7 @@ const MUITableCell = styled(TableCell)<TableCellBaseProps>(({ theme }) => ({
   padding: `${theme.spacing(1, 0)} !important`
 }))
 
-const InvoicePrint = ({ quotationData }: any) => {
+const QuotationPrint = ({ quotationData }: any) => {
   // ** State
   const [error, setError] = useState<boolean>(false)
   const [data, setData] = useState<null | any>(null)
@@ -77,102 +73,34 @@ const InvoicePrint = ({ quotationData }: any) => {
           <Grid item xs={8} sx={{ mb: { sm: 0, xs: 4 } }}>
             <Box sx={{ display: 'flex', flexDirection: 'column' }}>
               <Box sx={{ mb: 6, display: 'flex', alignItems: 'center' }}>
-                <svg width={40} fill='none' height={22} viewBox='0 0 268 150' xmlns='http://www.w3.org/2000/svg'>
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 195.571 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fillOpacity='0.4'
-                    fill='url(#paint0_linear_7821_79167)'
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 196.084 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(0.865206 0.501417 -0.498585 0.866841 173.147 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 94.1973 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fillOpacity='0.4'
-                    fill='url(#paint1_linear_7821_79167)'
-                    transform='matrix(-0.865206 0.501417 0.498585 0.866841 94.1973 0)'
-                  />
-                  <rect
-                    rx='25.1443'
-                    width='50.2886'
-                    height='143.953'
-                    fill={theme.palette.primary.main}
-                    transform='matrix(0.865206 0.501417 -0.498585 0.866841 71.7728 0)'
-                  />
-                  <defs>
-                    <linearGradient
-                      y1='0'
-                      x1='25.1443'
-                      x2='25.1443'
-                      y2='143.953'
-                      id='paint0_linear_7821_79167'
-                      gradientUnits='userSpaceOnUse'
-                    >
-                      <stop />
-                      <stop offset='1' stopOpacity='0' />
-                    </linearGradient>
-                    <linearGradient
-                      y1='0'
-                      x1='25.1443'
-                      x2='25.1443'
-                      y2='143.953'
-                      id='paint1_linear_7821_79167'
-                      gradientUnits='userSpaceOnUse'
-                    >
-                      <stop />
-                      <stop offset='1' stopOpacity='0' />
-                    </linearGradient>
-                  </defs>
-                </svg>
+                <Image src='/images/output.png' alt='Top-4 Logistics Logo' height={100} width={100} />
                 <Typography variant='h6' sx={{ ml: 2, fontWeight: 700, lineHeight: 1.2 }}>
-                  {themeConfig.templateName}
+                  Top-4 Logistics
                 </Typography>
               </Box>
               <div>
                 <Typography variant='body2' sx={{ mb: 1 }}>
-                  Office 149, 450 South Brand Brooklyn
+                  9/31, F, Eastern Plaza, Hatirpul
                 </Typography>
                 <Typography variant='body2' sx={{ mb: 1 }}>
-                  San Diego County, CA 91905, USA
+                  Dhaka - 1205, Bangladesh
                 </Typography>
-                <Typography variant='body2'>+1 (123) 456 7891, +44 (876) 543 2198</Typography>
+                <Typography variant='body2'>+8801852244141</Typography>
+                <Typography variant='body2'>top4we@gmail.com</Typography>
               </div>
             </Box>
           </Grid>
           <Grid item xs={4}>
             <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: { sm: 'flex-end', xs: 'flex-start' } }}>
               <Typography variant='h6' sx={{ mb: 2 }}>
-                {`Invoice #${data.attributes.quotation_no}`}
+                {`Quotation #${data.attributes.quotation_no}`}
               </Typography>
               <Box sx={{ mb: 2, display: 'flex' }}>
                 <Typography variant='body2' sx={{ mr: 3 }}>
                   Date Issued:
                 </Typography>
                 <Typography variant='body2' sx={{ fontWeight: 600 }}>
-                  {data.attributes.date}
+                  {formatDate(data.attributes.date, 'DD-MM-YYYY')}
                 </Typography>
               </Box>
             </Box>
@@ -181,54 +109,71 @@ const InvoicePrint = ({ quotationData }: any) => {
 
         <Divider sx={{ my: theme => `${theme.spacing(6)} !important` }} />
 
-        <Grid container>
-          <Grid item xs={7} md={8} sx={{ mb: { lg: 0, xs: 4 } }}>
-            <Typography variant='body2' sx={{ mb: 3.5, fontWeight: 600 }}>
-              Quotation To:
-            </Typography>
-            <Typography variant='body2' sx={{ mb: 2 }}>
-              {data.attributes.client.data.attributes.name}
-            </Typography>
-            <Typography variant='body2' sx={{ mb: 2 }}>
-              {data.attributes.client.data.attributes.address}
-            </Typography>
-            <Typography variant='body2' sx={{ mb: 2 }}>
-              {data.attributes.client.data.attributes.phone}
-            </Typography>
-            <Typography variant='body2' sx={{ mb: 2 }}>
-              {data.attributes.client.data.attributes.email}
-            </Typography>
+        <CardContent>
+          <Grid container>
+            <Grid item xs={12} sm={6} sx={{ mb: { lg: 0, xs: 4 } }}>
+              <Typography variant='subtitle2' sx={{ mb: 3, color: 'text.primary', letterSpacing: '.1px' }}>
+                Quotation To:
+              </Typography>
+              <Typography variant='body2' sx={{ mb: 2 }}>
+                {data.attributes.client.data.attributes.name}
+              </Typography>
+              <Typography variant='body2' sx={{ mb: 2 }}>
+                {data.attributes.client.data.attributes.address}
+              </Typography>
+              <Typography variant='body2' sx={{ mb: 2 }}>
+                {data.attributes.client.data.attributes.email}
+              </Typography>
+              <Typography variant='body2' sx={{ mb: 2 }}>
+                {data.attributes.client.data.attributes.phone}
+              </Typography>
+            </Grid>
+            <Grid item xs={12} sm={6} sx={{ display: 'flex', justifyContent: ['flex-start', 'flex-end'] }}>
+              <div>
+                <TableContainer>
+                  <Table>
+                    <TableBody>
+                      <TableRow>
+                        <MUITableCell>
+                          <Typography variant='body2'>Subject:</Typography>
+                        </MUITableCell>
+                        <MUITableCell>
+                          <Typography variant='body2'>{data.attributes.subject}</Typography>
+                        </MUITableCell>
+                      </TableRow>
+                      <TableRow>
+                        <MUITableCell>
+                          <Typography variant='body2'>B/L NO:</Typography>
+                        </MUITableCell>
+                        <MUITableCell>
+                          <Typography variant='body2'>{data.attributes.bl_number}</Typography>
+                        </MUITableCell>
+                      </TableRow>
+                      <TableRow>
+                        <MUITableCell>
+                          <Typography variant='body2'>L/C NO:</Typography>
+                        </MUITableCell>
+                        <MUITableCell>
+                          <Typography variant='body2'>{data.attributes.lc_number}</Typography>
+                        </MUITableCell>
+                      </TableRow>
+                      <TableRow>
+                        <MUITableCell>
+                          <Typography variant='subtitle2' sx={{ color: 'text.primary', letterSpacing: '.1px' }}>
+                            Remarks:
+                          </Typography>
+                        </MUITableCell>
+                        <MUITableCell>
+                          <Typography variant='body2'>{data.attributes.remarks}</Typography>
+                        </MUITableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </div>
+            </Grid>
           </Grid>
-          <Grid item xs={5} md={4}>
-            <Typography variant='body2' sx={{ mb: 3.5, fontWeight: 600 }}>
-              Bill To:
-            </Typography>
-            {/* <Table>
-              <TableBody>
-                <TableRow>
-                  <MUITableCell>Total Due:</MUITableCell>
-                  <MUITableCell>{paymentDetails.totalDue}</MUITableCell>
-                </TableRow>
-                <TableRow>
-                  <MUITableCell>Bank name:</MUITableCell>
-                  <MUITableCell>{paymentDetails.bankName}</MUITableCell>
-                </TableRow>
-                <TableRow>
-                  <MUITableCell>Country:</MUITableCell>
-                  <MUITableCell>{paymentDetails.country}</MUITableCell>
-                </TableRow>
-                <TableRow>
-                  <MUITableCell>IBAN:</MUITableCell>
-                  <MUITableCell>{paymentDetails.iban}</MUITableCell>
-                </TableRow>
-                <TableRow>
-                  <MUITableCell>SWIFT code:</MUITableCell>
-                  <MUITableCell>{paymentDetails.swiftCode}</MUITableCell>
-                </TableRow>
-              </TableBody>
-            </Table> */}
-          </Grid>
-        </Grid>
+        </CardContent>
 
         <Divider sx={{ mt: theme => `${theme.spacing(6)} !important`, mb: '0 !important' }} />
 
@@ -316,4 +261,4 @@ const InvoicePrint = ({ quotationData }: any) => {
   }
 }
 
-export default InvoicePrint
+export default QuotationPrint
