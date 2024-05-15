@@ -45,7 +45,6 @@ const UserDropdown = (props: Props) => {
   // ** States
   const [anchorEl, setAnchorEl] = useState<Element | null>(null)
   const [userData, setUserData] = useState<any>(null)
-  const [userProfileData, setUserProfileData] = useState<any>(null)
 
   // console.log('image', userData?.image ? `http://127.0.0.1:1337${userData.image.url}` : '/images/avatars/1.png')
 
@@ -92,16 +91,11 @@ const UserDropdown = (props: Props) => {
   useEffect(() => {
     ;(async () => {
       const response = await fetchDataFromApi(`/users/${storedUser.id}?populate=*`)
+
+      // console.log('response', response)
       setUserData(response)
     })()
-  }, [storedUser.id])
-
-  useEffect(() => {
-    ;(async () => {
-      const response = await fetchDataFromApi(`/users/${storedUser.id}?populate[user_profile][populate]=*`)
-      setUserProfileData(response)
-    })()
-  }, [storedUser.id])
+  }, [])
 
   return (
     <Fragment>
@@ -116,14 +110,10 @@ const UserDropdown = (props: Props) => {
         }}
       >
         <Avatar
-          alt={userProfileData?.username}
+          alt='John Doe'
           onClick={handleDropdownOpen}
           sx={{ width: 40, height: 40 }}
-          src={
-            userProfileData?.user_profile?.profile
-              ? `${STRAPI_URL}${userProfileData?.user_profile?.profile?.url}`
-              : '/images/avatars/1.png'
-          }
+          src={userData?.image ? `${STRAPI_URL}${userData.image.url}` : '/images/avatars/1.png'}
         />
       </Badge>
       <Menu
@@ -145,12 +135,8 @@ const UserDropdown = (props: Props) => {
               }}
             >
               <Avatar
-                alt={userProfileData?.username}
-                src={
-                  userProfileData?.user_profile?.profile
-                    ? `${STRAPI_URL}${userProfileData?.user_profile?.profile?.url}`
-                    : '/images/avatars/1.png'
-                }
+                alt={userData?.username}
+                src={userData?.image ? userData?.image?.url : '/images/avatars/1.png'}
                 sx={{ width: '2.5rem', height: '2.5rem' }}
               />
             </Badge>
@@ -163,8 +149,7 @@ const UserDropdown = (props: Props) => {
           </Box>
         </Box>
         <Divider sx={{ mt: '0 !important' }} />
-        {/* <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/pages/user-profile/profile')}> */}
-        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose(`/apps/user/view/${storedUser.id}`)}>
+        <MenuItem sx={{ p: 0 }} onClick={() => handleDropdownClose('/pages/user-profile/profile')}>
           <Box sx={styles}>
             <Icon icon='mdi:account-outline' />
             Profile
