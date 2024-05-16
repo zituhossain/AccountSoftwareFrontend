@@ -92,44 +92,15 @@ const QuotationAdd = () => {
 
           if (userResponse && userResponse.company && userResponse.company.id) {
             // Fetch the latest quotation data
-            const quoteResponse = await fetchDataFromApi(`/quotations`)
+
             setUserId(userResponse.id)
             if (userResponse.company) setCompanyId(userResponse.company.id)
-
-            if (quoteResponse && quoteResponse.data && quoteResponse.data.length > 0) {
-              // Extract quotation numbers from each quotation object
-              const quotationNumbers = quoteResponse.data.map((quote: any) =>
-                parseInt(quote.attributes.quotation_no, 10)
-              )
-
-              // Find the maximum quotation number
-              const maxQuotationNumber = Math.max(...quotationNumbers)
-
-              // Generate the next quotation number
-              const nextQuotationNumber = maxQuotationNumber + 1
-
-              // Set the next quotation number
-              setQuotationNo(nextQuotationNumber)
-
-              // Merge the changes into the existing formData state
-              setFormData(prevState => ({
-                ...prevState,
-                quotation_no: nextQuotationNumber.toString(),
-                created_user: userData.id,
-                company: userResponse.company.id
-              }))
-            } else {
-              // If no quotations exist, set the quotation number to 1
-              setQuotationNo(1)
-
-              // Merge the changes into the existing formData state with quotation number as 1
-              setFormData(prevState => ({
-                ...prevState,
-                quotation_no: '1',
-                created_user: userData.id,
-                company: userResponse.company.id
-              }))
-            }
+            setFormData(prevState => ({
+              ...prevState,
+              quotation_no: '1',
+              created_user: userData.id,
+              company: userResponse.company.id
+            }))
           }
         }
       } catch (error) {
@@ -145,10 +116,10 @@ const QuotationAdd = () => {
       if (id) {
         try {
           const response = await fetchDataFromApi(`/quotations/${id}?populate=*`)
+          setQuotationNo(response.data.attributes.quotation_no)
           const {
             data: { attributes }
           } = response
-          console.log('attt', attributes)
           if (attributes.date) {
             attributes.date = new Date(attributes.date) // Convert string to Date object
           }
@@ -158,6 +129,36 @@ const QuotationAdd = () => {
         } catch (error) {
           toast.error('Error fetching quotation data.')
           console.error('Error:', error)
+        }
+      } else {
+        const quoteResponse = await fetchDataFromApi(`/quotations`)
+        if (quoteResponse && quoteResponse.data && quoteResponse.data.length > 0) {
+          // Extract quotation numbers from each quotation object
+          const quotationNumbers = quoteResponse.data.map((quote: any) => parseInt(quote.attributes.quotation_no, 10))
+
+          // Find the maximum quotation number
+          const maxQuotationNumber = Math.max(...quotationNumbers)
+
+          // Generate the next quotation number
+          const nextQuotationNumber = maxQuotationNumber + 1
+
+          // Set the next quotation number
+          setQuotationNo(nextQuotationNumber)
+
+          // Merge the changes into the existing formData state
+          setFormData(prevState => ({
+            ...prevState,
+            quotation_no: nextQuotationNumber.toString()
+          }))
+        } else {
+          // If no quotations exist, set the quotation number to 1
+          setQuotationNo(1)
+
+          // Merge the changes into the existing formData state with quotation number as 1
+          setFormData(prevState => ({
+            ...prevState,
+            quotation_no: '1'
+          }))
         }
       }
     }
