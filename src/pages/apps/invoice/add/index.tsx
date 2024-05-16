@@ -106,35 +106,23 @@ const InvoiceAdd = () => {
   // Fetch invoice no
   const fetchInvoiceNumber = async () => {
     try {
-      // Fetch existing invoice data if in edit mode
-      if (id) {
-        const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters/${id}`)
-        console.log('invoiceMasterResponse:##########', invoiceMasterResponse.data)
-        const existingInvoiceNo = invoiceMasterResponse?.data?.attributes?.invoice_no
-        setInvoiceNo(existingInvoiceNo)
-        setInvoiceMasterData((prevState: any) => ({
-          ...prevState,
-          invoice_no: existingInvoiceNo.toString()
-        }))
-      } else {
-        // Generate new invoice number if creating new invoice
-        const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters`)
-        const invoices = invoiceMasterResponse?.data
-        console.log('Create new invoice: ')
-        const maxInvoiceNo = Math.max(
-          ...invoices.map((invoice: { attributes: { invoice_no: string } }) =>
-            parseInt(invoice.attributes.invoice_no, 10)
-          )
+      // Generate new invoice number if creating new invoice
+      const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters`)
+      const invoices = invoiceMasterResponse?.data
+      console.log('Create new invoice: ')
+      const maxInvoiceNo = Math.max(
+        ...invoices.map((invoice: { attributes: { invoice_no: string } }) =>
+          parseInt(invoice.attributes.invoice_no, 10)
         )
-        const newInvoiceNo = maxInvoiceNo >= 0 ? maxInvoiceNo + 1 : 1
-        setInvoiceNo(newInvoiceNo)
+      )
+      const newInvoiceNo = maxInvoiceNo >= 0 ? maxInvoiceNo + 1 : 1
+      setInvoiceNo(newInvoiceNo)
 
-        // Merge the changes into the existing formData state
-        setInvoiceMasterData((prevState: any) => ({
-          ...prevState,
-          invoice_no: newInvoiceNo.toString()
-        }))
-      }
+      // Merge the changes into the existing formData state
+      setInvoiceMasterData((prevState: any) => ({
+        ...prevState,
+        invoice_no: newInvoiceNo.toString()
+      }))
     } catch (error) {
       console.error('Error fetching invoice data:', error)
       toast.error('Error fetching data.')
@@ -145,6 +133,8 @@ const InvoiceAdd = () => {
     try {
       const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters/${invoiceId}?populate=*`)
       setInvoiceMasterData(invoiceMasterResponse.data)
+      const existingInvoiceNo = invoiceMasterResponse?.data?.attributes?.invoice_no
+      setInvoiceNo(existingInvoiceNo)
       const invoiceDetailsResponse = await fetchDataFromApi(
         `/invoice-details?filters[invoice_master][id][$eq]=${invoiceId}`
       )
