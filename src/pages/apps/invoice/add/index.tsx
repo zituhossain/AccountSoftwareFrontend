@@ -1,12 +1,8 @@
 // ** React Imports
 import { useEffect, useState } from 'react'
 
-// ** Next Imports
-
 // ** MUI Imports
 import Grid from '@mui/material/Grid'
-
-// ** Third Party Components
 
 // ** Types
 import { InvoiceClientType } from 'src/types/apps/invoiceTypes'
@@ -109,7 +105,6 @@ const InvoiceAdd = () => {
       // Generate new invoice number if creating new invoice
       const invoiceMasterResponse = await fetchDataFromApi(`/invoice-masters`)
       const invoices = invoiceMasterResponse?.data
-      console.log('Create new invoice: ')
       const maxInvoiceNo = Math.max(
         ...invoices.map((invoice: { attributes: { invoice_no: string } }) =>
           parseInt(invoice.attributes.invoice_no, 10)
@@ -255,11 +250,18 @@ const InvoiceAdd = () => {
     }
   }
 
+  const prepareDataForAPI = (data: { [x: string]: any; attributes: any }) => {
+    const { attributes, ...otherData } = data
+
+    return { ...attributes, ...otherData }
+  }
+
   const updateInvoiceMasterAndDetails = async () => {
     try {
       // Update the invoice master record
+      const formattedData = prepareDataForAPI(invoiceMasterData)
       const masterData = new FormData()
-      masterData.append('data', JSON.stringify(invoiceMasterData))
+      masterData.append('data', JSON.stringify(formattedData))
       await putDataToApi(`/invoice-masters/${invoiceMasterData.id}?populate=*`, masterData)
 
       // Retrieve current invoice details from the API to compare with local state

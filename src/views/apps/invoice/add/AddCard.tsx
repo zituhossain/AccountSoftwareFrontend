@@ -1,5 +1,5 @@
 // ** React Imports
-import { ForwardedRef, SyntheticEvent, forwardRef, useEffect, useState } from 'react'
+import { ForwardedRef, forwardRef, useEffect, useState } from 'react'
 
 // ** MUI Imports
 import Box, { BoxProps } from '@mui/material/Box'
@@ -11,8 +11,7 @@ import Divider from '@mui/material/Divider'
 import Grid, { GridProps } from '@mui/material/Grid'
 import IconButton from '@mui/material/IconButton'
 import InputAdornment from '@mui/material/InputAdornment'
-import InputLabel from '@mui/material/InputLabel'
-import MenuItem, { MenuItemProps } from '@mui/material/MenuItem'
+import MenuItem from '@mui/material/MenuItem'
 import Select, { SelectChangeEvent } from '@mui/material/Select'
 import Table from '@mui/material/Table'
 import TableBody from '@mui/material/TableBody'
@@ -21,7 +20,7 @@ import TableContainer from '@mui/material/TableContainer'
 import TableRow from '@mui/material/TableRow'
 import TextField from '@mui/material/TextField'
 import Typography from '@mui/material/Typography'
-import { alpha, styled, useTheme } from '@mui/material/styles'
+import { styled } from '@mui/material/styles'
 
 // ** Icon Imports
 import Icon from 'src/@core/components/icon'
@@ -29,15 +28,13 @@ import Icon from 'src/@core/components/icon'
 // ** Third Party Imports
 import DatePicker from 'react-datepicker'
 
-// ** Configs
-
 // ** Types
 import { DateType } from 'src/types/forms/reactDatepickerTypes'
 
 // ** Custom Component Imports
+import Image from 'next/image'
 import { Controller, useForm } from 'react-hook-form'
 import Repeater from 'src/@core/components/repeater'
-import Image from 'next/image'
 
 interface PickerProps {
   label?: string
@@ -120,12 +117,6 @@ const InvoiceAction = styled(Box)<BoxProps>(({ theme }) => ({
   borderLeft: `1px solid ${theme.palette.divider}`
 }))
 
-const CustomSelectItem = styled(MenuItem)<MenuItemProps>(({ theme }) => ({
-  color: theme.palette.success.main,
-  backgroundColor: 'transparent !important',
-  '&:hover': { backgroundColor: `${alpha(theme.palette.success.main, 0.1)} !important` }
-}))
-
 const now = new Date()
 
 const AddCard = (props: Props) => {
@@ -142,18 +133,10 @@ const AddCard = (props: Props) => {
   } = props
   const { control } = useForm()
 
-  // console.log('initialMasterData:', initialMasterData)
-  console.log('invoiceDetails:===>', invoiceDetails)
-
   // ** States
   const [count, setCount] = useState<number>(1)
   const [selected, setSelected] = useState<string>('')
   const [issueDate, setIssueDate] = useState<DateType>(new Date())
-
-  console.log('selected:', selected)
-
-  // ** Hook
-  const theme = useTheme()
 
   // ** Handle Invoice To Change
   const handleInvoiceChange = (event: SelectChangeEvent) => {
@@ -166,9 +149,20 @@ const AddCard = (props: Props) => {
     }
   }
 
+  // const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  //   const { name, value } = event.target
+  //   setInvoiceMasterData({ ...invoiceMasterData, [name]: value })
+  // }
+
   const handleFieldChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = event.target
-    setInvoiceMasterData({ ...invoiceMasterData, [name]: value })
+    setInvoiceMasterData((prevState: any) => ({
+      ...prevState,
+      attributes: {
+        ...prevState.attributes,
+        [name]: value
+      }
+    }))
   }
 
   // Update formData whenever date picker changes
